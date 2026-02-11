@@ -21,12 +21,9 @@ class Careven extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xff141414),
-            // Color(0xff6D21B9),
-            Color(0xff6D21B9),
-
-            // Color(0xff6D21B9),
-            Color(0xff141414),
+            Color.fromRGBO(0, 0, 0, 0),
+            Color.fromRGBO(109, 33, 185, 1),
+            Color.fromRGBO(109, 33, 185, 0),
           ],
         ),
       ),
