@@ -8,6 +8,7 @@ void main() {
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent, // 상태바 투명하게
       statusBarIconBrightness: Brightness.light, // 상태바 아이콘 밝기 설정
+      statusBarBrightness: Brightness.dark,
     ),
   );
   runApp(const MyApp());
