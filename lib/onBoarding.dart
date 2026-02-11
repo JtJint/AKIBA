@@ -1,6 +1,7 @@
 import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -45,6 +46,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: Color(0xff141414),
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark, // ios
+          ),
+        ),
         backgroundColor: const Color(0xff141414),
         body: Center(
           child: SizedBox(
