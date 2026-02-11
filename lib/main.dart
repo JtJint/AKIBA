@@ -1,26 +1,8 @@
-import 'dart:io';
-
 import 'package:akiba/home.dart';
 import 'package:akiba/onBoarding.dart'; // 파일명 확인 (onBoarding.dart vs onboarding.dart)
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-bool isDarkMode =
-    WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
-      statusBarColor: Color(0xff141414), // 상태바 투명하게
-      statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-      statusBarBrightness: isDarkMode
-          ? Platform.isIOS
-                ? Brightness.dark
-                : Brightness.light
-          : Platform.isIOS
-          ? Brightness.light
-          : Brightness.dark,
-    ),
-  );
   runApp(const MyApp());
 }
 

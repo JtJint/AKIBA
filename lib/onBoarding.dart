@@ -44,26 +44,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: Color(0xff141414),
-            statusBarIconBrightness: Brightness.light,
-            statusBarBrightness: Brightness.dark, // ios
-          ),
-        ),
-        backgroundColor: const Color(0xff141414),
-        body: Center(
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.3, // 크기 조금 키움 (취향껏 조절)
-            child: AnimatedOpacity(
-              // 6. 상태 변수 _opacity에 따라 애니메이션 자동 적용
-              opacity: _opacity,
-              duration: const Duration(milliseconds: 1500), // 페이드인 되는 시간
-              curve: Curves.easeIn, // 부드러운 가속도 곡선
-              child: logo(width: 0.3, height: 0.1),
-            ),
+    return Scaffold(
+      backgroundColor: const Color(0xff141414),
+      body: Center(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.3, // 크기 조금 키움 (취향껏 조절)
+          child: AnimatedOpacity(
+            // 6. 상태 변수 _opacity에 따라 애니메이션 자동 적용
+            opacity: _opacity,
+            duration: const Duration(milliseconds: 1500), // 페이드인 되는 시간
+            curve: Curves.easeIn, // 부드러운 가속도 곡선
+            child: logo(width: 0.3, height: 0.1),
           ),
         ),
       ),

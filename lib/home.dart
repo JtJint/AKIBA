@@ -1,8 +1,6 @@
 import 'package:akiba/Cards/careven.dart';
-import 'package:akiba/Cards/popCard.dart';
 import 'package:akiba/Logo/logo.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
           ],
         ),
-        leadingWidth: MediaQuery.of(context).size.width * 0.2,
+        leadingWidth: MediaQuery.of(context).size.width * 0.3,
         backgroundColor: Color(0xff141414),
       ),
       endDrawer: Drawer(
