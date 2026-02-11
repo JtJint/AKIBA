@@ -16,7 +16,10 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false, // 오른쪽 위 'Debug' 띠 제거 (선택사항)
       title: 'Akiba',
-      theme: ThemeData(primaryColor: Color(0xff141414)),
+      theme: ThemeData(
+        scaffoldBackgroundColor: Color(0xff141414),
+        primaryColor: Color(0xff141414),
+      ),
       home: const OnboardingPage(), // 여기에 OnboardingPage를 연결합니다.
       // home: HomeScreen(),
     );
