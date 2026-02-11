@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Scaffold 대신 MaterialApp을 최상위에 둡니다.
     return MaterialApp(
+      themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false, // 오른쪽 위 'Debug' 띠 제거 (선택사항)
       title: 'Akiba',
       theme: ThemeData(primaryColor: Color(0xff141414)),
