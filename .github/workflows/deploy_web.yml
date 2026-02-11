@@ -23,7 +23,7 @@ jobs:
       - name: Pub 새로 가져오기
         run: flutter pub get
       - name: 플러터 웹 빌드
-        run: flutter build web --base-href "/blog/"
+        run: flutter build web --base-href "/AKIBA/"
       - name: Github Pages 배포
         uses: peaceiris/actions-gh-pages@v3
         with:
