@@ -1,5 +1,7 @@
+import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -51,7 +53,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             opacity: _opacity,
             duration: const Duration(milliseconds: 1500), // 페이드인 되는 시간
             curve: Curves.easeIn, // 부드러운 가속도 곡선
-            child: Image.asset('assets/AKIBA_LOGO.png', fit: BoxFit.contain),
+            child: logo(width: 0.3, height: 0.1),
           ),
         ),
       ),

@@ -1,4 +1,8 @@
+import 'package:akiba/Cards/careven.dart';
+import 'package:akiba/Cards/popCard.dart';
+import 'package:akiba/Logo/logo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,6 +12,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late PageController _pageController;
+  double _currentPage = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.8);
+    _pageController.addListener(() {
+      setState(() {
+        _currentPage = _pageController.page ?? 0.0;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,23 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.notifications),
             ),
           ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
         ],
         leading: Row(
           children: [
-            SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-            IconButton(
-              onPressed: () {},
-              icon: Image.asset(
-                'assets/AKIBA_LOGO.png',
-                width: MediaQuery.of(context).size.width * 0.1,
-                height: MediaQuery.of(context).size.height * 0.05,
-                fit: BoxFit.contain,
-              ),
-            ),
+            SizedBox(width: MediaQuery.of(context).size.width * 0.01),
+            IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
           ],
         ),
-        leadingWidth: MediaQuery.of(context).size.width * 0.14,
-        title: const Text('Akiba Home'),
+        leadingWidth: MediaQuery.of(context).size.width * 0.2,
         backgroundColor: Color(0xff141414),
       ),
       endDrawer: Drawer(
@@ -54,7 +64,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: const Center(child: Text('Welcome to the Home Screen!')),
+      body: Column(
+        children: [
+          Center(
+            //검색창 로직에 대해서 의논 필요
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.94,
+              height: MediaQuery.of(context).size.height * 0.05,
+              color: Color(0xff070707),
+              child: Row(
+                children: [
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                  Icon(Icons.search, color: Color(0xffD1FF00)),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                  Text('검색', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+          Careven(pageController: _pageController, currentPage: _currentPage),
+        ],
+      ),
     );
   }
 }
