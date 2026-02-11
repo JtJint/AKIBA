@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // 상태바 투명하게
+      statusBarColor: Color(0xff141414), // 상태바 투명하게
       statusBarIconBrightness: Brightness.light, // 상태바 아이콘 밝기 설정
       statusBarBrightness: Brightness.dark,
     ),
