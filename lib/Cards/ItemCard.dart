@@ -17,7 +17,7 @@ class Itemcard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.2,
+      width: MediaQuery.of(context).size.width * 0.3,
       height: MediaQuery.of(context).size.height * .3,
       decoration: BoxDecoration(
         color: Color(0xff1E1E1E),
@@ -27,7 +27,7 @@ class Itemcard extends StatelessWidget {
         children: [
           Image.network(
             img,
-            width: MediaQuery.of(context).size.width * 0.19,
+            width: MediaQuery.of(context).size.width * 0.3,
             height: MediaQuery.of(context).size.height * 0.2,
             fit: BoxFit.cover,
           ),
