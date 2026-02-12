@@ -1,3 +1,4 @@
+import 'package:akiba/scrolls/ItemCareven.dart';
 import 'package:akiba/scrolls/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
@@ -116,6 +117,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            Itemcareven(),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: MediaQuery.of(context).size.width * 0.03,
+                  ),
+                  child: Text(
+                    '곧 입찰이 끝나요!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    right: MediaQuery.of(context).size.width * 0.03,
+                  ),
+                  child: Text(
+                    '더보기',
+                    style: TextStyle(
+                      color: Color(0xff838383),
+                      fontSize: MediaQuery.of(context).size.width * 0.035,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
           ],
         ),
       ),
