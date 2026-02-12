@@ -21,7 +21,7 @@ class category extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Categorybox(svg: 'Cart.svg', categoryName: '중고거래'),
-              Categorybox(svg: 'SuitCase.svg', categoryName: '경매'),
+              Categorybox(svg: 'Suitcase.svg', categoryName: '경매'),
               Categorybox(svg: 'Pencil.svg', categoryName: '구해요'),
               Categorybox(svg: 'Chat.svg', categoryName: '특전/한정판'),
             ],
