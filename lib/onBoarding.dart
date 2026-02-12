@@ -2,7 +2,6 @@ import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
