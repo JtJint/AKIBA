@@ -28,7 +28,9 @@ class _ItemcarevenState extends State<Itemcareven> {
             scale: 1.0,
             // 만약 카드 사이 간격을 더 좁히고 싶다면 padding을 조절하세요
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0.0), // 좌우 간격 조절
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.02,
+              ), // 좌우 간격 조절
               child: Center(
                 child: Itemcard(
                   img: 'https://picsum.photos/seed/${index + 1}/400/400',
