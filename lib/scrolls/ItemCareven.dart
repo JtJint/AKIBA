@@ -29,7 +29,7 @@ class _ItemcarevenState extends State<Itemcareven> {
             // 만약 카드 사이 간격을 더 좁히고 싶다면 padding을 조절하세요
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.02,
+                horizontal: MediaQuery.of(context).size.width * 0.021,
               ), // 좌우 간격 조절
               child: Center(
                 child: Itemcard(
