@@ -1,6 +1,7 @@
 import 'package:akiba/Box/categoryBox.dart';
 import 'package:flutter/material.dart';
 
+// ignore: camel_case_types
 class category extends StatelessWidget {
   const category({super.key});
 

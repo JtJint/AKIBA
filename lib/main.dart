@@ -1,4 +1,3 @@
-import 'package:akiba/home.dart';
 import 'package:akiba/onBoarding.dart'; // 파일명 확인 (onBoarding.dart vs onboarding.dart)
 import 'package:flutter/material.dart';
 
