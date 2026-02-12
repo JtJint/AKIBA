@@ -27,10 +27,11 @@ class Careven extends StatelessWidget {
           ],
         ),
       ),
-      height: MediaQuery.of(context).size.height * 0.4,
+      height: MediaQuery.of(context).size.height * 0.4 + 8,
       child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
         width: MediaQuery.of(context).size.width * 0.4,
-        height: MediaQuery.of(context).size.height * 0.3,
+        height: MediaQuery.of(context).size.height * 0.4,
         child: PageView.builder(
           scrollDirection: Axis.horizontal,
           controller: _pageController,
