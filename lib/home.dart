@@ -72,9 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Center(
               child: GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const SearchScreen()),
-                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => SearchScreen())),
                 child: Container(
                   width: Responsive.w(context) * 0.94,
                   height: Responsive.ref(context) * 0.05,
