@@ -16,7 +16,7 @@ class Careven extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Responsive.w(context),
+      width: MediaQuery.of(context).size.width * 1,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -32,7 +32,7 @@ class Careven extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
         width: Responsive.ref(context) * 0.4,
-        height: Responsive.ref(context) * 0.4,
+        height: Responsive.ref(context) * 0.3,
         child: PageView.builder(
           scrollDirection: Axis.horizontal,
           controller: _pageController,
@@ -42,7 +42,7 @@ class Careven extends StatelessWidget {
             double difference = (index - _currentPage).abs();
 
             // 2. 크기 계산 (기존 유지)
-            double scale = 1 - (difference * 0.15);
+            double scale = 1 - (difference * 0.1);
 
             // 3. '어두움' 정도 계산 (Opacity가 아님!)
             // difference가 0(가운데)이면 darkness는 0.0 (투명한 막 -> 원본 그대로)

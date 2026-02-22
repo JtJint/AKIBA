@@ -19,25 +19,28 @@ class Itemcard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ref = Responsive.ref(context);
-
     return Container(
       width: ref * 0.3,
+      height: ref * 0.3,
       decoration: BoxDecoration(
         color: Color(0xff1E1E1E),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        // mainAxisSize: MainAxisSize.min,
         children: [
           // 1. 사진
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-            child: Image.network(
-              img,
-              width: ref * 0.3,
-              height: ref * 0.2,
-              fit: BoxFit.cover,
+          SizedBox(
+            height: ref * 0.2,
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+              child: Image.network(
+                img,
+                width: ref * 0.3,
+                height: ref * 0.3,
+                fit: BoxFit.fitHeight,
+              ),
             ),
           ),
           Padding(

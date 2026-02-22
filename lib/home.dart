@@ -3,6 +3,7 @@ import 'package:akiba/scrolls/AutionCareven.dart';
 import 'package:akiba/scrolls/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
+import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Row(
           children: [
             SizedBox(width: Responsive.ref(context) * 0.01),
-            IconButton(onPressed: () {}, icon: logo(width: .18, height: 0.024)),
+            IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
           ],
         ),
         leadingWidth: Responsive.ref(context) * 0.3,
@@ -70,18 +71,22 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Center(
-              //검색창 로직에 대해서 의논 필요
-              child: Container(
-                width: Responsive.w(context) * 0.94,
-                height: Responsive.ref(context) * 0.05,
-                color: Color(0xff070707),
-                child: Row(
-                  children: [
-                    SizedBox(width: Responsive.ref(context) * 0.02),
-                    Icon(Icons.search, color: Color(0xffD1FF00)),
-                    SizedBox(width: Responsive.ref(context) * 0.02),
-                    Text('검색', style: TextStyle(color: Colors.white)),
-                  ],
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                ),
+                child: Container(
+                  width: Responsive.w(context) * 0.94,
+                  height: Responsive.ref(context) * 0.05,
+                  color: Color(0xff070707),
+                  child: Row(
+                    children: [
+                      SizedBox(width: Responsive.ref(context) * 0.02),
+                      Icon(Icons.search, color: Color(0xffD1FF00)),
+                      SizedBox(width: Responsive.ref(context) * 0.02),
+                      Text('검색', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
             ),

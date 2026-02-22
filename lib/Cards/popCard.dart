@@ -26,7 +26,7 @@ class popCard extends StatelessWidget {
           Stack(
             children: <Widget>[
               Container(
-                width: Responsive.ref(context) * 0.7,
+                width: MediaQuery.of(context).size.width * 0.4,
                 height: Responsive.ref(context) * 0.4,
                 decoration: BoxDecoration(
                   // 원하는 그라데이션 색상 설정
@@ -65,9 +65,7 @@ class tagWidget extends StatelessWidget {
       children: tagName.map((tag) {
         return Container(
           // 1. 태그 사이의 간격 (기존 코드 유지)
-          margin: EdgeInsets.only(
-            right: Responsive.ref(context) * 0.01,
-          ),
+          margin: EdgeInsets.only(right: Responsive.ref(context) * 0.01),
 
           // 2. [수정됨] 바깥쪽 데코레이션: 그라데이션 적용 (테두리 역할)
           decoration: BoxDecoration(

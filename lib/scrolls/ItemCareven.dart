@@ -22,7 +22,7 @@ class _ItemcarevenState extends State<Itemcareven> {
   Widget build(BuildContext context) {
     return Container(
       width: Responsive.w(context) * 0.9,
-      height: Responsive.carouselHeight(context),
+      height: Responsive.ref(context) * 0.36 + 8,
       child: PageView.builder(
         controller: _pageController,
         padEnds: false,
