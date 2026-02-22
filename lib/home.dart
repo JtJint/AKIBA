@@ -1,3 +1,4 @@
+import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/scrolls/ItemCareven.dart';
 import 'package:akiba/scrolls/AutionCareven.dart';
 import 'package:akiba/scrolls/careven.dart';
@@ -72,9 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Center(
               child: GestureDetector(
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (context) => SearchScreen())),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => SearchScreen_()),
+                ),
                 child: Container(
                   width: Responsive.w(context) * 0.94,
                   height: Responsive.ref(context) * 0.05,

@@ -3,14 +3,14 @@ import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
 /// Figma AKIBA Design - 검색 화면
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+class SearchScreen_ extends StatefulWidget {
+  const SearchScreen_({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchScreen_> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends State<SearchScreen_> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
