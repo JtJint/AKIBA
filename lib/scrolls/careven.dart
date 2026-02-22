@@ -1,4 +1,5 @@
 import 'package:akiba/Cards/popCard.dart';
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
 class Careven extends StatelessWidget {
@@ -15,7 +16,7 @@ class Careven extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 1,
+      width: Responsive.w(context),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -27,11 +28,11 @@ class Careven extends StatelessWidget {
           ],
         ),
       ),
-      height: MediaQuery.of(context).size.height * 0.4 + 8,
+      height: Responsive.ref(context) * 0.4 + 8,
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-        width: MediaQuery.of(context).size.width * 0.4,
-        height: MediaQuery.of(context).size.height * 0.4,
+        width: Responsive.ref(context) * 0.4,
+        height: Responsive.ref(context) * 0.4,
         child: PageView.builder(
           scrollDirection: Axis.horizontal,
           controller: _pageController,

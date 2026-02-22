@@ -1,3 +1,4 @@
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -9,9 +10,9 @@ class Categorybox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.15,
+      width: Responsive.ref(context) * 0.19,
       color: Colors.transparent,
-      height: MediaQuery.of(context).size.width * 0.18,
+      height: Responsive.ref(context) * 0.22,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -21,23 +22,23 @@ class Categorybox extends StatelessWidget {
                 color: Color(0xff1E1E1E),
                 borderRadius: BorderRadius.circular(10),
               ),
-              width: MediaQuery.of(context).size.width * 0.14,
-              height: MediaQuery.of(context).size.width * 0.14,
+              width: Responsive.ref(context) * 0.18,
+              height: Responsive.ref(context) * 0.18,
               child: Center(
                 child: SvgPicture.asset(
                   'assets/$svg',
                   fit: BoxFit.contain,
-                  width: MediaQuery.of(context).size.width * 0.14,
-                  height: MediaQuery.of(context).size.width * 0.14,
+                  width: Responsive.ref(context) * 0.18,
+                  height: Responsive.ref(context) * 0.18,
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.width * 0.007),
+            SizedBox(height: Responsive.ref(context) * 0.007),
             Text(
               categoryName,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: MediaQuery.of(context).size.width * 0.015,
+                fontSize: Responsive.ref(context) * 0.015,
               ),
             ),
           ],

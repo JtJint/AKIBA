@@ -1,7 +1,9 @@
 import 'package:akiba/scrolls/ItemCareven.dart';
+import 'package:akiba/scrolls/AutionCareven.dart';
 import 'package:akiba/scrolls/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,15 +42,15 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.notifications),
             ),
           ),
-          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+          SizedBox(width: Responsive.ref(context) * 0.02),
         ],
         leading: Row(
           children: [
-            SizedBox(width: MediaQuery.of(context).size.width * 0.01),
+            SizedBox(width: Responsive.ref(context) * 0.01),
             IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
           ],
         ),
-        leadingWidth: MediaQuery.of(context).size.width * 0.3,
+        leadingWidth: Responsive.ref(context) * 0.3,
         backgroundColor: Color(0xff141414),
       ),
       endDrawer: Drawer(
@@ -70,88 +72,90 @@ class _HomeScreenState extends State<HomeScreen> {
             Center(
               //검색창 로직에 대해서 의논 필요
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.94,
-                height: MediaQuery.of(context).size.height * 0.05,
+                width: Responsive.w(context) * 0.94,
+                height: Responsive.ref(context) * 0.05,
                 color: Color(0xff070707),
                 child: Row(
                   children: [
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    SizedBox(width: Responsive.ref(context) * 0.02),
                     Icon(Icons.search, color: Color(0xffD1FF00)),
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    SizedBox(width: Responsive.ref(context) * 0.02),
                     Text('검색', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
             Careven(pageController: _pageController, currentPage: _currentPage),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
             category(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Padding(
                   padding: EdgeInsets.only(
-                    left: MediaQuery.of(context).size.width * 0.03,
+                    left: Responsive.ref(context) * 0.03,
                   ),
                   child: Text(
                     '지금 가장 핫한 매물!',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      fontSize: Responsive.ref(context) * 0.04,
                     ),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    right: MediaQuery.of(context).size.width * 0.03,
+                    right: Responsive.ref(context) * 0.03,
                   ),
                   child: Text(
                     '더보기',
                     style: TextStyle(
                       color: Color(0xff838383),
-                      fontSize: MediaQuery.of(context).size.width * 0.035,
+                      fontSize: Responsive.ref(context) * 0.035,
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
             Itemcareven(),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Padding(
                   padding: EdgeInsets.only(
-                    left: MediaQuery.of(context).size.width * 0.03,
+                    left: Responsive.ref(context) * 0.03,
                   ),
                   child: Text(
                     '곧 입찰이 끝나요!',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      fontSize: Responsive.ref(context) * 0.04,
                     ),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(
-                    right: MediaQuery.of(context).size.width * 0.03,
+                    right: Responsive.ref(context) * 0.03,
                   ),
                   child: Text(
                     '더보기',
                     style: TextStyle(
                       color: Color(0xff838383),
-                      fontSize: MediaQuery.of(context).size.width * 0.035,
+                      fontSize: Responsive.ref(context) * 0.035,
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+            SizedBox(height: Responsive.ref(context) * 0.02),
+            Autioncareven(),
+            SizedBox(height: Responsive.ref(context) * 0.02),
           ],
         ),
       ),

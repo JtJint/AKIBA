@@ -1,4 +1,5 @@
 import 'package:akiba/Cards/ItemCard.dart';
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
 class Itemcareven extends StatefulWidget {
@@ -9,28 +10,31 @@ class Itemcareven extends StatefulWidget {
 }
 
 class _ItemcarevenState extends State<Itemcareven> {
-  // 1. PageController 생성 및 viewportFraction 설정
-  // 0.8은 화면 너비의 80%만 차지한다는 뜻입니다. (숫자가 작을수록 더 많이 겹쳐 보임)
-  final PageController _pageController = PageController(viewportFraction: 0.3);
+  final PageController _pageController = PageController(viewportFraction: 0.28);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      height: MediaQuery.of(context).size.height * 0.28,
+      width: Responsive.w(context) * 0.9,
+      height: Responsive.ref(context) * 0.35,
       child: PageView.builder(
-        controller: _pageController, // 2. 컨트롤러 연결
+        controller: _pageController,
         padEnds: false,
         scrollDirection: Axis.horizontal,
         itemCount: 10,
         itemBuilder: (context, index) {
           return Transform.scale(
             scale: 1.0,
-            // 만약 카드 사이 간격을 더 좁히고 싶다면 padding을 조절하세요
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.021,
-              ), // 좌우 간격 조절
+                horizontal: Responsive.carouselGap(context),
+              ),
               child: Center(
                 child: Itemcard(
                   img: 'https://picsum.photos/seed/${index + 1}/400/400',

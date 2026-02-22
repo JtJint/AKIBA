@@ -1,5 +1,7 @@
 import 'package:akiba/color/HEXColor.dart';
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
+import '../colors.dart';
 
 class popCard extends StatelessWidget {
   final dynamic image;
@@ -24,18 +26,11 @@ class popCard extends StatelessWidget {
           Stack(
             children: <Widget>[
               Container(
-                width: MediaQuery.of(context).size.width * 0.7,
-                height: MediaQuery.of(context).size.height * 0.4,
+                width: Responsive.ref(context) * 0.7,
+                height: Responsive.ref(context) * 0.4,
                 decoration: BoxDecoration(
                   // 원하는 그라데이션 색상 설정
-                  gradient: LinearGradient(
-                    colors: [
-                      HexColor("#D0FF00", opacity: 0.2),
-                      HexColor("#D0FF00", opacity: 1),
-                    ],
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                  ),
+                  gradient: AKIBAGradient,
                   // 테두리의 둥글기 (이미지 둥글기와 맞춰야 함)
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -44,8 +39,8 @@ class popCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
                     image,
-                    width: MediaQuery.of(context).size.width * 0.7,
-                    height: MediaQuery.of(context).size.height * 0.4,
+                    width: Responsive.ref(context) * 0.7,
+                    height: Responsive.ref(context) * 0.4,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -71,7 +66,7 @@ class tagWidget extends StatelessWidget {
         return Container(
           // 1. 태그 사이의 간격 (기존 코드 유지)
           margin: EdgeInsets.only(
-            right: MediaQuery.of(context).size.width * 0.01,
+            right: Responsive.ref(context) * 0.01,
           ),
 
           // 2. [수정됨] 바깥쪽 데코레이션: 그라데이션 적용 (테두리 역할)
@@ -81,11 +76,11 @@ class tagWidget extends StatelessWidget {
                 Color(0xff8522D5),
                 Color(0xffD0FF00),
               ], // 원하는 그라데이션 색상으로 변경
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
             ),
             borderRadius: BorderRadius.circular(
-              MediaQuery.of(context).size.width * 0.015,
+              Responsive.ref(context) * 0.015,
             ),
           ),
 
@@ -95,20 +90,20 @@ class tagWidget extends StatelessWidget {
           // 4. [추가됨] 안쪽 컨테이너: 실제 배경색(검정)과 텍스트
           child: Container(
             padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.015,
-              vertical: MediaQuery.of(context).size.height * 0.003,
+              horizontal: Responsive.ref(context) * 0.015,
+              vertical: Responsive.ref(context) * 0.003,
             ),
             decoration: BoxDecoration(
               color: const Color(0xff000000), // 안쪽 배경색 (검정)
               borderRadius: BorderRadius.circular(
-                MediaQuery.of(context).size.width * 0.015,
+                Responsive.ref(context) * 0.015,
               ),
             ),
             child: Text(
               '#' + tag,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: MediaQuery.of(context).size.height * 0.012,
+                fontSize: Responsive.ref(context) * 0.012,
               ),
             ),
           ),

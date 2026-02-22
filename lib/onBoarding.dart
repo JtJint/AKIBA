@@ -1,5 +1,6 @@
 import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/home.dart';
+import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -47,7 +48,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       backgroundColor: const Color(0xff141414),
       body: Center(
         child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.3, // 크기 조금 키움 (취향껏 조절)
+          width: Responsive.ref(context) * 0.3, // 크기 조금 키움 (취향껏 조절)
           child: AnimatedOpacity(
             // 6. 상태 변수 _opacity에 따라 애니메이션 자동 적용
             opacity: _opacity,
