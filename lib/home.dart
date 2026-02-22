@@ -4,7 +4,6 @@ import 'package:akiba/scrolls/AutionCareven.dart';
 import 'package:akiba/scrolls/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
-import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
