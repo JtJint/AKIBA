@@ -22,12 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
   ];
 
   /// 추천 검색어 태그
-  static const List<String> _recommendedTags = [
-    '중고거래',
-    '경매',
-    '한정판',
-    '특전',
-  ];
+  static const List<String> _recommendedTags = ['중고거래', '경매', '한정판', '특전'];
 
   /// 인기 검색어 10위 (1위~10위)
   static const List<String> _popularSearchesTop10 = [
@@ -69,7 +64,11 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: BackGroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: Responsive.ref(context) * 0.04),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
+            size: Responsive.ref(context) * 0.04,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -84,7 +83,9 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: Responsive.ref(context) * 0.04),
+          padding: EdgeInsets.symmetric(
+            horizontal: Responsive.ref(context) * 0.04,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -125,7 +126,11 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Row(
           children: [
             SizedBox(width: Responsive.ref(context) * 0.03),
-            Icon(Icons.search, color: PointColor, size: Responsive.ref(context) * 0.04),
+            Icon(
+              Icons.search,
+              color: PointColor,
+              size: Responsive.ref(context) * 0.04,
+            ),
             SizedBox(width: Responsive.ref(context) * 0.02),
             Expanded(
               child: TextField(
@@ -142,14 +147,20 @@ class _SearchScreenState extends State<SearchScreen> {
                     fontSize: Responsive.ref(context) * 0.035,
                   ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: Responsive.ref(context) * 0.015),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: Responsive.ref(context) * 0.015,
+                  ),
                 ),
                 onSubmitted: (value) => _performSearch(value),
               ),
             ),
             if (_searchController.text.isNotEmpty)
               IconButton(
-                icon: Icon(Icons.clear, color: Color(0xff838383), size: Responsive.ref(context) * 0.03),
+                icon: Icon(
+                  Icons.clear,
+                  color: Color(0xff838383),
+                  size: Responsive.ref(context) * 0.03,
+                ),
                 onPressed: () {
                   _searchController.clear();
                   setState(() {});
@@ -261,7 +272,8 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildPopularSearchBox() {
     final ref = Responsive.ref(context);
     return GestureDetector(
-      onTap: () => setState(() => _isPopularBoxExpanded = !_isPopularBoxExpanded),
+      onTap: () =>
+          setState(() => _isPopularBoxExpanded = !_isPopularBoxExpanded),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -269,11 +281,7 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: EdgeInsets.all(ref * 0.03),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xff1A1A2E),
-              Color(0xff16213E),
-              Color(0xff0F3460),
-            ],
+            colors: [Color(0xff1A1A2E), Color(0xff16213E), Color(0xff0F3460)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -391,9 +399,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (query.isEmpty) return;
     // TODO: 실제 검색 로직 구현
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => SearchResultScreen(query: query),
-      ),
+      MaterialPageRoute(builder: (context) => SearchResultScreen(query: query)),
     );
   }
 }
@@ -412,7 +418,11 @@ class SearchResultScreen extends StatelessWidget {
         backgroundColor: BackGroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: Responsive.ref(context) * 0.04),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.white,
+            size: Responsive.ref(context) * 0.04,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(

@@ -1,4 +1,3 @@
-import 'package:akiba/color/HEXColor.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import '../colors.dart';
