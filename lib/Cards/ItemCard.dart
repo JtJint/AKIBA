@@ -36,7 +36,7 @@ class Itemcard extends StatelessWidget {
             child: Image.network(
               img,
               width: ref * 0.3,
-              height: ref * 0.2,
+              height: ref * 0.3,
               fit: BoxFit.cover,
             ),
           ),
