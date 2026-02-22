@@ -34,4 +34,12 @@ class Responsive {
     final value = ref(context) * 0.021;
     return value.clamp(6.0, 14.0); // 최소 6px, 최대 14px
   }
+
+  /// 캐러셀 높이 (모바일에서 세로로 과도하게 길어지는 것 방지)
+  /// 화면 높이의 22%를 초과하지 않도록 제한
+  static double carouselHeight(BuildContext context) {
+    final desired = ref(context) * 0.35;
+    final maxByScreen = h(context) * 0.22;
+    return desired.clamp(120, maxByScreen); // 최소 120px로 카드가 잘리지 않도록
+  }
 }

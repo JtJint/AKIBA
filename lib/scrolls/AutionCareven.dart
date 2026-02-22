@@ -83,7 +83,7 @@ class _AutioncarevenState extends State<Autioncareven> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: Responsive.w(context) * 0.9,
-      height: Responsive.ref(context) * 0.35,
+      height: Responsive.carouselHeight(context),
       child: PageView.builder(
         controller: _pageController,
         padEnds: false,

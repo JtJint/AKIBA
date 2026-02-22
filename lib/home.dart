@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Row(
           children: [
             SizedBox(width: Responsive.ref(context) * 0.01),
-            IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
+            IconButton(onPressed: () {}, icon: logo(width: .18, height: 0.024)),
           ],
         ),
         leadingWidth: Responsive.ref(context) * 0.3,
