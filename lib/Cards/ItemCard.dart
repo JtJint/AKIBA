@@ -39,7 +39,7 @@ class Itemcard extends StatelessWidget {
                 img,
                 width: ref * 0.3,
                 height: ref * 0.3,
-                fit: BoxFit.fitHeight,
+                fit: BoxFit.cover,
               ),
             ),
           ),

@@ -83,7 +83,7 @@ class _AutioncarevenState extends State<Autioncareven> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: Responsive.w(context) * 0.9,
-      height: Responsive.ref(context) * 0.3 + 8,
+      height: Responsive.ref(context) * 0.32,
       child: PageView.builder(
         controller: _pageController,
         padEnds: false,
@@ -93,7 +93,7 @@ class _AutioncarevenState extends State<Autioncareven> {
           final item = _auctionItems[index];
           return Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: Responsive.carouselGap(context),
+              horizontal: Responsive.ref(context) * 0.01,
             ),
             child: Center(
               child: Auctioncardcareven(

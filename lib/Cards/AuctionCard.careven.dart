@@ -26,7 +26,8 @@ class Auctioncardcareven extends StatelessWidget {
     final isPositive = rateOfChange >= 0;
 
     return Container(
-      width: ref * 0.3,
+      width: ref * 0.32,
+      // height: ref * 0.3 + 1,
       decoration: BoxDecoration(
         color: Color(0xff1E1E1E),
         borderRadius: BorderRadius.circular(8),

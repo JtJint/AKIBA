@@ -1,4 +1,5 @@
 import 'package:akiba/Box/categoryBox.dart';
+import 'package:akiba/demand/guhaeyo.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +24,15 @@ class category extends StatelessWidget {
             children: [
               Categorybox(svg: 'Cart.svg', categoryName: '중고거래'),
               Categorybox(svg: 'Suitcase.svg', categoryName: '경매'),
-              Categorybox(svg: 'Pencil.svg', categoryName: '구해요'),
+              GestureDetector(
+                child: Categorybox(svg: 'Pencil.svg', categoryName: '구해요'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => GuhaeyoScreen()),
+                  );
+                },
+              ),
               Categorybox(svg: 'Chat.svg', categoryName: '특전/한정판'),
             ],
           ),

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 /// Figma AKIBA Design - 검색 화면
 class SearchScreen_ extends StatefulWidget {
-  const SearchScreen_({super.key});
-
+  const SearchScreen_({super.key, required this.initialType});
+  final String? initialType; // 'home' 또는 'guhaeyo'로 구분하여 초기 검색창 타입 설정
   @override
   State<SearchScreen_> createState() => _SearchScreenState();
 }
@@ -13,7 +13,7 @@ class SearchScreen_ extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen_> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-
+  String? selectedType; // 'home' 또는 'guhaeyo' 중 선택된 타입
   static const List<String> _recentSearches = [
     '아이폰 15',
     '맥북 에어',
@@ -46,6 +46,9 @@ class _SearchScreenState extends State<SearchScreen_> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    selectedType = widget.initialType == 'home'
+        ? null
+        : widget.initialType; // ✅ 여기서 미리 고정 칩 세팅
   }
 
   @override
@@ -91,7 +94,12 @@ class _SearchScreenState extends State<SearchScreen_> {
             children: [
               SizedBox(height: Responsive.ref(context) * 0.02),
               // 검색창
-              _buildSearchBar(),
+              _SearchBar(
+                typeChip: selectedType,
+                controller: TextEditingController(),
+                onRemoveType: () => setState(() => selectedType = null),
+                onChanged: (value) => setState(() {}),
+              ),
               SizedBox(height: Responsive.ref(context) * 0.04),
               // 최근 검색어
               _buildSectionTitle('최근 검색어'),
@@ -455,6 +463,90 @@ class SearchResultScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({
+    required this.typeChip,
+    required this.controller,
+    required this.onRemoveType,
+    required this.onChanged,
+  });
+
+  final String? typeChip;
+  final TextEditingController controller;
+  final VoidCallback onRemoveType;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: Colors.white70),
+          const SizedBox(width: 8),
+
+          if (typeChip != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xffD1FF00)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    typeChip!,
+                    style: const TextStyle(
+                      color: Color(0xffD1FF00),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: onRemoveType,
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: Color(0xffD1FF00),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: "검색어를 입력하세요",
+                hintStyle: TextStyle(color: Colors.white38),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.photo_camera_outlined,
+              color: Colors.white70,
+            ),
+          ),
+        ],
       ),
     );
   }
