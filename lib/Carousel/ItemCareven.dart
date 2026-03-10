@@ -1,4 +1,5 @@
 import 'package:akiba/Cards/ItemCard.dart';
+import 'package:akiba/demand/guhaeyo.detail.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -36,10 +37,18 @@ class _ItemcarevenState extends State<Itemcareven> {
                 horizontal: Responsive.ref(context) * 0.01,
               ),
               child: Center(
-                child: Itemcard(
-                  img: 'https://picsum.photos/seed/${index + 1}/400/400',
-                  name: 'name$index',
-                  price: '${(index + 1) * 1000}원',
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => gDetailScreen()),
+                    );
+                  },
+                  child: Itemcard(
+                    img: 'https://picsum.photos/seed/${index + 1}/400/400',
+                    name: 'name$index',
+                    price: '${(index + 1) * 1000}원',
+                  ),
                 ),
               ),
             ),
