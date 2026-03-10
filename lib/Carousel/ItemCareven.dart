@@ -22,7 +22,7 @@ class _ItemcarevenState extends State<Itemcareven> {
   Widget build(BuildContext context) {
     return Container(
       width: Responsive.w(context) * 0.9,
-      height: Responsive.ref(context) * 0.36 + 8,
+      height: Responsive.ref(context) * 0.36,
       child: PageView.builder(
         controller: _pageController,
         padEnds: false,
@@ -33,7 +33,7 @@ class _ItemcarevenState extends State<Itemcareven> {
             scale: 1.0,
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: Responsive.carouselGap(context),
+                horizontal: Responsive.ref(context) * 0.01,
               ),
               child: Center(
                 child: Itemcard(

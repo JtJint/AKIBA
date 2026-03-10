@@ -1,7 +1,8 @@
+import 'package:akiba/search/SearchWidget.dart';
 import 'package:akiba/search/search_screen.dart';
-import 'package:akiba/scrolls/ItemCareven.dart';
-import 'package:akiba/scrolls/AutionCareven.dart';
-import 'package:akiba/scrolls/careven.dart';
+import 'package:akiba/Carousel/ItemCareven.dart';
+import 'package:akiba/Carousel/AutionCareven.dart';
+import 'package:akiba/Carousel/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/utils/responsive.dart';
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.8);
+    _pageController = PageController(viewportFraction: 0.3);
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page ?? 0.0;
@@ -70,26 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Center(
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => SearchScreen_()),
-                ),
-                child: Container(
-                  width: Responsive.w(context) * 0.94,
-                  height: Responsive.ref(context) * 0.05,
-                  color: Color(0xff070707),
-                  child: Row(
-                    children: [
-                      SizedBox(width: Responsive.ref(context) * 0.02),
-                      Icon(Icons.search, color: Color(0xffD1FF00)),
-                      SizedBox(width: Responsive.ref(context) * 0.02),
-                      Text('검색', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            Center(child: SearchWidget(type: 'home')),
             SizedBox(height: Responsive.ref(context) * 0.02),
             Careven(pageController: _pageController, currentPage: _currentPage),
             SizedBox(height: Responsive.ref(context) * 0.02),

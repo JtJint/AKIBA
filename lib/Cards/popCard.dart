@@ -19,14 +19,15 @@ class popCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero, // 기본 마진 제거하여 카드 간 간격 없앰
       color: Color(0xff1E1E1E),
       child: Column(
         children: [
           Stack(
             children: <Widget>[
               Container(
-                width: MediaQuery.of(context).size.width * 0.4,
-                height: Responsive.ref(context) * 0.4,
+                width: Responsive.ref(context) * 0.3,
+                height: Responsive.ref(context) * 0.3,
                 decoration: BoxDecoration(
                   // 원하는 그라데이션 색상 설정
                   gradient: AKIBAGradient,
