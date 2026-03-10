@@ -22,10 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.3);
+    _pageController = PageController(viewportFraction: 0.3, initialPage: 1);
     _pageController.addListener(() {
       setState(() {
-        _currentPage = _pageController.page ?? 0.0;
+        _currentPage = _pageController.page ?? 1.0;
       });
     });
   }
@@ -68,82 +68,90 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Center(child: SearchWidget(type: 'home')),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Careven(pageController: _pageController, currentPage: _currentPage),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            category(),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Center(
+        child: SizedBox(
+          width: 752,
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: Responsive.ref(context) * 0.03,
-                  ),
-                  child: Text(
-                    '지금 가장 핫한 매물!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: Responsive.ref(context) * 0.04,
-                    ),
-                  ),
+                Center(child: SearchWidget(type: 'home')),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                Careven(
+                  pageController: _pageController,
+                  currentPage: _currentPage,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    right: Responsive.ref(context) * 0.03,
-                  ),
-                  child: Text(
-                    '더보기',
-                    style: TextStyle(
-                      color: Color(0xff838383),
-                      fontSize: Responsive.ref(context) * 0.035,
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                category(),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: Responsive.ref(context) * 0.03,
+                      ),
+                      child: Text(
+                        '지금 가장 핫한 매물!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: Responsive.ref(context) * 0.04,
+                        ),
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: Responsive.ref(context) * 0.03,
+                      ),
+                      child: Text(
+                        '더보기',
+                        style: TextStyle(
+                          color: Color(0xff838383),
+                          fontSize: Responsive.ref(context) * 0.035,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                Itemcareven(),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: Responsive.ref(context) * 0.03,
+                      ),
+                      child: Text(
+                        '곧 입찰이 끝나요!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: Responsive.ref(context) * 0.04,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: Responsive.ref(context) * 0.03,
+                      ),
+                      child: Text(
+                        '더보기',
+                        style: TextStyle(
+                          color: Color(0xff838383),
+                          fontSize: Responsive.ref(context) * 0.035,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.ref(context) * 0.02),
+                Autioncareven(),
+                SizedBox(height: Responsive.ref(context) * 0.02),
               ],
             ),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Itemcareven(),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: Responsive.ref(context) * 0.03,
-                  ),
-                  child: Text(
-                    '곧 입찰이 끝나요!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: Responsive.ref(context) * 0.04,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    right: Responsive.ref(context) * 0.03,
-                  ),
-                  child: Text(
-                    '더보기',
-                    style: TextStyle(
-                      color: Color(0xff838383),
-                      fontSize: Responsive.ref(context) * 0.035,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Autioncareven(),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-          ],
+          ),
         ),
       ),
     );
