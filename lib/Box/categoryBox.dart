@@ -38,7 +38,7 @@ class Categorybox extends StatelessWidget {
               categoryName,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: Responsive.ref(context) * 0.015,
+                fontSize: Responsive.ref(context) * 0.02,
               ),
             ),
           ],

@@ -27,6 +27,7 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
     final ranking = dummyRanking;
 
     return Scaffold(
+      backgroundColor: const Color(0xff141414),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

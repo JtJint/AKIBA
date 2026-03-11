@@ -53,7 +53,7 @@ class Itemcard extends StatelessWidget {
                   name,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: ref * 0.018,
+                    fontSize: ref * 0.022,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -65,7 +65,7 @@ class Itemcard extends StatelessWidget {
                   price,
                   style: TextStyle(
                     color: PointColor,
-                    fontSize: ref * 0.016,
+                    fontSize: ref * 0.02,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
