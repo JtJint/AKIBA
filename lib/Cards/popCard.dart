@@ -6,7 +6,7 @@ class popCard extends StatelessWidget {
   final dynamic image;
 
   final dynamic tag;
-
+  final dynamic name;
   final dynamic description;
 
   const popCard({
@@ -14,10 +14,12 @@ class popCard extends StatelessWidget {
     required this.image,
     required this.tag,
     required this.description,
+    required this.name,
   });
   //이미지 받고 어떤 글과 태그 설명
   @override
   Widget build(BuildContext context) {
+    double darkness = (0.5).clamp(0.0, 0.4);
     return Card(
       margin: EdgeInsets.zero, // 기본 마진 제거하여 카드 간 간격 없앰
       color: Color(0xff1E1E1E),
@@ -45,8 +47,47 @@ class popCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(top: 30, left: 20, child: tagWidget(tagName: tag)),
-              Positioned(bottom: 30, left: 20, child: Text(description)),
+              Positioned.fill(
+                child: Container(
+                  width: Responsive.ref(context) * 0.3,
+                  decoration: BoxDecoration(
+                    // 검은색을 덮어씌움 (투명도는 darkness 변수로 조절)
+                    color: Colors.black.withOpacity(darkness),
+
+                    // 중요: popCard의 모서리가 둥글다면 여기도 똑같이 깎아줘야 어색하지 않음
+                    // (popCard의 borderRadius 값을 확인해서 맞춰주세요)
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: Responsive.ref(context) * 0.02,
+                left: MediaQuery.of(context).size.width * 0.026,
+                child: tagWidget(tagName: tag),
+              ),
+              Positioned(
+                bottom: Responsive.ref(context) * 0.07,
+                left: MediaQuery.of(context).size.width * 0.026,
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: Responsive.ref(context) * 0.02,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: Responsive.ref(context) * 0.02,
+                left: MediaQuery.of(context).size.width * 0.026,
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: Responsive.ref(context) * 0.015,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -101,7 +142,7 @@ class tagWidget extends StatelessWidget {
               '#' + tag,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: Responsive.ref(context) * 0.012,
+                fontSize: Responsive.ref(context) * 0.015,
               ),
             ),
           ),

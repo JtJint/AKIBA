@@ -36,6 +36,7 @@
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
+import 'package:akiba/onBoarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -67,7 +68,7 @@ class MyApp extends StatelessWidget {
         }
 
         // 기본
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return MaterialPageRoute(builder: (_) => const OnboardingPage());
       },
     );
   }

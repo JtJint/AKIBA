@@ -66,7 +66,7 @@ class Auctioncardcareven extends StatelessWidget {
                   name,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: ref * 0.018,
+                    fontSize: ref * 0.022,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -82,7 +82,7 @@ class Auctioncardcareven extends StatelessWidget {
                       price,
                       style: TextStyle(
                         color: PointColor,
-                        fontSize: ref * 0.016,
+                        fontSize: ref * 0.02,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -92,7 +92,7 @@ class Auctioncardcareven extends StatelessWidget {
                         color: isPositive
                             ? Color(0xff00C853)
                             : Color(0xffFF5252),
-                        fontSize: ref * 0.012,
+                        fontSize: ref * 0.02,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
