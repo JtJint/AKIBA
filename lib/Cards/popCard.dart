@@ -4,7 +4,6 @@ import '../colors.dart';
 
 class popCard extends StatelessWidget {
   final dynamic image;
-
   final dynamic tag;
   final dynamic name;
   final dynamic description;
@@ -28,8 +27,7 @@ class popCard extends StatelessWidget {
           Stack(
             children: <Widget>[
               Container(
-                width: Responsive.ref(context) * 0.3,
-                height: Responsive.ref(context) * 0.3,
+                height: Responsive.ref(context) * 0.4,
                 decoration: BoxDecoration(
                   // 원하는 그라데이션 색상 설정
                   gradient: AKIBAGradient,
@@ -39,12 +37,7 @@ class popCard extends StatelessWidget {
                 padding: const EdgeInsets.all(3), // 테두리 두께
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    image,
-                    width: Responsive.ref(context) * 0.7,
-                    height: Responsive.ref(context) * 0.4,
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.network(image, fit: BoxFit.cover),
                 ),
               ),
               Positioned.fill(

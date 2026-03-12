@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.3, initialPage: 1);
+    _pageController = PageController(viewportFraction: 0.4, initialPage: 1);
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page ?? 1.0;
