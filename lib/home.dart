@@ -36,12 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Color(0xff141414),
       appBar: AppBar(
         actions: [
+          SearchWidget(type: 'home'),
           Builder(
             builder: (context) => IconButton(
               onPressed: () {
                 Scaffold.of(context).openEndDrawer(); // 드로어 열기
               },
-              icon: Icon(Icons.notifications),
+              icon: Icon(Icons.notifications, color: Colors.white),
             ),
           ),
           SizedBox(width: Responsive.ref(context) * 0.02),
@@ -74,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Center(child: SearchWidget(type: 'home')),
                 SizedBox(height: Responsive.ref(context) * 0.02),
                 Careven(
                   pageController: _pageController,

@@ -16,18 +16,12 @@ class SearchWidget extends StatelessWidget {
           ),
         );
       },
-      child: Container(
-        width: Responsive.w(context) * 0.94,
-        height: Responsive.ref(context) * 0.05,
-        color: Color(0xff070707),
-        child: Row(
-          children: [
-            SizedBox(width: Responsive.ref(context) * 0.02),
-            Icon(Icons.search, color: Color(0xffD1FF00)),
-            SizedBox(width: Responsive.ref(context) * 0.02),
-            Text('검색', style: TextStyle(color: Colors.white)),
-          ],
-        ),
+      child: Row(
+        children: [
+          SizedBox(width: Responsive.ref(context) * 0.02),
+          Icon(Icons.search, color: Colors.white),
+          SizedBox(width: Responsive.ref(context) * 0.02),
+        ],
       ),
     );
   }
