@@ -28,36 +28,33 @@ class Careven extends StatelessWidget {
           ],
         ),
       ),
-      height: Responsive.ref(context) * 0.3 + 8,
+      height: Responsive.ref(context) * 0.4 + 8,
       child: SizedBox(
-        width: Responsive.ref(context) * 0.3,
-        height: Responsive.ref(context) * 0.3,
+        width: Responsive.ref(context) * 0.4,
+        height: Responsive.ref(context) * 0.4,
         child: Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
           child: PageView.builder(
             scrollDirection: Axis.horizontal,
             controller: _pageController,
-            padEnds: true, // 양 끝 여백 제거
+            padEnds: true,
             itemCount: 3,
             itemBuilder: (context, index) {
-              // 1. 거리 계산 (절댓값)
-              // double difference = (index - _currentPage).abs();
+              double page = _pageController.hasClients
+                  ? _pageController.page ??
+                        _pageController.initialPage.toDouble()
+                  : 0;
 
-              // 2. 크기 계산 (기존 유지)
-              double scale = 1;
+              double difference = (index - page).abs();
 
-              // 3. '어두움' 정도 계산 (Opacity가 아님!)
-              // difference가 0(가운데)이면 darkness는 0.0 (투명한 막 -> 원ㄴ본 그대로)
-              // difference가 1(양옆)이면 darkness는 0.5 (검은색 50% 덧씌움 -> 어두워짐)
-
+              double scale = difference < 0.5 ? 1.0 : 0.8;
               return Transform.scale(
                 scale: scale,
-                child: Container(
-                  width: Responsive.ref(context) * 0.3 + 3,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // [Layer 1] 실제 카드 (항상 선명한 원본)
                       popCard(
                         name: '${index + 1}\n이름',
                         image:
@@ -65,8 +62,6 @@ class Careven extends StatelessWidget {
                         tag: ['Tag1', 'Tag2'],
                         description: '${index + 1}아 몰라 텍스트나 내놔',
                       ),
-
-                      // [Layer 2] 카드 위에 덮는 검은 막 (Dimming Layer)
                     ],
                   ),
                 ),
