@@ -1,10 +1,9 @@
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class Categorybox extends StatelessWidget {
-  const Categorybox({super.key, required this.svg, required this.categoryName});
-  final String svg;
+  const Categorybox({super.key, required this.png, required this.categoryName});
+  final String png;
   final String categoryName;
 
   @override
@@ -25,11 +24,13 @@ class Categorybox extends StatelessWidget {
               width: Responsive.ref(context) * 0.18,
               height: Responsive.ref(context) * 0.18,
               child: Center(
-                child: SvgPicture.asset(
-                  'assets/$svg',
+                child: Image.asset(
+                  // SvgPicture 대신 Image.asset 사용
+                  'assets/$png', // 확장자를 png로 변경
                   fit: BoxFit.contain,
-                  width: Responsive.ref(context) * 0.18,
-                  height: Responsive.ref(context) * 0.18,
+                  width:
+                      Responsive.ref(context) * 0.10, // 여백을 위해 크기를 약간 줄여도 좋습니다
+                  height: Responsive.ref(context) * 0.10,
                 ),
               ),
             ),
