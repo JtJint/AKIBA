@@ -33,6 +33,8 @@
 //   }
 // }
 
+import 'dart:ui';
+
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
@@ -51,6 +53,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scrollBehavior: MyCustomScrollBehavior(),
+      debugShowCheckedModeBanner: false,
       // home: HomeScreen(),  // 있어도 됨. 단, 아래 onGenerateRoute가 URL을 우선 처리
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
@@ -72,4 +76,15 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.unknown,
+  };
 }

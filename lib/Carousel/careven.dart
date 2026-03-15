@@ -3,11 +3,8 @@ import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
 class Careven extends StatelessWidget {
-  const Careven({
-    super.key,
-    required PageController pageController,
-    required double currentPage,
-  }) : _pageController = pageController;
+  const Careven({super.key, required PageController pageController})
+    : _pageController = pageController;
   //  _currentPage = currentPage;
 
   final PageController _pageController;

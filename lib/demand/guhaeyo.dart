@@ -28,20 +28,23 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xff141414),
+      appBar: AppBar(
+        backgroundColor: Color(0xff141414),
+        title: Text('구해요', style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+        ),
+        actions: [
+          const SearchWidget(type: '구해요'), // 이미 분리해둔 거
+        ],
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             // 헤더/검색
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  const TopBar(title: "구해요"),
-                  const SizedBox(height: 12),
-                  const SearchWidget(type: '구해요'), // 이미 분리해둔 거
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
 
             // 지금 가장 핫한 매물 + 가로캐러셀
             SliverToBoxAdapter(

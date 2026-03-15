@@ -12,7 +12,11 @@ List<Color> SubPointColor = [Color(0xff8522D5), Color(0xffA434FE)];
 
 // ignore: non_constant_identifier_names
 Gradient AKIBAGradient = LinearGradient(
-  colors: [HexColor("#D0FF00", opacity: 0.2), HexColor("#D0FF00", opacity: 1)],
+  colors: [
+    HexColor("#D0FF00", opacity: 0.2),
+    HexColor("#D0FF00", opacity: 1),
+    HexColor("#D0FF00", opacity: 1),
+  ],
   begin: Alignment.topRight,
   end: Alignment.bottomLeft,
 );

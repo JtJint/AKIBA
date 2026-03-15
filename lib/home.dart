@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.4, initialPage: 1);
+    _pageController = PageController(viewportFraction: 0.5, initialPage: 1);
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page ?? 1.0;
@@ -35,39 +35,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Color(0xff141414),
       appBar: AppBar(
+        backgroundColor: const Color(0xff141414),
+        elevation: 0,
+        leadingWidth: 140,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: logo(width: .18, height: 0.05),
+          ),
+        ),
         actions: [
           SearchWidget(type: 'home'),
           Builder(
             builder: (context) => IconButton(
               onPressed: () {
-                Scaffold.of(context).openEndDrawer(); // 드로어 열기
+                Scaffold.of(context).openEndDrawer();
               },
-              icon: Icon(Icons.notifications, color: Colors.white),
+              icon: const Icon(Icons.notifications_none, color: Colors.white),
             ),
           ),
-          SizedBox(width: Responsive.ref(context) * 0.02),
+          const SizedBox(width: 8),
         ],
-        leading: Row(
-          children: [
-            SizedBox(width: Responsive.ref(context) * 0.01),
-            IconButton(onPressed: () {}, icon: logo(width: .1, height: 0.024)),
-          ],
-        ),
-        leadingWidth: Responsive.ref(context) * 0.3,
-        backgroundColor: Color(0xff141414),
-      ),
-      endDrawer: Drawer(
-        backgroundColor: Color(0xff141414),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              child: Text('알람', style: TextStyle(color: Colors.white)),
-              decoration: BoxDecoration(color: Color(0xff141414)),
-            ),
-            myListTile(label: "메뉴 1"),
-          ],
-        ),
       ),
       body: Center(
         child: SizedBox(
@@ -76,10 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 SizedBox(height: Responsive.ref(context) * 0.02),
-                Careven(
-                  pageController: _pageController,
-                  currentPage: _currentPage,
-                ),
+                Careven(pageController: _pageController),
                 SizedBox(height: Responsive.ref(context) * 0.02),
                 category(),
                 SizedBox(height: Responsive.ref(context) * 0.02),

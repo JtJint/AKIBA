@@ -10,7 +10,7 @@ class category extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Responsive.ref(context) * 0.75,
+      width: Responsive.ref(context) * 0.9,
       color: Colors.transparent,
       height: Responsive.ref(context) * 0.24,
       child: Padding(

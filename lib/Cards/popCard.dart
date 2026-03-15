@@ -22,21 +22,25 @@ class popCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero, // 기본 마진 제거하여 카드 간 간격 없앰
       color: Color(0xff1E1E1E),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(0), // 카드 모서리 둥글게 (필요에 따라 조절)
+      ),
       child: Column(
         children: [
           Stack(
             children: <Widget>[
               Container(
                 height: Responsive.ref(context) * 0.4,
+                width: double.infinity,
                 decoration: BoxDecoration(
                   // 원하는 그라데이션 색상 설정
                   gradient: AKIBAGradient,
                   // 테두리의 둥글기 (이미지 둥글기와 맞춰야 함)
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 padding: const EdgeInsets.all(3), // 테두리 두께
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(0),
                   child: Image.network(image, fit: BoxFit.cover),
                 ),
               ),
