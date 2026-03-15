@@ -22,10 +22,10 @@ class category extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Categorybox(svg: 'Cart.svg', categoryName: '중고거래'),
-              Categorybox(svg: 'Suitcase.svg', categoryName: '경매'),
+              Categorybox(png: 'Cart.png', categoryName: '중고거래'),
+              Categorybox(png: 'Suitcase.png', categoryName: '경매'),
               GestureDetector(
-                child: Categorybox(svg: 'Pencil.svg', categoryName: '구해요'),
+                child: Categorybox(png: 'Pencil.png', categoryName: '구해요'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -33,7 +33,7 @@ class category extends StatelessWidget {
                   );
                 },
               ),
-              Categorybox(svg: 'Chat.svg', categoryName: '특전/한정판'),
+              Categorybox(png: 'Chat.png', categoryName: '특전/한정판'),
             ],
           ),
         ),
