@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+import 'package:akiba/models/sideBar.dart';
 import 'package:akiba/search/SearchWidget.dart';
 import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/Carousel/ItemCareven.dart';
@@ -18,10 +20,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   double _currentPage = 0.0;
-
+  int selectedIndex = 0;
   @override
   void initState() {
     super.initState();
+    html.window.history.replaceState(null, '', '/main');
     _pageController = PageController(viewportFraction: 0.5, initialPage: 1);
     _pageController.addListener(() {
       setState(() {
@@ -32,111 +35,129 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xff141414),
-      appBar: AppBar(
-        backgroundColor: const Color(0xff141414),
-        elevation: 0,
-        leadingWidth: 140,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: logo(width: .18, height: 0.05),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: Color(0xff141414),
+        appBar: AppBar(
+          backgroundColor: const Color(0xff141414),
+          elevation: 0,
+          leadingWidth: 140,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: logo(width: .18, height: 0.05),
+            ),
           ),
+          actions: [
+            SearchWidget(type: 'home'),
+            Builder(
+              builder: (context) => IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openEndDrawer();
+                },
+                icon: const Icon(Icons.notifications_none, color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
-        actions: [
-          SearchWidget(type: 'home'),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer();
-              },
-              icon: const Icon(Icons.notifications_none, color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Center(
-        child: SizedBox(
-          width: 752,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                Careven(pageController: _pageController),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                category(),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: Responsive.ref(context) * 0.03,
+        body: Center(
+          child: Row(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              LeftSidebar(
+                selectedIndex: selectedIndex,
+                onTap: (int index) {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+              ),
+              SizedBox(width: 24),
+              SizedBox(
+                width: 752,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      Careven(pageController: _pageController),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      category(),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: Responsive.ref(context) * 0.03,
+                            ),
+                            child: Text(
+                              '지금 가장 핫한 매물!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: Responsive.ref(context) * 0.04,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              right: Responsive.ref(context) * 0.03,
+                            ),
+                            child: Text(
+                              '더보기',
+                              style: TextStyle(
+                                color: Color(0xff838383),
+                                fontSize: Responsive.ref(context) * 0.035,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        '지금 가장 핫한 매물!',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: Responsive.ref(context) * 0.04,
-                        ),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      Itemcareven(),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: Responsive.ref(context) * 0.03,
+                            ),
+                            child: Text(
+                              '곧 입찰이 끝나요!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: Responsive.ref(context) * 0.04,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              right: Responsive.ref(context) * 0.03,
+                            ),
+                            child: Text(
+                              '더보기',
+                              style: TextStyle(
+                                color: Color(0xff838383),
+                                fontSize: Responsive.ref(context) * 0.035,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        right: Responsive.ref(context) * 0.03,
-                      ),
-                      child: Text(
-                        '더보기',
-                        style: TextStyle(
-                          color: Color(0xff838383),
-                          fontSize: Responsive.ref(context) * 0.035,
-                        ),
-                      ),
-                    ),
-                  ],
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                      Autioncareven(),
+                      SizedBox(height: Responsive.ref(context) * 0.02),
+                    ],
+                  ),
                 ),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                Itemcareven(),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: Responsive.ref(context) * 0.03,
-                      ),
-                      child: Text(
-                        '곧 입찰이 끝나요!',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: Responsive.ref(context) * 0.04,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        right: Responsive.ref(context) * 0.03,
-                      ),
-                      child: Text(
-                        '더보기',
-                        style: TextStyle(
-                          color: Color(0xff838383),
-                          fontSize: Responsive.ref(context) * 0.035,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-                Autioncareven(),
-                SizedBox(height: Responsive.ref(context) * 0.02),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

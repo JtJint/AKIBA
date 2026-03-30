@@ -1,4 +1,6 @@
+import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/logo.dart';
+import 'package:akiba/Logo/nickName.dart';
 import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
 
@@ -75,9 +77,34 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     children: [
                       logo(width: 0.35, height: 0.12),
                       const SizedBox(height: 12),
-                      const Text(
-                        '뭐시기 슬로건',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            '굿즈의 ',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Text(
+                            '가치',
+                            style: TextStyle(
+                              color: Color(0xff03C75A),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const Text(
+                            '를 다시 발견하다',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -97,6 +124,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   duration: const Duration(milliseconds: 500),
                   opacity: _loginOpacity,
                   child: AnimatedContainer(
+                    width: 325,
+                    // height: MediaQuery.of(context).size.height * 0.12,
                     duration: const Duration(milliseconds: 500),
                     curve: Curves.easeOut,
                     transform: Matrix4.translationValues(0, _loginOffsetY, 0),
@@ -108,14 +137,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           height: 48,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return HomeScreen();
-                                  },
-                                ),
-                              );
+                              startNaverLogin();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xff03C75A),

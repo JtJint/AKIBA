@@ -5,6 +5,7 @@ class logo extends StatelessWidget {
   const logo({super.key, required this.width, required this.height});
   final width;
   final height;
+
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(

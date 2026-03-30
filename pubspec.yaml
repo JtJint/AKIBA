@@ -39,6 +39,8 @@ dependencies:
   flutter_svg : ^2.2.3
   flutter_naver_login : ^1.8.0
   flutter_web_auth_2: ^2.1.0
+  http: ^1.6.0
+  localstorage: ^6.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,13 +57,23 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  fonts :
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.ttf
+        - asset: assets/fonts/Pretendard-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.ttf
+          weight: 700
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
   assets :
     - assets/
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

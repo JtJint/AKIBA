@@ -36,9 +36,10 @@
 import 'dart:ui';
 
 import 'package:akiba/Login/URL.dart';
+import 'package:akiba/Logo/nickName.dart';
 import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
-import 'package:akiba/onBoarding.dart';
+import 'package:akiba/Logo/onBoarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -53,6 +54,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xff141414),
+        primaryColor: const Color(0xff141414),
+        fontFamily: 'Pretendard-Light',
+      ),
       scrollBehavior: MyCustomScrollBehavior(),
       debugShowCheckedModeBanner: false,
       // home: HomeScreen(),  // 있어도 됨. 단, 아래 onGenerateRoute가 URL을 우선 처리
@@ -67,10 +73,15 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        if (uri.path == '/login') {
-          return MaterialPageRoute(builder: (_) => Dummypage());
+        if (uri.path == '/nickname') {
+          return MaterialPageRoute(builder: (_) => inputNickNamePage());
         }
-
+        if (uri.path == '/main') {
+          return MaterialPageRoute(
+            builder: (_) => HomeScreen(),
+            settings: settings,
+          );
+        }
         // 기본
         return MaterialPageRoute(builder: (_) => const OnboardingPage());
       },

@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:math';
+import 'package:akiba/Login/api/userApi.dart';
+import 'package:akiba/Logo/nickName.dart';
 import 'package:akiba/dummyPage.dart';
-import 'package:akiba/onBoarding.dart';
+import 'package:akiba/Logo/onBoarding.dart';
+import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 String randomState([int len = 16]) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -15,7 +20,7 @@ void startNaverLogin() {
   html.window.sessionStorage['naver_state'] = state;
 
   const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
-  const redirectUri = 'http://localhost:3000/oauth/callback';
+  const redirectUri = 'http://localhost:8000/oauth/callback';
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
@@ -41,38 +46,64 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final uri = Uri.base;
-      final code = uri.queryParameters['code'];
-      final state = uri.queryParameters['state'];
-      final error = uri.queryParameters['error'];
+      try {
+        final uri = Uri.base;
+        final code = uri.queryParameters['code'];
+        final state = uri.queryParameters['state'];
+        final error = uri.queryParameters['error'];
 
-      if (error != null) {
-        // 실패 처리
+        print('code: $code');
+        print('state: $state');
+        print('error: $error');
+
+        if (error != null) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+
+        if (code == null || state == null) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+
+        final expected = html.window.sessionStorage['naver_state'];
+        if (expected == null || expected != state) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+
+        html.window.sessionStorage.remove('naver_state');
+
+        final rt = await Loginapi.loginAct(code, state);
+        print('statusCode: ${rt.statusCode}');
+        print('body: ${rt.body}');
+
+        if (rt.statusCode != 200) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
+
+        final decodingRt = jsonDecode(rt.body);
+
+        final isNewUser = decodingRt['isNewUser'];
+
+        if (isNewUser == true) {
+          html.window.history.replaceState(null, '', '/nickname');
+          Navigator.of(context).pushReplacementNamed('/nickname');
+        } else if (isNewUser == false) {
+          html.window.history.replaceState(null, '', '/main');
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/main', (route) => false);
+        } else {
+          html.window.history.replaceState(null, '', '/login');
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
+      } catch (e, st) {
+        print('callback error: $e');
+        print(st);
         Navigator.of(context).pushReplacementNamed('/login');
-        return;
       }
-
-      if (code == null || state == null) {
-        Navigator.of(context).pushReplacementNamed('/login');
-        return;
-      }
-
-      // CSRF 방지 state 검증 (웹은 sessionStorage가 편함)
-      final expected = html.window.sessionStorage['naver_state'];
-      if (expected == null || expected != state) {
-        // state mismatch
-        Navigator.of(context).pushReplacementNamed('/login');
-        return;
-      }
-
-      // TODO: code를 백엔드로 보내서 토큰 교환 (client_secret은 백엔드!)
-      print('NAVER code=$code state=$state');
-      // await api.loginWithNaver(code: code, state: state);
-
-      // 임시: 성공 처리로 홈 이동
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => OnboardingPage()));
     });
   }
 
@@ -81,5 +112,3 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
     return const Scaffold(body: Center(child: Text('네이버 로그인 처리중...')));
   }
 }
-
-// http://localhost:3000/oauth/callback?code=yWjLsd9HeCKJtnlQx4&state=kdss2r7rmkiqa2rd
