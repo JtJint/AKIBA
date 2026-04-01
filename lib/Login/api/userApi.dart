@@ -9,7 +9,20 @@ String baseURL = 'https://dev-api.akibaha.shop/';
 class Loginapi {
   static Future<http.Response> loginAct(String Code, String state) async {
     final url = Uri.parse('${baseURL}api/users/login');
-    final body = {"provider": "NAVER", "code": Code, "state": state};
+    // final body = {
+    //   "provider": "NAVER",
+    //   "code": Code,
+    //   "state": state,
+    //   "env": "dev",
+    // };
+    final body = {
+      // 배포 기준
+      "provider": "NAVER",
+      "code": Code,
+      "state": state,
+      "env": "prod",
+    };
+
     final reqBody = jsonEncode(body);
     final response = await http.post(
       url,

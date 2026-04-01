@@ -1,5 +1,6 @@
 import 'package:akiba/Login/URL.dart';
 import 'package:flutter/material.dart';
+import 'dart:html' as html;
 
 class LoginButton extends StatelessWidget {
   const LoginButton({super.key});
@@ -13,6 +14,10 @@ class LoginButton extends StatelessWidget {
           final r = startNaverLogin();
           // ✅ 여기서 code/state를 백엔드로 보내서 토큰 교환해야 함(Secret은 백엔드!)
           // debugPrint('NAVER code=${r.code} state=${r.state}');
+          // html.window.history.replaceState(null, '', '/main');
+          // Navigator.of(
+          //   context,
+          // ).pushNamedAndRemoveUntil('/main', (route) => false);
         } catch (e) {
           debugPrint('Login failed: $e');
         }

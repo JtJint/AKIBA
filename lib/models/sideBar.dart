@@ -1,3 +1,4 @@
+import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
 class LeftSidebar extends StatelessWidget {

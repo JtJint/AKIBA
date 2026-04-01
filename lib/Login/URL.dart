@@ -21,6 +21,7 @@ void startNaverLogin() {
 
   const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
   const redirectUri = 'http://localhost:8000/oauth/callback';
+  // const redirectUri = 'https://jtjint.github.io/AKIBA/oauth/callback'; //배포용 redirect URI
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
@@ -48,6 +49,7 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final uri = Uri.base;
+        // print(uri.toString());
         final code = uri.queryParameters['code'];
         final state = uri.queryParameters['state'];
         final error = uri.queryParameters['error'];
@@ -88,10 +90,18 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         final isNewUser = decodingRt['isNewUser'];
 
         if (isNewUser == true) {
-          html.window.history.replaceState(null, '', '/nickname');
+          html.window.history.replaceState(
+            html.window.history.state,
+            '',
+            '/nickname',
+          );
           Navigator.of(context).pushReplacementNamed('/nickname');
         } else if (isNewUser == false) {
-          html.window.history.replaceState(null, '', '/main');
+          html.window.history.replaceState(
+            html.window.history.state,
+            '',
+            '/main',
+          );
           Navigator.of(
             context,
           ).pushNamedAndRemoveUntil('/main', (route) => false);

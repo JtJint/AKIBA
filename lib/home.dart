@@ -8,6 +8,7 @@ import 'package:akiba/Carousel/careven.dart';
 import 'package:akiba/Cards/category.dart';
 import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/utils/responsive.dart';
+import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,12 +26,33 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     html.window.history.replaceState(null, '', '/main');
+
     _pageController = PageController(viewportFraction: 0.5, initialPage: 1);
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page ?? 1.0;
+        selectedIndex = 0;
       });
     });
+  }
+
+  int getSelectedIndexFromRoute(BuildContext context) {
+    final routeName = ModalRoute.of(context)?.settings.name;
+
+    switch (routeName) {
+      case '/main':
+        return 0;
+      case '/write':
+        return 1;
+      case '/community':
+        return 2;
+      case '/chat':
+        return 3;
+      case '/mypage':
+        return 4;
+      default:
+        return 0;
+    }
   }
 
   @override
@@ -69,16 +91,30 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               LeftSidebar(
-                selectedIndex: selectedIndex,
-                onTap: (int index) {
-                  setState(() {
-                    selectedIndex = index;
-                  });
+                selectedIndex: getSelectedIndexFromRoute(context),
+                onTap: (index) {
+                  switch (index) {
+                    case 0:
+                      Navigator.of(context).pushReplacementNamed('/main');
+                      break;
+                    case 1:
+                      Navigator.of(context).pushReplacementNamed('/write');
+                      break;
+                    case 2:
+                      Navigator.of(context).pushReplacementNamed('/community');
+                      break;
+                    case 3:
+                      // Navigator.of(context).pushReplacementNamed('/chat');
+                      break;
+                    case 4:
+                      Navigator.of(context).pushReplacementNamed('/mypage');
+                      break;
+                  }
                 },
               ),
               SizedBox(width: 24),
               SizedBox(
-                width: 752,
+                width: MediaQuery.of(context).size.width * 0.7,
                 child: SingleChildScrollView(
                   child: Column(
                     children: [

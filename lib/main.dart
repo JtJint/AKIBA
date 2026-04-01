@@ -37,9 +37,12 @@ import 'dart:ui';
 
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/nickName.dart';
+import 'package:akiba/community/communityMain.dart';
 import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
 import 'package:akiba/Logo/onBoarding.dart';
+import 'package:akiba/myPage/myPage.dart';
+import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -79,6 +82,24 @@ class MyApp extends StatelessWidget {
         if (uri.path == '/main') {
           return MaterialPageRoute(
             builder: (_) => HomeScreen(),
+            settings: settings,
+          );
+        }
+        if (uri.path == '/write') {
+          return MaterialPageRoute(
+            builder: (_) => WritePage(),
+            settings: settings,
+          );
+        }
+        if (uri.path == '/community') {
+          return MaterialPageRoute(
+            builder: (_) => communityMain(),
+            settings: settings,
+          );
+        }
+        if (uri.path == '/mypage') {
+          return MaterialPageRoute(
+            builder: (_) => Mypage(),
             settings: settings,
           );
         }

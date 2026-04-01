@@ -1,3 +1,4 @@
+import 'package:akiba/Login/Login_Button.dart';
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/Logo/nickName.dart';
@@ -135,8 +136,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         SizedBox(
                           width: double.infinity,
                           height: 48,
+                          // child: LoginButton(),
                           child: ElevatedButton(
                             onPressed: () {
+                              // print('네이버 로그인 버튼 클릭');
                               startNaverLogin();
                             },
                             style: ElevatedButton.styleFrom(
