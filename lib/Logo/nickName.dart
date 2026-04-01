@@ -27,7 +27,7 @@ class _inputNickNamePage extends State<inputNickNamePage> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
