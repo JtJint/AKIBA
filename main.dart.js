@@ -29692,7 +29692,7 @@ afg(a,b){var s=0,r=A.R(t.Wd),q,p,o,n,m
 var $async$afg=A.S(function(c,d){if(c===1)return A.O(d,r)
 for(;;)switch(s){case 0:o=t.N
 s=3
-return A.U(A.b71(A.i9("https://dev-api.akibaha.shop/api/users/login"),B.cl.ZZ(A.aH(["provider","NAVER","code",a,"state",b,"env","dev"],o,o),null),A.aH(["Content-Type","application/json"],o,o)),$async$afg)
+return A.U(A.b71(A.i9("https://dev-api.akibaha.shop/api/users/login"),B.cl.ZZ(A.aH(["provider","NAVER","code",a,"state",b,"env","prod"],o,o),null),A.aH(["Content-Type","application/json"],o,o)),$async$afg)
 case 3:n=d
 m=B.cl.By(0,A.aJ4(A.aIE(n.e)).eH(0,n.w),null)
 o=window.localStorage
