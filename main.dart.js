@@ -48176,7 +48176,7 @@ $S:0}
 A.aye.prototype={
 $0(){var s,r=A.b74()
 window.sessionStorage.setItem("naver_state",r)
-s=A.b2B("https","nid.naver.com","/oauth2.0/authorize",A.aH(["response_type","code","client_id","ZfdrzEhizfq8bi0KaKTQ","redirect_uri","http://localhost:8000/oauth/callback","state",r],t.N,t.z)).gnn()
+s=A.b2B("https","nid.naver.com","/oauth2.0/authorize",A.aH(["response_type","code","client_id","quwp3RTYyaTzBPWUj59t","redirect_uri","https://jtjint.github.io/AKIBA/oauth/callback","state",r],t.N,t.z)).gnn()
 window.location.href=s},
 $S:0}
 A.PW.prototype={}
