@@ -23,7 +23,7 @@ void startNaverLogin() {
   const clientId = 'quwp3RTYyaTzBPWUj59t';
   // const redirectUri = 'http://localhost:8000/oauth/callback';
   const redirectUri =
-      'http://jtjint.github.io/AKIBA/oauth/callback'; //배포용 redirect URI
+      'https://jtjint.github.io/AKIBA/oauth/callback'; //배포용 redirect URI
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
