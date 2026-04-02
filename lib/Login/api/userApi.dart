@@ -31,6 +31,7 @@ class Loginapi {
     );
 
     final resBody = jsonDecode(response.body);
+
     window.localStorage['accessToken'] = resBody['accessToken'].toString();
     window.localStorage['refreshToken'] = resBody['refreshToken'].toString();
 

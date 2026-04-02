@@ -23,7 +23,7 @@ void startNaverLogin() {
   const clientId = 'quwp3RTYyaTzBPWUj59t';
   // const redirectUri = 'http://localhost:8000/oauth/callback';
   const redirectUri =
-      'https://jtjint.github.io/AKIBA/#/oauth/callback'; //배포용 redirect URI
+      'https://akiba-bay.vercel.app/oauth/callback'; //배포용 redirect URI
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
@@ -60,27 +60,27 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         print('state: $state');
         print('error: $error');
 
-        if (error != null) {
-          Navigator.of(context).pushReplacementNamed('/login');
-          return;
-        }
+        // if (error != null) {
+        //   Navigator.of(context).pushReplacementNamed('/login');
+        //   return;
+        // }
 
-        if (code == null || state == null) {
-          Navigator.of(context).pushReplacementNamed('/login');
-          return;
-        }
+        // if (code == null || state == null) {
+        //   Navigator.of(context).pushReplacementNamed('/login');
+        //   return;
+        // }
 
-        final expected = html.window.sessionStorage['naver_state'];
-        if (expected == null || expected != state) {
-          Navigator.of(context).pushReplacementNamed('/login');
-          return;
-        }
+        // final expected = html.window.sessionStorage['naver_state'];
+        // if (expected == null || expected != state) {
+        //   Navigator.of(context).pushReplacementNamed('/login');
+        //   return;
+        // }
 
-        html.window.sessionStorage.remove('naver_state');
+        // html.window.sessionStorage.remove('naver_state');
 
-        final rt = await Loginapi.loginAct(code, state);
-        print('statusCode: ${rt.statusCode}');
-        print('body: ${rt.body}');
+        // final rt = await Loginapi.loginAct(code, state);
+        // print('statusCode: ${rt.statusCode}');
+        // print('body: ${rt.body}');
 
         // if (rt.statusCode != 200) {
         //   Navigator.of(context).pushReplacementNamed('/login');
