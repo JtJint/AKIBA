@@ -60,57 +60,57 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         print('state: $state');
         print('error: $error');
 
-        // if (error != null) {
-        //   Navigator.of(context).pushReplacementNamed('/login');
-        //   return;
-        // }
+        if (error != null) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
 
-        // if (code == null || state == null) {
-        //   Navigator.of(context).pushReplacementNamed('/login');
-        //   return;
-        // }
+        if (code == null || state == null) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
 
-        // final expected = html.window.sessionStorage['naver_state'];
-        // if (expected == null || expected != state) {
-        //   Navigator.of(context).pushReplacementNamed('/login');
-        //   return;
-        // }
+        final expected = html.window.sessionStorage['naver_state'];
+        if (expected == null || expected != state) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
 
-        // html.window.sessionStorage.remove('naver_state');
+        html.window.sessionStorage.remove('naver_state');
 
-        // final rt = await Loginapi.loginAct(code, state);
-        // print('statusCode: ${rt.statusCode}');
-        // print('body: ${rt.body}');
+        final rt = await Loginapi.loginAct(code, state);
+        print('statusCode: ${rt.statusCode}');
+        print('body: ${rt.body}');
 
-        // if (rt.statusCode != 200) {
-        //   Navigator.of(context).pushReplacementNamed('/login');
-        //   return;
-        // }
+        if (rt.statusCode != 200) {
+          Navigator.of(context).pushReplacementNamed('/login');
+          return;
+        }
 
-        // final decodingRt = jsonDecode(rt.body);
+        final decodingRt = jsonDecode(rt.body);
 
-        // final isNewUser = decodingRt['isNewUser'];
+        final isNewUser = decodingRt['isNewUser'];
 
-        // if (isNewUser == true) {
-        //   html.window.history.replaceState(
-        //     html.window.history.state,
-        //     '',
-        //     '/nickname',
-        //   );
-        //   Navigator.of(context).pushReplacementNamed('/nickname');
-        // } else if (isNewUser == false) {
-        //   html.window.history.replaceState(
-        //     html.window.history.state,
-        //     '',
-        //     '/main',
-        //   );
-        //   Navigator.of(
-        //     context,
-        //   ).pushNamedAndRemoveUntil('/main', (route) => false);
-        // } else {
-        //   html.window.history.replaceState(null, '', '/login');
-        //   Navigator.of(context).pushReplacementNamed('/login');
-        // }
+        if (isNewUser == true) {
+          html.window.history.replaceState(
+            html.window.history.state,
+            '',
+            '/nickname',
+          );
+          Navigator.of(context).pushReplacementNamed('/nickname');
+        } else if (isNewUser == false) {
+          html.window.history.replaceState(
+            html.window.history.state,
+            '',
+            '/main',
+          );
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/main', (route) => false);
+        } else {
+          html.window.history.replaceState(null, '', '/login');
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
       } catch (e, st) {
         print('callback error: $e');
         print(st);
