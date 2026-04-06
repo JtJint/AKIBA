@@ -48300,7 +48300,7 @@ case"/community":return 2
 case"/chat":return 3
 case"/mypage":return 4
 default:return 0}},
-G(a){var s,r,q=null,p=4286808963,o=t.w,n=A.Y(a,q,o).w,m=A.Y(a,q,o).w.a.a<=442?new A.Nq(this.NO(a),q):q,l=A.aF(4279505940),k=t.p,j=A.MZ(A.b([new A.xF("home",q),new A.dV(new A.awE(),q),B.hc],k),B.dj,q,0,new A.aT(B.pB,new A.el(B.f1,q,q,new A.A2(0.18,0.05,q),q),q),140,q),i=A.Y(a,q,o).w.a.a>442?new A.D2(this.NO(a),new A.awF(a),q):A.aL(q,q,0),h=A.aL(q,q,24)
+G(a){var s,r,q=null,p=4286808963,o=t.w,n=A.Y(a,q,o).w,m=A.Y(a,q,o).w.a.a<=442?new A.Nq(this.NO(a),q):q,l=A.aF(4279505940),k=t.p,j=A.MZ(A.b([new A.xF("home",q),new A.dV(new A.awE(),q),B.hc],k),B.dj,q,0,new A.aT(B.pB,new A.el(B.f1,q,q,new A.A2(0.18,0.05,q),q),q),140,q),i=A.Y(a,q,o).w.a.a>442?new A.D2(this.NO(a),new A.awF(a),q):A.aL(q,q,0),h=A.aL(q,q,A.Y(a,q,o).w.a.a<=442?0:24)
 o=A.Y(a,q,o).w
 s=A.aL(q,A.b2(a)*0.02,q)
 r=this.d
