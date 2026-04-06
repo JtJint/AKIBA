@@ -149,28 +149,32 @@ class BottomFloatingButton extends StatelessWidget {
             ),
             _item(
               context,
+              icon: Icons.edit,
+              label: '글쓰기',
+              onTap: () => _move(context, 1),
+              active: selectedIndex == 1,
+            ),
+            _item(
+              context,
               icon: Icons.groups,
               label: '커뮤니티',
               active: selectedIndex == 2,
-              onTap: () => _move(context, 1),
+              onTap: () => _move(context, 2),
             ),
-
-            // 가운데 FAB 자리 비우기
-            const SizedBox(width: 56),
 
             _item(
               context,
               icon: Icons.chat_bubble_outline,
               label: '채팅',
               active: selectedIndex == 3,
-              onTap: () => _move(context, 2),
+              onTap: () => _move(context, 3),
             ),
             _item(
               context,
               icon: Icons.settings,
               label: '마이페이지',
               active: selectedIndex == 4,
-              onTap: () => _move(context, 3),
+              onTap: () => _move(context, 4),
             ),
           ],
         ),
