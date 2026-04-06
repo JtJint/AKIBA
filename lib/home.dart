@@ -135,7 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         )
                       : SizedBox(width: 0),
-                  SizedBox(width: 24),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width <= 442 ? 0 : 24,
+                  ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.7,
                     child: SingleChildScrollView(
