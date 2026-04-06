@@ -58,13 +58,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xff141414),
+        scaffoldBackgroundColor: const Color(0xff000000),
         primaryColor: const Color(0xff141414),
         fontFamily: 'Pretendard-Light',
       ),
       scrollBehavior: MyCustomScrollBehavior(),
       debugShowCheckedModeBanner: false,
-      // home: HomeScreen(),  // 있어도 됨. 단, 아래 onGenerateRoute가 URL을 우선 처리
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
 
