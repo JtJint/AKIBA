@@ -82,7 +82,7 @@ class Auctioncardcareven extends StatelessWidget {
                       price,
                       style: TextStyle(
                         color: PointColor,
-                        fontSize: ref * 0.02,
+                        fontSize: ref * 0.018,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

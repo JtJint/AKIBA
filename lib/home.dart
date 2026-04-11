@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   double _currentPage = 0.0;
   int selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -56,14 +57,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final contentWidth = screenWidth.clamp(360.0, 800.0);
     return PopScope(
       canPop: false,
       child: Center(
         child: Container(
-          decoration: const BoxDecoration(color: Color(0xff000000)),
-          width: MediaQuery.of(context).size.width * 0.9,
+          decoration: const BoxDecoration(color: Color(0xff141414)),
+          width: contentWidth,
           child: Scaffold(
-            bottomNavigationBar: MediaQuery.of(context).size.width <= 442
+            bottomNavigationBar: screenWidth <= 442
                 ? BottomFloatingButton(
                     selectedIndex: getSelectedIndexFromRoute(context),
                   )
@@ -73,12 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: const Color(0xff141414),
               elevation: 0,
               leadingWidth: 140,
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: logo(width: .18, height: 0.05),
-                ),
+              leading: Align(
+                alignment: Alignment.centerLeft,
+                child: logo(width: .18, height: 0.05),
               ),
               actions: [
                 SearchWidget(type: 'home'),
@@ -98,53 +98,38 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             body: Center(
               child: Row(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MediaQuery.of(context).size.width > 442
-                      ? LeftSidebar(
-                          selectedIndex: getSelectedIndexFromRoute(context),
-                          onTap: (index) {
-                            switch (index) {
-                              case 0:
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/main');
-                                break;
-                              case 1:
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/write');
-                                break;
-                              case 2:
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/community');
-                                break;
-                              case 3:
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/chat');
-                                break;
-                              case 4:
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/mypage');
-                                break;
-                            }
-                          },
-                        )
-                      : SizedBox(width: 0),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width <= 442 ? 0 : 24,
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.7,
+                  if (screenWidth > 442)
+                    LeftSidebar(
+                      selectedIndex: getSelectedIndexFromRoute(context),
+                      onTap: (index) {
+                        switch (index) {
+                          case 0:
+                            Navigator.of(context).pushNamed('/main');
+                            break;
+                          case 1:
+                            Navigator.of(context).pushNamed('/write');
+                            break;
+                          case 2:
+                            Navigator.of(context).pushNamed('/community');
+                            break;
+                          case 3:
+                            Navigator.of(context).pushNamed('/chat');
+                            break;
+                          case 4:
+                            Navigator.of(context).pushNamed('/mypage');
+                            break;
+                        }
+                      },
+                    ),
+                  if (screenWidth > 442) const SizedBox(width: 24),
+                  Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
                           SizedBox(height: Responsive.ref(context) * 0.02),
-                          Careven(pageController: _pageController),
+                          Careven(),
                           SizedBox(height: Responsive.ref(context) * 0.02),
                           category(),
                           SizedBox(height: Responsive.ref(context) * 0.02),

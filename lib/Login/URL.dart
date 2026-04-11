@@ -19,11 +19,12 @@ void startNaverLogin() {
   final state = randomState();
   html.window.sessionStorage['naver_state'] = state;
 
-  // const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
-  const clientId = 'quwp3RTYyaTzBPWUj59t';
-  // const redirectUri = 'http://localhost:8000/oauth/callback';
-  const redirectUri =
-      'https://akiba-bay.vercel.app/oauth/callback'; //배포용 redirect URI
+  const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
+
+  const redirectUri = 'http://localhost:8000/oauth/callback';
+  // const clientId = 'quwp3RTYyaTzBPWUj59t';
+  // const redirectUri =
+  //     'https://akiba-bay.vercel.app/oauth/callback'; //배포용 redirect URI
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
@@ -79,8 +80,6 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         html.window.sessionStorage.remove('naver_state');
 
         final rt = await Loginapi.loginAct(code, state);
-        print('statusCode: ${rt.statusCode}');
-        print('body: ${rt.body}');
 
         if (rt.statusCode != 200) {
           Navigator.of(context).pushReplacementNamed('/login');
@@ -113,7 +112,6 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         }
       } catch (e, st) {
         print('callback error: $e');
-        print(st);
         Navigator.of(context).pushReplacementNamed('/login');
       }
     });

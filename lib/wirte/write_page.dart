@@ -153,13 +153,13 @@ class _WritePageState extends State<WritePage> {
                       Navigator.of(context).pushReplacementNamed('/write');
                       break;
                     case 2:
-                      // Navigator.of(context).pushReplacementNamed('/community');
+                      Navigator.of(context).pushReplacementNamed('/community');
                       break;
                     case 3:
-                      // Navigator.of(context).pushReplacementNamed('/chat');
+                      Navigator.of(context).pushReplacementNamed('/chat');
                       break;
                     case 4:
-                      // Navigator.of(context).pushReplacementNamed('/mypage');
+                      Navigator.of(context).pushReplacementNamed('/mypage');
                       break;
                   }
                 },

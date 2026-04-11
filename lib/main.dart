@@ -37,6 +37,7 @@ import 'dart:ui';
 
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/nickName.dart';
+import 'package:akiba/chat/chatMain.dart';
 import 'package:akiba/community/communityMain.dart';
 import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
@@ -96,9 +97,15 @@ class MyApp extends StatelessWidget {
             settings: settings,
           );
         }
+        if (uri.path == '/chat') {
+          return MaterialPageRoute(
+            builder: (_) => ChatPage(),
+            settings: settings,
+          );
+        }
         if (uri.path == '/mypage') {
           return MaterialPageRoute(
-            builder: (_) => Mypage(),
+            builder: (_) => MyPageScreen(),
             settings: settings,
           );
         }

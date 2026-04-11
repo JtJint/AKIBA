@@ -14,7 +14,7 @@ class LeftSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.12,
+      width: 80,
       height: MediaQuery.of(context).size.height,
       padding: const EdgeInsets.symmetric(vertical: 28),
       decoration: BoxDecoration(
@@ -28,6 +28,7 @@ class LeftSidebar extends StatelessWidget {
             label: '홈',
             index: 0,
             selected: selectedIndex == 0,
+            size: MediaQuery.of(context).size.width < 450 ? 22 : 24,
           ),
           const SizedBox(height: 26),
           _sidebarItem(
@@ -35,6 +36,7 @@ class LeftSidebar extends StatelessWidget {
             label: '글쓰기',
             index: 1,
             selected: selectedIndex == 1,
+            size: MediaQuery.of(context).size.width < 450 ? 22 : 24,
           ),
           const SizedBox(height: 26),
           _sidebarItem(
@@ -42,6 +44,7 @@ class LeftSidebar extends StatelessWidget {
             label: '커뮤니티',
             index: 2,
             selected: selectedIndex == 2,
+            size: MediaQuery.of(context).size.width < 450 ? 22 : 24,
           ),
           const SizedBox(height: 26),
           _sidebarItem(
@@ -49,6 +52,7 @@ class LeftSidebar extends StatelessWidget {
             label: '채팅',
             index: 3,
             selected: selectedIndex == 3,
+            size: MediaQuery.of(context).size.width < 450 ? 22 : 24,
           ),
           const SizedBox(height: 26),
           _sidebarItem(
@@ -56,6 +60,7 @@ class LeftSidebar extends StatelessWidget {
             label: '마이페이지',
             index: 4,
             selected: selectedIndex == 4,
+            size: MediaQuery.of(context).size.width < 450 ? 22 : 24,
           ),
         ],
       ),
@@ -67,6 +72,7 @@ class LeftSidebar extends StatelessWidget {
     required String label,
     required int index,
     required bool selected,
+    required double size,
   }) {
     final Color activeColor = const Color(0xffD7FF00);
     final Color inactiveColor = Colors.white;
@@ -78,13 +84,17 @@ class LeftSidebar extends StatelessWidget {
         width: 80,
         child: Column(
           children: [
-            Icon(icon, color: selected ? activeColor : inactiveColor, size: 24),
+            Icon(
+              icon,
+              color: selected ? activeColor : inactiveColor,
+              size: size,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
                 color: selected ? activeColor : inactiveColor,
-                fontSize: 13,
+                fontSize: size * 0.5,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -125,6 +135,7 @@ class BottomFloatingButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
       child: Container(
+        width: double.infinity,
         height: 72,
         decoration: BoxDecoration(
           color: const Color(0xff1b1b1d),

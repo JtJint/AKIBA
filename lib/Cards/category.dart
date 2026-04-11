@@ -10,9 +10,9 @@ class category extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Responsive.ref(context) * 0.9,
+      // width: 400,
       color: Colors.transparent,
-      height: Responsive.ref(context) * 0.24,
+      // height: 200,
       child: Padding(
         padding: EdgeInsets.only(
           top: Responsive.ref(context) * 0.009,
@@ -20,10 +20,16 @@ class category extends StatelessWidget {
         ),
         child: Center(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MediaQuery.of(context).size.width < 440
+                ? MainAxisAlignment.spaceEvenly
+                : MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Categorybox(png: 'Cart.png', categoryName: '중고거래'),
+              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
               Categorybox(png: 'Suitcase.png', categoryName: '경매'),
+              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
+
               GestureDetector(
                 child: Categorybox(png: 'Pencil.png', categoryName: '구해요'),
                 onTap: () {
@@ -33,6 +39,8 @@ class category extends StatelessWidget {
                   );
                 },
               ),
+              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
+
               Categorybox(png: 'Chat.png', categoryName: '특전/한정판'),
             ],
           ),

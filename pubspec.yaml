@@ -41,6 +41,7 @@ dependencies:
   flutter_web_auth_2: ^2.1.0
   http: ^1.6.0
   localstorage: ^6.0.0
+  stomp_dart_client: ^0.4.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

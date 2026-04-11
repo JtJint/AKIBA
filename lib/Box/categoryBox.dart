@@ -9,7 +9,7 @@ class Categorybox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Responsive.ref(context) * 0.17,
+      width: Responsive.ref(context) * 0.16,
       color: Colors.transparent,
       height: Responsive.ref(context) * 0.22,
       child: Center(
