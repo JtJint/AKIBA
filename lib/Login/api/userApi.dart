@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui' as html;
 import 'dart:html';
+import 'package:akiba/chat/api/chatApi.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 
@@ -34,7 +35,12 @@ class Loginapi {
 
     window.localStorage['accessToken'] = resBody['accessToken'].toString();
     window.localStorage['refreshToken'] = resBody['refreshToken'].toString();
-
+    //   if (response.statusCode == 200) {
+    //     print('Login successful');
+    //     ChatService.connect(resBody['accessToken'].toString());
+    //   } else {
+    //     print('Login failed: ${response.statusCode}');
+    //   }
     return response;
   }
 
