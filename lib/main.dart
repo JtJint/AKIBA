@@ -34,12 +34,14 @@
 // }
 
 import 'dart:ui';
+import 'dart:html' as html;
 
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/nickName.dart';
+import 'package:akiba/chat/api/chatApi.dart';
+import 'package:akiba/chat/chatingPage.dart';
 import 'package:akiba/chat/chatMain.dart';
 import 'package:akiba/community/communityMain.dart';
-import 'package:akiba/dummyPage.dart';
 import 'package:akiba/home.dart';
 import 'package:akiba/Logo/onBoarding.dart';
 import 'package:akiba/myPage/myPage.dart';
@@ -49,14 +51,50 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() {
   usePathUrlStrategy();
+  ChatService.instance.registerLifecycleHandlers();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    ChatService.instance.connectIfLoggedIn();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ChatService.instance.disconnect();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      return;
+    }
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      ChatService.instance.disconnect();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final hasAccessToken =
+        (html.window.localStorage['accessToken'] ?? '').isNotEmpty;
+    final initialPath = hasAccessToken ? '/main' : '/';
+
     return MaterialApp(
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xff000000),
@@ -65,6 +103,7 @@ class MyApp extends StatelessWidget {
       ),
       scrollBehavior: MyCustomScrollBehavior(),
       debugShowCheckedModeBanner: false,
+      initialRoute: initialPath,
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name ?? '/');
 
@@ -102,6 +141,15 @@ class MyApp extends StatelessWidget {
             builder: (_) => ChatPage(),
             settings: settings,
           );
+        }
+        if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'chat') {
+          final roomId = int.tryParse(uri.pathSegments[1]);
+          if (roomId != null) {
+            return MaterialPageRoute(
+              builder: (_) => ChatingPage(roomId: roomId),
+              settings: settings,
+            );
+          }
         }
         if (uri.path == '/mypage') {
           return MaterialPageRoute(

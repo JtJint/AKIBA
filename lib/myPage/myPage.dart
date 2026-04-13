@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:ui' as html;
+import 'dart:html' as html;
 
+import 'package:akiba/Login/api/userApi.dart';
 import 'package:akiba/models/sideBar.dart';
 import 'package:akiba/myPage/mypage.api.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
     } catch (e) {
       print('Error fetching profile: $e');
     }
+  }
+
+  Future<void> _logout() async {
+    await Loginapi.logout();
+
+    if (!mounted) return;
+
+    html.window.history.replaceState(null, '', '/login');
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   //   {
@@ -266,6 +276,25 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         const _MenuItem(title: '내 경매 현황'),
 
                         const SizedBox(height: 40),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: _logout,
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xff3a3a3f)),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              '로그아웃',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),

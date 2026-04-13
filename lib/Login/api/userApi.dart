@@ -1,28 +1,26 @@
 import 'dart:convert';
-import 'dart:ui' as html;
-import 'dart:html';
+import 'dart:html' as html;
 import 'package:akiba/chat/api/chatApi.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 
 String baseURL = 'https://dev-api.akibaha.shop/';
 
 class Loginapi {
   static Future<http.Response> loginAct(String Code, String state) async {
     final url = Uri.parse('${baseURL}api/users/login');
-    final body = {
-      "provider": "NAVER",
-      "code": Code,
-      "state": state,
-      "env": "dev",
-    };
     // final body = {
-    //   // 배포 기준 ???
     //   "provider": "NAVER",
     //   "code": Code,
     //   "state": state,
-    //   "env": "prod",
+    //   "env": "dev",
     // };
+    final body = {
+      // 배포 기준 ???
+      "provider": "NAVER",
+      "code": Code,
+      "state": state,
+      "env": "prod",
+    };
 
     final reqBody = jsonEncode(body);
     final response = await http.post(
@@ -33,14 +31,12 @@ class Loginapi {
 
     final resBody = jsonDecode(response.body);
 
-    window.localStorage['accessToken'] = resBody['accessToken'].toString();
-    window.localStorage['refreshToken'] = resBody['refreshToken'].toString();
-    //   if (response.statusCode == 200) {
-    //     print('Login successful');
-    //     ChatService.connect(resBody['accessToken'].toString());
-    //   } else {
-    //     print('Login failed: ${response.statusCode}');
-    //   }
+    html.window.localStorage['accessToken'] = resBody['accessToken'].toString();
+    html.window.localStorage['refreshToken'] = resBody['refreshToken']
+        .toString();
+    html.window.localStorage['userId'] = resBody['userId'].toString();
+    if (response.statusCode == 200) ChatService.instance.connectIfLoggedIn();
+
     return response;
   }
 
@@ -52,5 +48,12 @@ class Loginapi {
     );
 
     return response;
+  }
+
+  static Future<void> logout() async {
+    ChatService.instance.disconnect();
+    html.window.localStorage.remove('accessToken');
+    html.window.localStorage.remove('refreshToken');
+    html.window.localStorage.remove('userId');
   }
 }

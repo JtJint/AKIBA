@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class ChatItemModel {
   final int roodId;
   final String imageUrl;
@@ -17,3 +19,6 @@ class ChatItemModel {
     required this.dateText,
   });
 }
+
+
+ //여기까지 박스 하나짜리임 이거 api로 가져와서 해보자이
