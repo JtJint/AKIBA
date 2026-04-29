@@ -9,43 +9,59 @@ class category extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // width: 400,
-      color: Colors.transparent,
-      // height: 200,
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: Responsive.ref(context) * 0.009,
-          bottom: Responsive.ref(context) * 0.003,
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MediaQuery.of(context).size.width < 440
-                ? MainAxisAlignment.spaceEvenly
-                : MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Categorybox(png: 'Cart.png', categoryName: '중고거래'),
-              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
-              Categorybox(png: 'Suitcase.png', categoryName: '경매'),
-              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final spacing = availableWidth < 440 ? 10.0 : 14.0;
+        final itemWidth = (availableWidth - (spacing * 3)) / 4;
 
-              GestureDetector(
-                child: Categorybox(png: 'Pencil.png', categoryName: '구해요'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => GuhaeyoScreen()),
-                  );
-                },
-              ),
-              SizedBox(width: MediaQuery.of(context).size.width < 450 ? 0 : 4),
-
-              Categorybox(png: 'Chat.png', categoryName: '특전/한정판'),
-            ],
+        return Container(
+          height: itemWidth + 20,
+          color: Colors.transparent,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: Responsive.ref(context) * 0.009,
+              bottom: Responsive.ref(context) * 0.003,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Categorybox(
+                  png: 'Cart.png',
+                  categoryName: '중고거래',
+                  width: itemWidth,
+                ),
+                SizedBox(width: spacing),
+                Categorybox(
+                  png: 'Suitcase.png',
+                  categoryName: '경매',
+                  width: itemWidth,
+                ),
+                SizedBox(width: spacing),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => GuhaeyoScreen()),
+                    );
+                  },
+                  child: Categorybox(
+                    png: 'Pencil.png',
+                    categoryName: '구해요',
+                    width: itemWidth,
+                  ),
+                ),
+                SizedBox(width: spacing),
+                Categorybox(
+                  png: 'Chat.png',
+                  categoryName: '특전/한정판',
+                  width: itemWidth,
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

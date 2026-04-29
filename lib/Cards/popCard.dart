@@ -32,7 +32,7 @@ class popCard extends StatelessWidget {
               gradient: AKIBAGradient,
               borderRadius: BorderRadius.circular(0),
             ),
-            padding: const EdgeInsets.all(3),
+            padding: EdgeInsets.all(Responsive.ref(context) * 0.0018),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),
               child: Image.network(image, fit: BoxFit.cover),
@@ -102,7 +102,7 @@ class tagWidget extends StatelessWidget {
           ),
 
           // 3. [추가됨] 테두리 두께 설정 (여기서 숫자를 조절하세요)
-          padding: const EdgeInsets.all(1.5),
+          padding: EdgeInsets.all(Responsive.ref(context) * 0.0012),
 
           // 4. [추가됨] 안쪽 컨테이너: 실제 배경색(검정)과 텍스트
           child: Container(

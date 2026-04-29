@@ -41,7 +41,9 @@ class _ItemcarevenState extends State<Itemcareven> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => gDetailScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const GDetailScreen(postId: 1),
+                      ),
                     );
                   },
                   child: Itemcard(

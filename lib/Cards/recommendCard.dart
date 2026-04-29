@@ -31,6 +31,7 @@ class RecommendCard extends StatelessWidget {
                 child: Image.network(
                   item.img,
                   fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.white12,
                     child: const Icon(Icons.image_not_supported),

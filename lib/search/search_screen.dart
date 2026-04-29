@@ -61,59 +61,66 @@ class _SearchScreenState extends State<SearchScreen_> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: BackGroundColor,
-      appBar: AppBar(
-        backgroundColor: BackGroundColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.white,
-            size: Responsive.ref(context) * 0.04,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          '검색',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: Responsive.ref(context) * 0.04,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: Responsive.ref(context) * 0.04,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: Responsive.ref(context) * 0.02),
-              // 검색창
-              _SearchBar(
-                typeChip: selectedType,
-                controller: TextEditingController(),
-                onRemoveType: () => setState(() => selectedType = null),
-                onChanged: (value) => setState(() {}),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final contentWidth = screenWidth.clamp(360.0, 800.0);
+    return Center(
+      child: Container(
+        width: contentWidth,
+        child: Scaffold(
+          backgroundColor: BackGroundColor,
+          appBar: AppBar(
+            backgroundColor: BackGroundColor,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: Colors.white,
+                size: Responsive.ref(context) * 0.04,
               ),
-              SizedBox(height: Responsive.ref(context) * 0.04),
-              // 최근 검색어
-              _buildSectionTitle('최근 검색어'),
-              SizedBox(height: Responsive.ref(context) * 0.015),
-              _buildSearchChips(_recentSearches),
-              SizedBox(height: Responsive.ref(context) * 0.04),
-              // 추천 검색어 태그
-              _buildSectionTitle('추천 검색어'),
-              SizedBox(height: Responsive.ref(context) * 0.015),
-              _buildRecommendedTags(),
-              SizedBox(height: Responsive.ref(context) * 0.04),
-              // 인기검색어 박스 (탭 시 확장)
-              _buildPopularSearchBox(),
-            ],
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              '검색',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: Responsive.ref(context) * 0.04,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.ref(context) * 0.04,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: Responsive.ref(context) * 0.02),
+                  // 검색창
+                  _SearchBar(
+                    typeChip: selectedType,
+                    controller: TextEditingController(),
+                    onRemoveType: () => setState(() => selectedType = null),
+                    onChanged: (value) => setState(() {}),
+                  ),
+                  SizedBox(height: Responsive.ref(context) * 0.04),
+                  // 최근 검색어
+                  _buildSectionTitle('최근 검색어'),
+                  SizedBox(height: Responsive.ref(context) * 0.015),
+                  _buildSearchChips(_recentSearches),
+                  SizedBox(height: Responsive.ref(context) * 0.04),
+                  // 추천 검색어 태그
+                  _buildSectionTitle('추천 검색어'),
+                  SizedBox(height: Responsive.ref(context) * 0.015),
+                  _buildRecommendedTags(),
+                  SizedBox(height: Responsive.ref(context) * 0.04),
+                  // 인기검색어 박스 (탭 시 확장)
+                  _buildPopularSearchBox(),
+                ],
+              ),
+            ),
           ),
         ),
       ),

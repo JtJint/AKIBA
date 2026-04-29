@@ -1,4 +1,5 @@
 import 'package:akiba/Logo/logo.dart';
+import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/models/sideBar.dart';
 import 'package:akiba/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,10 @@ import 'package:flutter/material.dart';
 enum WriteMode { used, wanted, auction }
 
 class WritePage extends StatefulWidget {
-  const WritePage({super.key});
+  const WritePage({super.key, this.initialMode, this.wantedEditPost});
+
+  final WriteMode? initialMode;
+  final WantedPostDetail? wantedEditPost;
 
   @override
   State<WritePage> createState() => _WritePageState();
@@ -35,6 +39,25 @@ class _WritePageState extends State<WritePage> {
 
   DateTime _auctionDate = DateTime.now();
   TimeOfDay _auctionTime = TimeOfDay.now();
+
+  bool get _isWantedEdit => widget.wantedEditPost != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _mode =
+        widget.initialMode ??
+        (_isWantedEdit ? WriteMode.wanted : WriteMode.used);
+
+    final wantedPost = widget.wantedEditPost;
+    if (wantedPost != null) {
+      _titleController.text = wantedPost.title;
+      _descController.text = wantedPost.content;
+      _priceController.text = wantedPost.price.toString();
+      _wantedCondition = wantedPost.conditionTxt;
+      _tradeMethod = wantedPost.deliveryMethod;
+    }
+  }
 
   @override
   void dispose() {
@@ -99,13 +122,88 @@ class _WritePageState extends State<WritePage> {
     }
   }
 
-  void _submit() {
-    debugPrint('mode: $_mode');
-    debugPrint('title: ${_titleController.text}');
-    debugPrint('desc: ${_descController.text}');
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('작성 완료 클릭됨')));
+  Future<void> _submit() async {
+    if (_mode != WriteMode.wanted) {
+      debugPrint('mode: $_mode');
+      debugPrint('title: ${_titleController.text}');
+      debugPrint('desc: ${_descController.text}');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('작성 완료 클릭됨')));
+      return;
+    }
+
+    final title = _titleController.text.trim();
+    final content = _descController.text.trim();
+    final priceText = _priceController.text.trim();
+    final tags = _tagController.text
+        .split(RegExp(r'[\s,]+'))
+        .map((tag) => tag.trim())
+        .where((tag) => tag.isNotEmpty)
+        .take(5)
+        .toList();
+    final price = int.tryParse(priceText);
+
+    if (title.isEmpty || content.isEmpty || price == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('제목, 설명, 가격을 올바르게 입력해주세요.')));
+      return;
+    }
+
+    try {
+      final payload = WantedUpsertPayload(
+        price: price,
+        title: title,
+        content: content,
+        specialType: widget.wantedEditPost?.specialType ?? 'NONE',
+        conditionTxt: _wantedCondition,
+        deliveryMethod: _tradeMethod,
+        imageMediaIds: widget.wantedEditPost?.imageMediaIds ?? [],
+        tagNames: tags,
+      );
+      final response = _isWantedEdit
+          ? await WantedApi.updateWantedPost(
+              postId: widget.wantedEditPost!.postId,
+              payload: payload,
+            )
+          : await WantedApi.createWantedPost(payload: payload);
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isWantedEdit ? '구해요 글이 수정되었습니다.' : '구해요 글이 등록되었습니다.',
+            ),
+          ),
+        );
+        if (_isWantedEdit) {
+          Navigator.of(context).pop();
+        } else {
+          Navigator.of(context).pushReplacementNamed('/main');
+        }
+        return;
+      }
+
+      debugPrint(
+        'wanted post create failed: status=${response.statusCode}, body=${response.body}',
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '구해요 글 등록 실패 (${response.statusCode}): ${response.body}',
+          ),
+        ),
+      );
+    } catch (error) {
+      debugPrint('wanted post create error: $error');
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('구해요 글 등록 중 오류가 발생했습니다.')));
+    }
   }
 
   @override
@@ -180,8 +278,8 @@ class _WritePageState extends State<WritePage> {
                         children: [
                           _buildTopBar(),
                           const SizedBox(height: 20),
-                          _buildModeSelector(),
-                          const SizedBox(height: 18),
+                          if (!_isWantedEdit) _buildModeSelector(),
+                          if (!_isWantedEdit) const SizedBox(height: 18),
                           _buildSectionLabel('이미지 *'),
                           const SizedBox(height: 8),
                           _buildImagePickerRow(),
@@ -217,9 +315,9 @@ class _WritePageState extends State<WritePage> {
                                 ),
                                 elevation: 0,
                               ),
-                              child: const Text(
-                                '작성 완료',
-                                style: TextStyle(
+                              child: Text(
+                                _isWantedEdit ? '수정 완료' : '작성 완료',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
                                 ),
@@ -253,9 +351,9 @@ class _WritePageState extends State<WritePage> {
           //     icon: const Icon(Icons.close, color: Colors.white),
           //   ),
           // ),
-          const Center(
+          Center(
             child: Text(
-              '글쓰기',
+              _isWantedEdit ? '구해요 수정' : '글쓰기',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -361,6 +459,13 @@ class _WritePageState extends State<WritePage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionLabel('가격 *'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _priceController,
+              hintText: '₩ 가격을 입력해주세요.',
+              keyboardType: TextInputType.number,
+            ),
             _buildSectionLabel('희망 상태 *'),
             const SizedBox(height: 8),
             _buildChoiceRow(

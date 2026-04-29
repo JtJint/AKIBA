@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: const BoxDecoration(color: Color(0xff141414)),
           width: contentWidth,
           child: Scaffold(
-            bottomNavigationBar: screenWidth <= 442
+            bottomNavigationBar: screenWidth <= 440
                 ? BottomFloatingButton(
                     selectedIndex: getSelectedIndexFromRoute(context),
                   )
@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (screenWidth > 442)
+                  if (screenWidth > 440)
                     LeftSidebar(
                       selectedIndex: getSelectedIndexFromRoute(context),
                       onTap: (index) {
@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                       },
                     ),
-                  if (screenWidth > 442) const SizedBox(width: 24),
+                  if (screenWidth > 440) const SizedBox(width: 24),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
