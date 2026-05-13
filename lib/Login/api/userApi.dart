@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/chat/api/chatApi.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -43,7 +44,7 @@ class Loginapi {
 
   static Future<http.Response> setNickName(String accessToken) async {
     final url = Uri.parse('${baseURL}api/users/me');
-    final response = await http.get(
+    final response = await AuthHttpClient.get(
       url,
       headers: {'Authorization': 'Bearer $accessToken'},
     );
@@ -53,8 +54,6 @@ class Loginapi {
 
   static Future<void> logout() async {
     ChatService.instance.disconnect();
-    html.window.localStorage.remove('accessToken');
-    html.window.localStorage.remove('refreshToken');
-    html.window.localStorage.remove('userId');
+    await AuthHttpClient.clearSession();
   }
 }

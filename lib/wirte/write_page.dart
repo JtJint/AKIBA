@@ -1,6 +1,11 @@
+import 'dart:html' as html;
+
 import 'package:akiba/demand/api/wanted_api.dart';
+import 'package:akiba/market/api/market_post_api.dart';
+import 'package:akiba/media/api/media_api.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 enum WriteMode { used, wanted, auction }
 
@@ -34,9 +39,13 @@ class _WritePageState extends State<WritePage> {
   String _wantedCondition = '미개봉';
   String _auctionCondition = '미개봉';
   int _bidUnit = 1000;
+  final int _categoryId = 0;
+  bool _isSubmitting = false;
 
   DateTime _auctionDate = DateTime.now();
   TimeOfDay _auctionTime = TimeOfDay.now();
+  final List<html.File> _imageFiles = [];
+  html.File? _receiptFile;
 
   bool get _isWantedEdit => widget.wantedEditPost != null;
 
@@ -121,15 +130,7 @@ class _WritePageState extends State<WritePage> {
   }
 
   Future<void> _submit() async {
-    if (_mode != WriteMode.wanted) {
-      debugPrint('mode: $_mode');
-      debugPrint('title: ${_titleController.text}');
-      debugPrint('desc: ${_descController.text}');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('작성 완료 클릭됨')));
-      return;
-    }
+    if (_isSubmitting) return;
 
     final title = _titleController.text.trim();
     final content = _descController.text.trim();
@@ -142,39 +143,63 @@ class _WritePageState extends State<WritePage> {
         .toList();
     final price = int.tryParse(priceText);
 
-    if (title.isEmpty || content.isEmpty || price == null) {
+    if (title.isEmpty || content.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('제목과 설명을 입력해주세요.')));
+      return;
+    }
+
+    if (_mode != WriteMode.auction && price == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('제목, 설명, 가격을 올바르게 입력해주세요.')));
       return;
     }
 
+    setState(() {
+      _isSubmitting = true;
+    });
+
     try {
-      final payload = WantedUpsertPayload(
-        price: price,
-        title: title,
-        content: content,
-        specialType: widget.wantedEditPost?.specialType ?? 'NONE',
-        conditionTxt: _wantedCondition,
-        deliveryMethod: _tradeMethod,
-        imageMediaIds: widget.wantedEditPost?.imageMediaIds ?? [],
-        tagNames: tags,
-      );
-      final response = _isWantedEdit
-          ? await WantedApi.updateWantedPost(
-              postId: widget.wantedEditPost!.postId,
-              payload: payload,
-            )
-          : await WantedApi.createWantedPost(payload: payload);
+      final imageMediaIds = _isWantedEdit && _imageFiles.isEmpty
+          ? widget.wantedEditPost!.imageMediaIds
+          : await MediaApi.uploadAll(_imageFiles);
+      final receiptMediaId = _receiptFile == null
+          ? null
+          : await MediaApi.upload(_receiptFile!);
+
+      final response = switch (_mode) {
+        WriteMode.wanted => await _submitWanted(
+          title: title,
+          content: content,
+          price: price!,
+          imageMediaIds: imageMediaIds,
+          tagNames: tags,
+        ),
+        WriteMode.used => await _submitUsed(
+          title: title,
+          content: content,
+          price: price!,
+          receiptMediaId: receiptMediaId,
+          imageMediaIds: imageMediaIds,
+          tagNames: tags,
+        ),
+        WriteMode.auction => await _submitAuction(
+          title: title,
+          content: content,
+          receiptMediaId: receiptMediaId,
+          imageMediaIds: imageMediaIds,
+          tagNames: tags,
+        ),
+      };
 
       if (!mounted) return;
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              _isWantedEdit ? '구해요 글이 수정되었습니다.' : '구해요 글이 등록되었습니다.',
-            ),
+            content: Text(_isWantedEdit ? '구해요 글이 수정되었습니다.' : '글이 등록되었습니다.'),
           ),
         );
         if (_isWantedEdit) {
@@ -186,22 +211,132 @@ class _WritePageState extends State<WritePage> {
       }
 
       debugPrint(
-        'wanted post create failed: status=${response.statusCode}, body=${response.body}',
+        'post create failed: mode=$_mode, status=${response.statusCode}, body=${response.body}',
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '구해요 글 등록 실패 (${response.statusCode}): ${response.body}',
-          ),
+          content: Text('글 등록 실패 (${response.statusCode}): ${response.body}'),
         ),
       );
     } catch (error) {
-      debugPrint('wanted post create error: $error');
+      debugPrint('post create error: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('구해요 글 등록 중 오류가 발생했습니다.')));
+      ).showSnackBar(SnackBar(content: Text('글 등록 중 오류가 발생했습니다: $error')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
+  }
+
+  Future<http.Response> _submitWanted({
+    required String title,
+    required String content,
+    required int price,
+    required List<int> imageMediaIds,
+    required List<String> tagNames,
+  }) {
+    final payload = WantedUpsertPayload(
+      price: price,
+      title: title,
+      content: content,
+      specialType: 'NONE',
+      conditionTxt: _wantedCondition,
+      deliveryMethod: _tradeMethod,
+      imageMediaIds: imageMediaIds,
+      tagNames: tagNames,
+    );
+    return _isWantedEdit
+        ? WantedApi.updateWantedPost(
+            postId: widget.wantedEditPost!.postId,
+            payload: payload,
+          )
+        : WantedApi.createWantedPost(payload: payload);
+  }
+
+  Future<http.Response> _submitUsed({
+    required String title,
+    required String content,
+    required int price,
+    required int? receiptMediaId,
+    required List<int> imageMediaIds,
+    required List<String> tagNames,
+  }) {
+    print(
+      UsedPostPayload(
+        title: title,
+        content: content,
+        price: price,
+        productCondition: _itemCondition,
+        specialType: 'NONE',
+        categoryId: _categoryId,
+        deliveryMethod: _tradeMethod,
+        purchaseSource: _purchasePlaceController.text.trim(),
+        receiptMediaId: receiptMediaId ?? 0,
+        imageMediaIds: imageMediaIds,
+        tagNames: tagNames,
+      ),
+    );
+    return MarketPostApi.createUsedPost(
+      UsedPostPayload(
+        title: title,
+        content: content,
+        price: price,
+        productCondition: _itemCondition,
+        specialType: 'NONE',
+        categoryId: _categoryId,
+        deliveryMethod: _tradeMethod,
+        purchaseSource: _purchasePlaceController.text.trim(),
+        receiptMediaId: receiptMediaId ?? 0,
+        imageMediaIds: imageMediaIds,
+        tagNames: tagNames,
+      ),
+    );
+  }
+
+  Future<http.Response> _submitAuction({
+    required String title,
+    required String content,
+    required int? receiptMediaId,
+    required List<int> imageMediaIds,
+    required List<String> tagNames,
+  }) {
+    final startPrice = int.tryParse(_auctionStartPriceController.text.trim());
+    if (startPrice == null) {
+      throw StateError('경매 시작가를 올바르게 입력해주세요.');
+    }
+    final buyNowPrice =
+        int.tryParse(_instantBuyPriceController.text.trim()) ?? 0;
+    final endsAt = DateTime(
+      _auctionDate.year,
+      _auctionDate.month,
+      _auctionDate.day,
+      _auctionTime.hour,
+      _auctionTime.minute,
+    );
+
+    return MarketPostApi.createAuctionPost(
+      AuctionPostPayload(
+        title: title,
+        content: content,
+        productCondition: _auctionCondition,
+        specialType: 'NONE',
+        categoryId: _categoryId,
+        startPrice: startPrice,
+        buyNowPrice: buyNowPrice,
+        bidStep: _bidUnit,
+        endsAt: endsAt,
+        deliveryMethod: _tradeMethod,
+        purchaseSource: _purchasePlaceController.text.trim(),
+        receiptMediaId: receiptMediaId ?? 0,
+        imageMediaIds: imageMediaIds,
+        tagNames: tagNames,
+      ),
+    );
   }
 
   @override
@@ -246,7 +381,7 @@ class _WritePageState extends State<WritePage> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _submit,
+                    onPressed: _isSubmitting ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffD0FF00),
                       foregroundColor: Colors.black,
@@ -256,7 +391,11 @@ class _WritePageState extends State<WritePage> {
                       elevation: 0,
                     ),
                     child: Text(
-                      _isWantedEdit ? '수정 완료' : '작성 완료',
+                      _isSubmitting
+                          ? '등록 중...'
+                          : _isWantedEdit
+                          ? '수정 완료'
+                          : '작성 완료',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -379,7 +518,7 @@ class _WritePageState extends State<WritePage> {
             const SizedBox(height: 18),
             _buildSectionLabel('영수증 인증'),
             const SizedBox(height: 8),
-            _buildPlusBox(),
+            _buildReceiptPicker(),
             const SizedBox(height: 18),
             _buildSectionLabel('태그'),
             const SizedBox(height: 8),
@@ -447,7 +586,7 @@ class _WritePageState extends State<WritePage> {
             const SizedBox(height: 18),
             _buildSectionLabel('영수증 인증 *'),
             const SizedBox(height: 8),
-            _buildPlusBox(),
+            _buildReceiptPicker(),
             const SizedBox(height: 18),
             _buildSectionLabel('경매 시작가 *'),
             const SizedBox(height: 8),
@@ -562,11 +701,84 @@ class _WritePageState extends State<WritePage> {
   Widget _buildImagePickerRow() {
     return Row(
       children: [
-        _buildImageBox(isAdd: false),
-        const SizedBox(width: 8),
-        _buildImageBox(isAdd: true),
+        for (final file in _imageFiles.take(4)) ...[
+          _buildImagePreview(file),
+          const SizedBox(width: 8),
+        ],
+        if (_imageFiles.isEmpty) ...[
+          _buildImageBox(isAdd: false),
+          const SizedBox(width: 8),
+        ],
+        GestureDetector(onTap: _pickImages, child: _buildImageBox(isAdd: true)),
       ],
     );
+  }
+
+  Widget _buildImagePreview(html.File file) {
+    final objectUrl = html.Url.createObjectUrl(file);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: const Color(0xff1B1B1B),
+            border: Border.all(color: const Color(0xff2F2F2F)),
+          ),
+          child: Image.network(objectUrl, fit: BoxFit.cover),
+        ),
+        Positioned(
+          top: -8,
+          right: -8,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _imageFiles.remove(file);
+              });
+              html.Url.revokeObjectUrl(objectUrl);
+            },
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickImages() async {
+    final input = html.FileUploadInputElement()
+      ..accept = 'image/*'
+      ..multiple = true;
+    input.click();
+    await input.onChange.first;
+
+    final files = input.files ?? <html.File>[];
+    if (files.isEmpty) return;
+    setState(() {
+      _imageFiles
+        ..clear()
+        ..addAll(files.take(8));
+    });
+  }
+
+  Future<void> _pickReceipt() async {
+    final input = html.FileUploadInputElement()..accept = 'image/*';
+    input.click();
+    await input.onChange.first;
+
+    final files = input.files ?? <html.File>[];
+    if (files.isEmpty) return;
+    setState(() {
+      _receiptFile = files.first;
+    });
   }
 
   Widget _buildImageBox({required bool isAdd}) {
@@ -579,12 +791,35 @@ class _WritePageState extends State<WritePage> {
       ),
       child: isAdd
           ? const Icon(Icons.add, color: Colors.white70)
-          : ClipRRect(
-              child: Image.network(
-                'https://picsum.photos/200',
-                fit: BoxFit.cover,
+          : const Icon(Icons.image_outlined, color: Colors.white38),
+    );
+  }
+
+  Widget _buildReceiptPicker() {
+    return InkWell(
+      onTap: _pickReceipt,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xff111111),
+          border: Border.all(color: const Color(0xff2F2F2F)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                _receiptFile?.name ?? '영수증 이미지를 추가해주세요.',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Color(0xff686868), fontSize: 13),
               ),
             ),
+            const Icon(Icons.add, color: Colors.white),
+          ],
+        ),
+      ),
     );
   }
 
@@ -655,27 +890,6 @@ class _WritePageState extends State<WritePage> {
           ),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildPlusBox() {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xff111111),
-        border: Border.all(color: const Color(0xff2F2F2F)),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '영수증 이미지를 추가해주세요.',
-            style: TextStyle(color: Color(0xff686868), fontSize: 13),
-          ),
-          Icon(Icons.add, color: Colors.white),
-        ],
-      ),
     );
   }
 

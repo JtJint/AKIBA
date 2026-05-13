@@ -1,16 +1,12 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
+import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
-import 'package:http/http.dart' as http;
 
 class UsedTradeApi {
   static Future<List<UsedTradeItem>> getPosts() async {
-    final response = await http.get(
-      ApiConfig.uri('api/used'),
-      headers: _authHeaders(),
-    );
+    final response = await AuthHttpClient.get(ApiConfig.uri('api/used/posts'));
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw UsedTradeApiException(response.statusCode, response.body);
@@ -24,9 +20,8 @@ class UsedTradeApi {
   }
 
   static Future<UsedTradeItem> getPostDetail(int postId) async {
-    final response = await http.get(
+    final response = await AuthHttpClient.get(
       ApiConfig.uri('api/used/$postId'),
-      headers: _authHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -38,14 +33,6 @@ class UsedTradeApi {
         ? decoded['data']
         : decoded;
     return UsedTradeItem.fromJson(body);
-  }
-
-  static Map<String, String> _authHeaders() {
-    final accessToken = html.window.localStorage['accessToken'];
-    return {
-      if (accessToken != null && accessToken.isNotEmpty)
-        'Authorization': 'Bearer $accessToken',
-    };
   }
 
   static List<dynamic> _extractList(dynamic decoded) {

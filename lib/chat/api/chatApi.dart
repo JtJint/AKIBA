@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -12,13 +13,8 @@ import '../../APIs/Board/BoardApi.dart';
 
 class Chatapi {
   static Future<http.Response> getRooms() async {
-    final accessToken = html.window.localStorage['accessToken'];
-
     final url = Uri.parse('${baseURL}api/chat/rooms');
-    final response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
+    final response = await AuthHttpClient.get(url);
     return response;
   }
 
@@ -27,15 +23,10 @@ class Chatapi {
     int marketPostId,
     int targetUserId,
   ) async {
-    final accessToken = html.window.localStorage['accessToken'];
-
     final url = Uri.parse('${baseURL}api/chat/rooms');
-    final response = await http.post(
+    final response = await AuthHttpClient.post(
       url,
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
+      headers: const {'Content-Type': 'application/json'},
       body:
           '{"roomType": "$roomType", "marketPostId": $marketPostId, "targetUserId": $targetUserId}',
     );
@@ -43,24 +34,14 @@ class Chatapi {
   }
 
   static Future<http.Response> getMessages(int roomId) async {
-    final accessToken = html.window.localStorage['accessToken'];
-
     final url = Uri.parse('${baseURL}api/chat/rooms/$roomId/messages');
-    final response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
+    final response = await AuthHttpClient.get(url);
     return response;
   }
 
   static Future<http.Response> deleteRoom(int roomId) async {
-    final accessToken = html.window.localStorage['accessToken'];
-
     final url = Uri.parse('${baseURL}api/chat/rooms/$roomId');
-    final response = await http.delete(
-      url,
-      headers: {'Authorization': 'Bearer $accessToken'},
-    );
+    final response = await AuthHttpClient.delete(url);
     return response;
   }
 }

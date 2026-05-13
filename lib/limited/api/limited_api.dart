@@ -1,19 +1,18 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
+import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:akiba/limited/model/limited_models.dart';
-import 'package:http/http.dart' as http;
 
 class LimitedApi {
   static Future<List<LimitedItem>> getItems({String? keyword}) async {
-    final uri = ApiConfig.uri('api/limited').replace(
+    final uri = ApiConfig.uri('api/limited/posts').replace(
       queryParameters: {
         if (keyword != null && keyword.trim().isNotEmpty)
           'keyword': keyword.trim(),
       },
     );
-    final response = await http.get(uri, headers: _authHeaders());
+    final response = await AuthHttpClient.get(uri);
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw LimitedApiException(response.statusCode, response.body);
@@ -24,14 +23,6 @@ class LimitedApi {
         .map((item) => LimitedItem.fromJson(item))
         .where((item) => item.id != 0 || item.title.isNotEmpty)
         .toList();
-  }
-
-  static Map<String, String> _authHeaders() {
-    final accessToken = html.window.localStorage['accessToken'];
-    return {
-      if (accessToken != null && accessToken.isNotEmpty)
-        'Authorization': 'Bearer $accessToken',
-    };
   }
 
   static List<dynamic> _extractList(dynamic decoded) {

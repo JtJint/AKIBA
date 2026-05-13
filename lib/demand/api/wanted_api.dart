@@ -1,12 +1,14 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
+import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:http/http.dart' as http;
 
 class WantedApi {
   static Future<List<dynamic>> getWantedPosts() async {
-    final response = await http.get(ApiConfig.uri('api/wanted/posts'));
+    final response = await AuthHttpClient.get(
+      ApiConfig.uri('api/wanted/posts'),
+    );
     final decoded = jsonDecode(response.body);
 
     if (decoded is List) {
@@ -32,9 +34,8 @@ class WantedApi {
   }
 
   static Future<WantedPostDetail> getWantedPostDetail(int postId) async {
-    final response = await http.get(
+    final response = await AuthHttpClient.get(
       ApiConfig.uri('api/wanted/posts/$postId'),
-      headers: _authHeaders(),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -47,9 +48,9 @@ class WantedApi {
   static Future<http.Response> createWantedPost({
     required WantedUpsertPayload payload,
   }) {
-    return http.post(
+    return AuthHttpClient.post(
       ApiConfig.uri('api/wanted/posts'),
-      headers: _jsonAuthHeaders(),
+      headers: const {'Content-Type': 'application/json'},
       body: jsonEncode(payload.toJson()),
     );
   }
@@ -58,30 +59,15 @@ class WantedApi {
     required int postId,
     required WantedUpsertPayload payload,
   }) {
-    return http.put(
+    return AuthHttpClient.put(
       ApiConfig.uri('api/wanted/posts/$postId'),
-      headers: _jsonAuthHeaders(),
+      headers: const {'Content-Type': 'application/json'},
       body: jsonEncode(payload.toJson()),
     );
   }
 
   static Future<http.Response> deleteWantedPost(int postId) {
-    return http.delete(
-      ApiConfig.uri('api/wanted/posts/$postId'),
-      headers: _authHeaders(),
-    );
-  }
-
-  static Map<String, String> _authHeaders() {
-    final accessToken = html.window.localStorage['accessToken'];
-    return {
-      if (accessToken != null && accessToken.isNotEmpty)
-        'Authorization': 'Bearer $accessToken',
-    };
-  }
-
-  static Map<String, String> _jsonAuthHeaders() {
-    return {'Content-Type': 'application/json', ..._authHeaders()};
+    return AuthHttpClient.delete(ApiConfig.uri('api/wanted/posts/$postId'));
   }
 }
 
