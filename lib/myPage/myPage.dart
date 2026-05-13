@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:html' as html;
 
 import 'package:akiba/Login/api/userApi.dart';
-import 'package:akiba/models/sideBar.dart';
 import 'package:akiba/myPage/mypage.api.dart';
+import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -74,26 +74,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
     }
   }
 
-  void _handleSidebarTap(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        Navigator.of(context).pushReplacementNamed('/main');
-        break;
-      case 1:
-        Navigator.of(context).pushReplacementNamed('/write');
-        break;
-      case 2:
-        Navigator.of(context).pushReplacementNamed('/community');
-        break;
-      case 3:
-        Navigator.of(context).pushReplacementNamed('/chat');
-        break;
-      case 4:
-        Navigator.of(context).pushReplacementNamed('/mypage');
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     const bgColor = Color(0xff0b0b0d);
@@ -103,205 +83,171 @@ class _MyPageScreenState extends State<MyPageScreen> {
     const textPrimary = Colors.white;
     const dividerColor = Color(0xff3a3a3f);
 
-    final isMobile = MediaQuery.of(context).size.width <= 440;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final contentWidth = screenWidth.clamp(360.0, 800.0);
-    return Scaffold(
+    return AkibaShell(
+      selectedIndex: getSelectedIndexFromRoute(context),
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: Center(
-          child: SizedBox(
-            width: contentWidth,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!isMobile) ...[
-                  LeftSidebar(
-                    selectedIndex: getSelectedIndexFromRoute(context),
-                    onTap: (index) => _handleSidebarTap(context, index),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+
+            Center(
+              child: Column(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: lime, width: 1.2),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xff2a2a2f), Color(0xff1a1a1f)],
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'akiba',
+                        style: TextStyle(
+                          color: Color(0xff6f6f76),
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 24),
-                ],
-                Expanded(
-                  child: SingleChildScrollView(
+                  const SizedBox(height: 14),
+                  Text(
+                    body['nickname'],
+                    style: TextStyle(
+                      color: textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 18,
+                      horizontal: 12,
+                      vertical: 7,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: lime, width: 1.2),
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xff2a2a2f),
-                                      Color(0xff1a1a1f),
-                                    ],
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'akiba',
-                                    style: TextStyle(
-                                      color: Color(0xff6f6f76),
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w800,
-                                      fontStyle: FontStyle.italic,
-                                      letterSpacing: -1,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Text(
-                                body['nickname'],
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: purple,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '신뢰도 ${body["mannerScore"]}%',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          decoration: BoxDecoration(
-                            color: panelColor,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x22000000),
-                                blurRadius: 20,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _StatItem(
-                                  title: '진행 중',
-                                  value: "${body['ongoingDealCount']}건",
-                                  showRightBorder: true,
-                                ),
-                              ),
-                              Expanded(
-                                child: _StatItem(
-                                  title: '찜한 목록',
-                                  value: '${body['followingCount']}건',
-                                  showRightBorder: true,
-                                ),
-                              ),
-                              Expanded(
-                                child: _StatItem(
-                                  title: '팔로워',
-                                  value: '${body['followerCount']}명',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 26),
-
-                        const _SectionTitle(title: '판매', color: lime),
-                        const SizedBox(height: 18),
-                        const _MenuItem(title: '등록한 상품'),
-                        const SizedBox(height: 28),
-                        const _MenuItem(title: '판매 완료'),
-
-                        const SizedBox(height: 26),
-                        Container(height: 1, color: dividerColor),
-                        const SizedBox(height: 26),
-
-                        const _SectionTitle(title: '구해요', color: lime),
-                        const SizedBox(height: 18),
-                        const _MenuItem(title: '내가 올린 구해요'),
-                        const SizedBox(height: 28),
-                        const _MenuItem(
-                          title: '매칭된 제안',
-                          trailing: _PurpleDot(),
-                        ),
-
-                        const SizedBox(height: 26),
-                        Container(height: 1, color: dividerColor),
-                        const SizedBox(height: 26),
-
-                        const _SectionTitle(title: '경매', color: lime),
-                        const SizedBox(height: 18),
-                        _MenuItem(
-                          title: '입찰 중',
-                          trailing: _CountBadge(
-                            count: '${body["ongoingDealCount"]}건',
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        const _MenuItem(title: '낙찰 성공', trailing: _PurpleDot()),
-                        const SizedBox(height: 28),
-                        const _MenuItem(title: '내 경매 현황'),
-
-                        const SizedBox(height: 40),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: _logout,
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xff3a3a3f)),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              '로그아웃',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                    decoration: BoxDecoration(
+                      color: purple,
+                      borderRadius: BorderRadius.circular(6),
                     ),
+                    child: Text(
+                      '신뢰도 ${body["mannerScore"]}%',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: panelColor,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _StatItem(
+                      title: '진행 중',
+                      value: "${body['ongoingDealCount']}건",
+                      showRightBorder: true,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StatItem(
+                      title: '찜한 목록',
+                      value: '${body['followingCount']}건',
+                      showRightBorder: true,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StatItem(
+                      title: '팔로워',
+                      value: '${body['followerCount']}명',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 26),
+
+            const _SectionTitle(title: '판매', color: lime),
+            const SizedBox(height: 18),
+            const _MenuItem(title: '등록한 상품'),
+            const SizedBox(height: 28),
+            const _MenuItem(title: '판매 완료'),
+
+            const SizedBox(height: 26),
+            Container(height: 1, color: dividerColor),
+            const SizedBox(height: 26),
+
+            const _SectionTitle(title: '구해요', color: lime),
+            const SizedBox(height: 18),
+            const _MenuItem(title: '내가 올린 구해요'),
+            const SizedBox(height: 28),
+            const _MenuItem(title: '매칭된 제안', trailing: _PurpleDot()),
+
+            const SizedBox(height: 26),
+            Container(height: 1, color: dividerColor),
+            const SizedBox(height: 26),
+
+            const _SectionTitle(title: '경매', color: lime),
+            const SizedBox(height: 18),
+            _MenuItem(
+              title: '입찰 중',
+              trailing: _CountBadge(count: '${body["ongoingDealCount"]}건'),
+            ),
+            const SizedBox(height: 28),
+            const _MenuItem(title: '낙찰 성공', trailing: _PurpleDot()),
+            const SizedBox(height: 28),
+            const _MenuItem(title: '내 경매 현황'),
+
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _logout,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xff3a3a3f)),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ],
+                child: const Text(
+                  '로그아웃',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );

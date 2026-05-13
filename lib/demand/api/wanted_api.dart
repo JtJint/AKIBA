@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
+import 'package:akiba/config/api_config.dart';
 import 'package:http/http.dart' as http;
-
-const String _baseUrl = 'https://dev-api.akibaha.shop/';
 
 class WantedApi {
   static Future<List<dynamic>> getWantedPosts() async {
-    final response = await http.get(Uri.parse('${_baseUrl}api/wanted/posts'));
+    final response = await http.get(ApiConfig.uri('api/wanted/posts'));
     final decoded = jsonDecode(response.body);
 
     if (decoded is List) {
@@ -34,7 +33,7 @@ class WantedApi {
 
   static Future<WantedPostDetail> getWantedPostDetail(int postId) async {
     final response = await http.get(
-      Uri.parse('${_baseUrl}api/wanted/posts/$postId'),
+      ApiConfig.uri('api/wanted/posts/$postId'),
       headers: _authHeaders(),
     );
 
@@ -49,7 +48,7 @@ class WantedApi {
     required WantedUpsertPayload payload,
   }) {
     return http.post(
-      Uri.parse('${_baseUrl}api/wanted/posts'),
+      ApiConfig.uri('api/wanted/posts'),
       headers: _jsonAuthHeaders(),
       body: jsonEncode(payload.toJson()),
     );
@@ -60,7 +59,7 @@ class WantedApi {
     required WantedUpsertPayload payload,
   }) {
     return http.put(
-      Uri.parse('${_baseUrl}api/wanted/posts/$postId'),
+      ApiConfig.uri('api/wanted/posts/$postId'),
       headers: _jsonAuthHeaders(),
       body: jsonEncode(payload.toJson()),
     );
@@ -68,7 +67,7 @@ class WantedApi {
 
   static Future<http.Response> deleteWantedPost(int postId) {
     return http.delete(
-      Uri.parse('${_baseUrl}api/wanted/posts/$postId'),
+      ApiConfig.uri('api/wanted/posts/$postId'),
       headers: _authHeaders(),
     );
   }

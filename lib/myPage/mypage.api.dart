@@ -1,10 +1,8 @@
-import 'dart:convert';
-import 'dart:ui' as html;
 import 'dart:html';
+import 'package:akiba/config/api_config.dart';
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
 
-String baseURL = 'https://dev-api.akibaha.shop/';
+String baseURL = ApiConfig.baseUrl;
 
 class myPageAPI {
   static Future<http.Response> getProfile() async {

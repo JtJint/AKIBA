@@ -36,16 +36,8 @@
 import 'dart:ui';
 import 'dart:html' as html;
 
-import 'package:akiba/Login/URL.dart';
-import 'package:akiba/Logo/nickName.dart';
+import 'package:akiba/app_router.dart';
 import 'package:akiba/chat/api/chatApi.dart';
-import 'package:akiba/chat/chatingPage.dart';
-import 'package:akiba/chat/chatMain.dart';
-import 'package:akiba/community/communityMain.dart';
-import 'package:akiba/home.dart';
-import 'package:akiba/Logo/onBoarding.dart';
-import 'package:akiba/myPage/myPage.dart';
-import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -66,7 +58,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    ChatService.instance.connectIfLoggedIn();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -93,7 +84,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final hasAccessToken =
         (html.window.localStorage['accessToken'] ?? '').isNotEmpty;
-    final initialPath = hasAccessToken ? '/main' : '/';
+    final initialPath = hasAccessToken ? AppRouter.main : AppRouter.onboarding;
 
     return MaterialApp(
       theme: ThemeData(
@@ -104,62 +95,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       scrollBehavior: MyCustomScrollBehavior(),
       debugShowCheckedModeBanner: false,
       initialRoute: initialPath,
-      onGenerateRoute: (settings) {
-        final uri = Uri.parse(settings.name ?? '/');
-
-        // ✅ 여기서 /oauth/callback 라우팅
-        if (uri.path == '/oauth/callback') {
-          return MaterialPageRoute(
-            builder: (_) => const NaverCallbackPage(),
-            settings: settings,
-          );
-        }
-
-        if (uri.path == '/nickname') {
-          return MaterialPageRoute(builder: (_) => inputNickNamePage());
-        }
-        if (uri.path == '/main') {
-          return MaterialPageRoute(
-            builder: (_) => HomeScreen(),
-            settings: settings,
-          );
-        }
-        if (uri.path == '/write') {
-          return MaterialPageRoute(
-            builder: (_) => WritePage(),
-            settings: settings,
-          );
-        }
-        if (uri.path == '/community') {
-          return MaterialPageRoute(
-            builder: (_) => communityMain(),
-            settings: settings,
-          );
-        }
-        if (uri.path == '/chat') {
-          return MaterialPageRoute(
-            builder: (_) => ChatPage(),
-            settings: settings,
-          );
-        }
-        if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'chat') {
-          final roomId = int.tryParse(uri.pathSegments[1]);
-          if (roomId != null) {
-            return MaterialPageRoute(
-              builder: (_) => ChatingPage(roomId: roomId),
-              settings: settings,
-            );
-          }
-        }
-        if (uri.path == '/mypage') {
-          return MaterialPageRoute(
-            builder: (_) => MyPageScreen(),
-            settings: settings,
-          );
-        }
-        // 기본
-        return MaterialPageRoute(builder: (_) => const OnboardingPage());
-      },
+      onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
 }

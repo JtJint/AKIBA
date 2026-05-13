@@ -1,6 +1,6 @@
 import 'package:akiba/Logo/genre.dart';
 import 'package:akiba/Logo/logo.dart';
-import 'package:akiba/home.dart';
+import 'package:akiba/app_router.dart';
 import 'package:flutter/material.dart';
 
 class inputNickNamePage extends StatefulWidget {
@@ -27,10 +27,7 @@ class _inputNickNamePage extends State<inputNickNamePage> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-              );
+              Navigator.of(context).pushReplacementNamed(AppRouter.main);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xffD0FF00),

@@ -1,11 +1,12 @@
 import 'package:akiba/Carousel/rankingListTile.dart';
 import 'package:akiba/Carousel/recommendCaroulsel.dart';
+import 'package:akiba/app_router.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
-import 'package:akiba/demand/guhaeyo.detail.dart';
 import 'package:akiba/search/SearchWidget.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/models/recommendItem.dart';
 import 'package:akiba/utils/responsive.dart';
+import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 
 class GuhaeyoScreen extends StatefulWidget {
@@ -72,106 +73,94 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final contentWidth = screenWidth.clamp(360.0, 800.0);
-    return Center(
-      child: Container(
-        width: contentWidth,
-        child: Scaffold(
-          backgroundColor: const Color(0xff141414),
-          appBar: AppBar(
-            backgroundColor: Color(0xff141414),
-            title: Text('구해요', style: TextStyle(color: Colors.white)),
-            leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-            ),
-            actions: [
-              const SearchWidget(type: '구해요'), // 이미 분리해둔 거
-            ],
+    return AkibaShell(
+      selectedIndex: 0,
+      showAppBar: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xff141414),
+        appBar: AppBar(
+          backgroundColor: Color(0xff141414),
+          title: Text('구해요', style: TextStyle(color: Colors.white)),
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           ),
-          body: SafeArea(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorText != null
-                ? Center(
-                    child: Text(
-                      _errorText!,
-                      style: const TextStyle(color: Colors.white70),
+          actions: [
+            const SearchWidget(type: '구해요'), // 이미 분리해둔 거
+          ],
+        ),
+        body: SafeArea(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorText != null
+              ? Center(
+                  child: Text(
+                    _errorText!,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                )
+              : CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: SectionHeader(title: "이런 굿즈는 어때요?", onMore: () {}),
                     ),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: "이런 굿즈는 어때요?",
-                          onMore: () {},
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: RecommendCarousel(
-                          items: _recommendItems,
-                          onTapItem: (item) {
-                            final match = _postItems.where(
-                              (post) => post.title == item.title,
-                            );
-                            if (match.isEmpty) return;
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    GDetailScreen(postId: match.first.id),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      SliverToBoxAdapter(child: const SizedBox(height: 28)),
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: "지금 가장 많이 찾는 굿즈!",
-                          onMore: () {},
-                        ),
-                      ),
-                      SliverList.separated(
-                        itemCount: _rankingItems.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (context, i) {
-                          final item = _rankingItems[i];
-                          return RankingListTile(
-                            rank: i + 1,
-                            title: item.title,
-                            subtitle: item.writerName,
-                            thumbnailUrl: item.thumbnailUrl,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      GDetailScreen(postId: item.id),
-                                ),
-                              );
-                            },
+                    SliverToBoxAdapter(
+                      child: RecommendCarousel(
+                        items: _recommendItems,
+                        onTapItem: (item) {
+                          final match = _postItems.where(
+                            (post) => post.title == item.title,
+                          );
+                          if (match.isEmpty) return;
+                          Navigator.of(context).pushNamed(
+                            AppRouter.wantedDetailPath(match.first.id),
                           );
                         },
                       ),
-                      SliverToBoxAdapter(child: const SizedBox(height: 28)),
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: "지금 가장 핫한 매물!",
-                          onMore: () {},
-                        ),
+                    ),
+                    SliverToBoxAdapter(child: const SizedBox(height: 28)),
+                    SliverToBoxAdapter(
+                      child: SectionHeader(
+                        title: "지금 가장 많이 찾는 굿즈!",
+                        onMore: () {},
                       ),
-                      SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: Responsive.ref(context) * 0.36,
-                          child: _WantedHotCarousel(items: _hotItems),
-                        ),
+                    ),
+                    SliverList.separated(
+                      itemCount: _rankingItems.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, i) {
+                        final item = _rankingItems[i];
+                        return RankingListTile(
+                          rank: i + 1,
+                          title: item.title,
+                          subtitle: item.writerName,
+                          thumbnailUrl: item.thumbnailUrl,
+                          onTap: () {
+                            Navigator.of(
+                              context,
+                            ).pushNamed(AppRouter.wantedDetailPath(item.id));
+                          },
+                        );
+                      },
+                    ),
+                    SliverToBoxAdapter(child: const SizedBox(height: 28)),
+                    SliverToBoxAdapter(
+                      child: SectionHeader(
+                        title: "지금 가장 핫한 매물!",
+                        onMore: () {},
                       ),
-                      SliverToBoxAdapter(child: const SizedBox(height: 24)),
-                    ],
-                  ),
-          ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: Responsive.ref(context) * 0.36,
+                        child: _WantedHotCarousel(items: _hotItems),
+                      ),
+                    ),
+                    SliverToBoxAdapter(child: const SizedBox(height: 24)),
+                  ],
+                ),
         ),
       ),
     );
@@ -221,11 +210,9 @@ class _WantedHotCarouselState extends State<_WantedHotCarousel> {
             ),
             child: GestureDetector(
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => GDetailScreen(postId: item.id),
-                  ),
-                );
+                Navigator.of(
+                  context,
+                ).pushNamed(AppRouter.wantedDetailPath(item.id));
               },
               child: _WantedHotCard(item: item),
             ),

@@ -1,4 +1,3 @@
-import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
 class LeftSidebar extends StatelessWidget {
@@ -116,12 +115,15 @@ class BottomFloatingButton extends StatelessWidget {
         Navigator.of(context).pushReplacementNamed('/main');
         break;
       case 1:
-        Navigator.of(context).pushReplacementNamed('/community');
+        Navigator.of(context).pushReplacementNamed('/write');
         break;
       case 2:
-        Navigator.of(context).pushReplacementNamed('/chat');
+        Navigator.of(context).pushReplacementNamed('/community');
         break;
       case 3:
+        Navigator.of(context).pushReplacementNamed('/chat');
+        break;
+      case 4:
         Navigator.of(context).pushReplacementNamed('/mypage');
         break;
     }
@@ -129,9 +131,6 @@ class BottomFloatingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Color(0xffD7FF00);
-    const inactiveColor = Colors.white70;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
       child: Container(

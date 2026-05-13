@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:akiba/config/api_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:stomp_dart_client/stomp.dart';
@@ -100,12 +101,12 @@ class ChatService {
     _isConnecting = true;
     _connectedToken = token;
     debugPrint(
-      '웹소켓 연결 시도: url=wss://dev-api.akibaha.shop/ws/chat/websocket, tokenLength=${token.length}, tokenPrefix=${token.substring(0, token.length > 12 ? 12 : token.length)}',
+      '웹소켓 연결 시도: url=${ApiConfig.webSocketUrl}, tokenLength=${token.length}, tokenPrefix=${token.substring(0, token.length > 12 ? 12 : token.length)}',
     );
 
     _stompClient = StompClient(
       config: StompConfig(
-        url: 'wss://dev-api.akibaha.shop/ws/chat/websocket',
+        url: ApiConfig.webSocketUrl,
         reconnectDelay: const Duration(seconds: 0),
         connectionTimeout: const Duration(seconds: 8),
         beforeConnect: () async {

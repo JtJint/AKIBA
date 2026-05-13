@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:akiba/app_router.dart';
 import 'package:akiba/chat/api/chatApi.dart';
-import 'package:akiba/chat/chatingPage.dart';
 import 'package:akiba/chat/model/chatmodel.dart';
-import 'package:akiba/models/sideBar.dart';
+import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -65,175 +65,132 @@ class _ChatPageState extends State<ChatPage> {
       final routeName = ModalRoute.of(context)?.settings.name;
 
       switch (routeName) {
-        case '/main':
+        case AppRouter.main:
           return 0;
-        case '/write':
+        case AppRouter.write:
           return 1;
-        case '/community':
+        case AppRouter.community:
           return 2;
-        case '/chat':
+        case AppRouter.chat:
           return 3;
-        case '/mypage':
+        case AppRouter.mypage:
           return 4;
         default:
           return 0;
       }
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final contentWidth = screenWidth.clamp(360.0, 800.0);
-    return Scaffold(
+    return AkibaShell(
+      selectedIndex: getSelectedIndexFromRoute(context),
       backgroundColor: bgColor,
-      body: Center(
-        child: Container(
-          width: contentWidth,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MediaQuery.of(context).size.width > 442
-                  ? LeftSidebar(
-                      selectedIndex: getSelectedIndexFromRoute(context),
-                      onTap: (index) {
-                        switch (index) {
-                          case 0:
-                            Navigator.of(context).pushNamed('/main');
-                            break;
-                          case 1:
-                            Navigator.of(context).pushNamed('/write');
-                            break;
-                          case 2:
-                            Navigator.of(context).pushNamed('/community');
-                            break;
-                          case 3:
-                            Navigator.of(context).pushNamed('/chat');
-                            break;
-                          case 4:
-                            Navigator.of(context).pushNamed('/mypage');
-                            break;
-                        }
-                      },
-                    )
-                  : SizedBox(width: 0),
-              Container(
-                width: screenWidth > 442 ? contentWidth - 80 : contentWidth,
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(color: const Color(0xff141414)),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 22,
-                      vertical: 18,
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: const BoxDecoration(color: Color(0xff141414)),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '채팅',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              '채팅',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.notifications_none,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        SizedBox(
-                          height: 42,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: categories.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 10),
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-                              final isSelected = _selectedCategory == category;
-
-                              return ChatCategory(
-                                isSelected: isSelected,
-                                lime: lime,
-                                purple: purple,
-                                category: category,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedCategory = category;
-                                  });
-                                },
-                              ); //여기까지 박스 하나짜리임 이거 api로 가져와서 해보자이
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        if (filteredChats.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 48),
-                            child: Text(
-                              '선택한 카테고리의 채팅이 없습니다.',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            itemCount: filteredChats.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            separatorBuilder: (_, __) => const Divider(
-                              color: dividerColor,
-                              height: 28,
-                              thickness: 1,
-                            ),
-                            itemBuilder: (context, index) {
-                              final item = filteredChats[index];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ChatingPage(
-                                        roomId: item.roodId,
-                                        userName: item.userName,
-                                        itemTitle: item.title,
-                                        itemImageUrl: item.imageUrl,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: _ChatListItem(
-                                  item: item,
-                                  lime: lime,
-                                  purple: purple,
-                                ),
-                              );
-                            },
-                          ),
-                      ],
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.notifications_none,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                SizedBox(
+                  height: 42,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final isSelected = _selectedCategory == category;
+
+                      return ChatCategory(
+                        isSelected: isSelected,
+                        lime: lime,
+                        purple: purple,
+                        category: category,
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                      ); //여기까지 박스 하나짜리임 이거 api로 가져와서 해보자이
+                    },
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 22),
+
+                if (filteredChats.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Text(
+                      '선택한 카테고리의 채팅이 없습니다.',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    itemCount: filteredChats.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    separatorBuilder: (_, __) => const Divider(
+                      color: dividerColor,
+                      height: 28,
+                      thickness: 1,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = filteredChats[index];
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            AppRouter.chatRoomPath(item.roodId),
+                            arguments: ChatRoomRouteArgs(
+                              userName: item.userName,
+                              itemTitle: item.title,
+                              itemImageUrl: item.imageUrl,
+                            ),
+                          );
+                        },
+                        child: _ChatListItem(
+                          item: item,
+                          lime: lime,
+                          purple: purple,
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),

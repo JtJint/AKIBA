@@ -1,4 +1,5 @@
 import 'package:akiba/colors.dart';
+import 'package:akiba/app_router.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -413,8 +414,9 @@ class _SearchScreenState extends State<SearchScreen_> {
   void _performSearch(String query) {
     if (query.isEmpty) return;
     // TODO: 실제 검색 로직 구현
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => SearchResultScreen(query: query)),
+    Navigator.of(context).pushNamed(
+      AppRouter.searchResult,
+      arguments: SearchResultRouteArgs(query: query),
     );
   }
 }

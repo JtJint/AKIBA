@@ -1,1 +1,3 @@
-String baseURL = 'https://dev-api.akibaha.shop/';
+import 'package:akiba/config/api_config.dart';
+
+String baseURL = ApiConfig.baseUrl;

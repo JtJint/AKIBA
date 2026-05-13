@@ -1,4 +1,4 @@
-import 'package:akiba/search/search_screen.dart';
+import 'package:akiba/app_router.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -9,11 +9,9 @@ class SearchWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SearchScreen_(initialType: type),
-          ),
+        Navigator.of(context).pushNamed(
+          AppRouter.search,
+          arguments: SearchRouteArgs(initialType: type),
         );
       },
       child: Row(

@@ -1,5 +1,5 @@
 import 'package:akiba/Box/categoryBox.dart';
-import 'package:akiba/demand/guhaeyo.dart';
+import 'package:akiba/app_router.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -26,10 +26,15 @@ class category extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Categorybox(
-                  png: 'Cart.png',
-                  categoryName: '중고거래',
-                  width: itemWidth,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(AppRouter.used);
+                  },
+                  child: Categorybox(
+                    png: 'Cart.png',
+                    categoryName: '중고거래',
+                    width: itemWidth,
+                  ),
                 ),
                 SizedBox(width: spacing),
                 Categorybox(
@@ -40,10 +45,7 @@ class category extends StatelessWidget {
                 SizedBox(width: spacing),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => GuhaeyoScreen()),
-                    );
+                    Navigator.of(context).pushNamed(AppRouter.wanted);
                   },
                   child: Categorybox(
                     png: 'Pencil.png',
@@ -52,10 +54,15 @@ class category extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: spacing),
-                Categorybox(
-                  png: 'Chat.png',
-                  categoryName: '특전/한정판',
-                  width: itemWidth,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(AppRouter.limited);
+                  },
+                  child: Categorybox(
+                    png: 'Chat.png',
+                    categoryName: '특전/한정판',
+                    width: itemWidth,
+                  ),
                 ),
               ],
             ),

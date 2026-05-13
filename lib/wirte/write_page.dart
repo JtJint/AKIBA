@@ -1,7 +1,5 @@
-import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
-import 'package:akiba/models/sideBar.dart';
-import 'package:akiba/search/SearchWidget.dart';
+import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 
 enum WriteMode { used, wanted, auction }
@@ -208,130 +206,67 @@ class _WritePageState extends State<WritePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xff141414),
-      appBar: AppBar(
-        backgroundColor: const Color(0xff141414),
-        elevation: 0,
-        leadingWidth: 140,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: logo(width: .18, height: 0.05),
-          ),
-        ),
-        actions: [
-          SearchWidget(type: 'home'),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer();
-              },
-              icon: const Icon(Icons.notifications_none, color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SafeArea(
+    return AkibaShell(
+      selectedIndex: 1,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         child: Center(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              LeftSidebar(
-                selectedIndex: 1,
-                onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      Navigator.of(context).pushReplacementNamed('/main');
-                      break;
-                    case 1:
-                      Navigator.of(context).pushReplacementNamed('/write');
-                      break;
-                    case 2:
-                      Navigator.of(context).pushReplacementNamed('/community');
-                      break;
-                    case 3:
-                      Navigator.of(context).pushReplacementNamed('/chat');
-                      break;
-                    case 4:
-                      Navigator.of(context).pushReplacementNamed('/mypage');
-                      break;
-                  }
-                },
-              ),
-              SizedBox(width: 24),
-              SizedBox(
-                width: 752,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTopBar(),
-                          const SizedBox(height: 20),
-                          if (!_isWantedEdit) _buildModeSelector(),
-                          if (!_isWantedEdit) const SizedBox(height: 18),
-                          _buildSectionLabel('이미지 *'),
-                          const SizedBox(height: 8),
-                          _buildImagePickerRow(),
-                          const SizedBox(height: 18),
-                          _buildSectionLabel('제목 *'),
-                          const SizedBox(height: 8),
-                          _buildTextField(
-                            controller: _titleController,
-                            hintText: '제품명, 장르, 캐릭터 이름을 포함해 주세요.',
-                          ),
-                          const SizedBox(height: 18),
-                          _buildSectionLabel('설명 *'),
-                          const SizedBox(height: 8),
-                          _buildTextField(
-                            controller: _descController,
-                            hintText:
-                                '거래 글에 필요한 설명을 적어주세요.\n\n상태, 구성품, 하자 여부, 거래 조건 등을 자세히 적으면 좋아요.',
-                            maxLines: 6,
-                          ),
-                          const SizedBox(height: 22),
-                          _buildModeFields(),
-                          const SizedBox(height: 28),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _submit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xffD0FF00),
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: Text(
-                                _isWantedEdit ? '수정 완료' : '작성 완료',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTopBar(),
+                const SizedBox(height: 20),
+                if (!_isWantedEdit) _buildModeSelector(),
+                if (!_isWantedEdit) const SizedBox(height: 18),
+                _buildSectionLabel('이미지 *'),
+                const SizedBox(height: 8),
+                _buildImagePickerRow(),
+                const SizedBox(height: 18),
+                _buildSectionLabel('제목 *'),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  controller: _titleController,
+                  hintText: '제품명, 장르, 캐릭터 이름을 포함해 주세요.',
+                ),
+                const SizedBox(height: 18),
+                _buildSectionLabel('설명 *'),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  controller: _descController,
+                  hintText:
+                      '거래 글에 필요한 설명을 적어주세요.\n\n상태, 구성품, 하자 여부, 거래 조건 등을 자세히 적으면 좋아요.',
+                  maxLines: 6,
+                ),
+                const SizedBox(height: 22),
+                _buildModeFields(),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffD0FF00),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(0),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      _isWantedEdit ? '수정 완료' : '작성 완료',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

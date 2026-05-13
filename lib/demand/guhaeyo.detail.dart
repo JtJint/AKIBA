@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
+import 'package:akiba/app_router.dart';
 import 'package:akiba/chat/api/chatApi.dart';
-import 'package:akiba/chat/chatingPage.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
@@ -157,17 +157,13 @@ class _GDetailScreenState extends State<GDetailScreen> {
       return;
     }
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ChatingPage(
-          roomId: roomId,
-          userName: post.author.nickname,
-          itemTitle: post.title,
-          itemImageUrl: post.images.isNotEmpty
-              ? post.images.first.imageUrl
-              : null,
-          priceText: _formatPrice(post.price),
-        ),
+    Navigator.of(context).pushNamed(
+      AppRouter.chatRoomPath(roomId),
+      arguments: ChatRoomRouteArgs(
+        userName: post.author.nickname,
+        itemTitle: post.title,
+        itemImageUrl: post.images.isNotEmpty ? post.images.first.imageUrl : null,
+        priceText: _formatPrice(post.price),
       ),
     );
   }
@@ -207,12 +203,11 @@ class _GDetailScreenState extends State<GDetailScreen> {
               icon: const Icon(Icons.more_vert, color: Colors.white),
               onSelected: (value) async {
                 if (value == 'edit' && post != null) {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WritePage(
-                        initialMode: WriteMode.wanted,
-                        wantedEditPost: post,
-                      ),
+                  await Navigator.of(context).pushNamed(
+                    AppRouter.write,
+                    arguments: WritePageRouteArgs(
+                      initialMode: WriteMode.wanted,
+                      wantedEditPost: post,
                     ),
                   );
                   _fetchDetail();
@@ -260,11 +255,8 @@ class _GDetailScreenState extends State<GDetailScreen> {
                                   });
                                 },
                                 onSimilarTap: (postId) {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          GDetailScreen(postId: postId),
-                                    ),
+                                  Navigator.of(context).pushNamed(
+                                    AppRouter.wantedDetailPath(postId),
                                   );
                                 },
                               )
@@ -278,11 +270,8 @@ class _GDetailScreenState extends State<GDetailScreen> {
                                   });
                                 },
                                 onSimilarTap: (postId) {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          GDetailScreen(postId: postId),
-                                    ),
+                                  Navigator.of(context).pushNamed(
+                                    AppRouter.wantedDetailPath(postId),
                                   );
                                 },
                               ),
