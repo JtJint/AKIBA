@@ -50763,7 +50763,7 @@ $S:0}
 A.aEt.prototype={
 $0(){var s,r=A.bfC()
 window.sessionStorage.setItem("naver_state",r)
-s=A.baV("https","nid.naver.com","/oauth2.0/authorize",A.aB(["response_type","code","client_id","ZfdrzEhizfq8bi0KaKTQ","redirect_uri","http://localhost:8000/oauth/callback","state",r],t.N,t.z)).gnX()
+s=A.baV("https","nid.naver.com","/oauth2.0/authorize",A.aB(["response_type","code","client_id","quwp3RTYyaTzBPWUj59t","redirect_uri","https://akiba-bay.vercel.app/oauth/callback","state",r],t.N,t.z)).gnX()
 window.location.href=s},
 $S:0}
 A.aaP.prototype={
@@ -52655,13 +52655,13 @@ a7=m.at
 a8=m.w
 a9=B.c.cV(a8.a.a)
 b0=a3==null
-A.f7(new A.Yf(b,a1,a2,a6,"NONE",0,a7,a9,b0?0:a3,a4,a5))
+A.f7(new A.Yf(b,a1,a2,a6,"NONE",1,a7,a9,b0?0:a3,a4,a5))
 a6=m.as
 a7=m.at
 a8=B.c.cV(a8.a.a)
 if(b0)a3=0
 s=21
-return A.J(A.aaQ(A.lx("api/used/posts"),B.aj.om(new A.Yf(b,a1,a2,a6,"NONE",0,a7,a8,a3,a4,a5).hH(),null),B.eN),$async$nV)
+return A.J(A.aaQ(A.lx("api/used/posts"),B.aj.om(new A.Yf(b,a1,a2,a6,"NONE",1,a7,a8,a3,a4,a5).hH(),null),B.eN),$async$nV)
 case 21:f=b7
 s=16
 break
@@ -52679,7 +52679,7 @@ a3=m.at
 a4=B.c.cV(m.w.a.a)
 if(b==null)b=0
 s=22
-return A.J(A.aaQ(A.lx("api/auction/posts"),B.aj.om(new A.aaL(l,k,a2,"NONE",0,b1,b2,a1,b3,a3,a4,b,h,j).hH(),null),B.eN),$async$nV)
+return A.J(A.aaQ(A.lx("api/auction/posts"),B.aj.om(new A.aaL(l,k,a2,"NONE",1,b1,b2,a1,b3,a3,a4,b,h,j).hH(),null),B.eN),$async$nV)
 case 22:f=b7
 s=16
 break
