@@ -39,7 +39,7 @@ class _WritePageState extends State<WritePage> {
   String _wantedCondition = '미개봉';
   String _auctionCondition = '미개봉';
   int _bidUnit = 1000;
-  final int _categoryId = 0;
+  final int _categoryId = 1;
   bool _isSubmitting = false;
 
   DateTime _auctionDate = DateTime.now();
