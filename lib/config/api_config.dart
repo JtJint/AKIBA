@@ -1,8 +1,9 @@
 import 'dart:html' as html;
 
 class ApiConfig {
-  static const String backendBaseUrl = 'http://3.38.67.165:8081/';
-  static const String webSocketUrl = 'ws://3.38.67.165:8081/ws/chat/websocket';
+  static const String backendBaseUrl = 'https://api.dev.akiba-shop.com/';
+  static const String webSocketUrl =
+      'wss://api.dev.akiba-shop.com/ws/chat/websocket';
 
   static String get baseUrl {
     final host = html.window.location.hostname;

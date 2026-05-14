@@ -79,81 +79,28 @@ class _MyPageScreenState extends State<MyPageScreen> {
     const bgColor = Color(0xff0b0b0d);
     const panelColor = Color(0xff17171b);
     const lime = Color(0xffd7ff00);
-    const purple = Color(0xff8a2be2);
-    const textPrimary = Colors.white;
     const dividerColor = Color(0xff3a3a3f);
+    final nickname = body['nickname']?.toString() ?? '아키바님';
+    final profileImageUrl = body['profileImageUrl']?.toString();
 
     return AkibaShell(
       selectedIndex: getSelectedIndexFromRoute(context),
       backgroundColor: bgColor,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: lime, width: 1.2),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xff2a2a2f), Color(0xff1a1a1f)],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'akiba',
-                        style: TextStyle(
-                          color: Color(0xff6f6f76),
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          fontStyle: FontStyle.italic,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    body['nickname'],
-                    style: TextStyle(
-                      color: textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: purple,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      '신뢰도 ${body["mannerScore"]}%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _ProfileStage(
+              nickname: nickname,
+              trustText: '신뢰도 ${body["mannerScore"]}%',
+              characterImageUrl:
+                  profileImageUrl != null && profileImageUrl.isNotEmpty
+                  ? profileImageUrl
+                  : null,
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 18),
 
             Container(
               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -172,15 +119,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 children: [
                   Expanded(
                     child: _StatItem(
-                      title: '진행 중',
-                      value: "${body['ongoingDealCount']}건",
+                      title: '거래완료',
+                      value: "${body['completedDealCount'] ?? 0}건",
                       showRightBorder: true,
                     ),
                   ),
                   Expanded(
                     child: _StatItem(
-                      title: '찜한 목록',
-                      value: '${body['followingCount']}건',
+                      title: '진행 중',
+                      value: '${body['ongoingDealCount']}건',
                       showRightBorder: true,
                     ),
                   ),
@@ -301,6 +248,139 @@ class _StatItem extends StatelessWidget {
   }
 }
 
+class _ProfileStage extends StatelessWidget {
+  const _ProfileStage({
+    required this.nickname,
+    required this.trustText,
+    this.characterImageUrl,
+  });
+
+  final String nickname;
+  final String trustText;
+  final String? characterImageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    const purple = Color(0xff8a2be2);
+
+    return SizedBox(
+      height: 405,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: 66,
+            child: Container(
+              width: 455,
+              height: 320,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: Alignment.topCenter,
+                  radius: 0.86,
+                  colors: [
+                    Color(0xff242426),
+                    Color(0xff171719),
+                    Color(0xff0b0b0d),
+                  ],
+                  stops: [0.0, 0.58, 1.0],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 26,
+            child: Container(
+              width: 300,
+              height: 24,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(120),
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xffd7ff00),
+                    Color(0xff6f8d00),
+                    Color(0x000b0b0d),
+                  ],
+                  stops: [0.0, 0.36, 1.0],
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x77d7ff00),
+                    blurRadius: 18,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 78,
+            child: Column(
+              children: [
+                Text(
+                  nickname,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: purple,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Text(
+                    trustText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 176,
+            child: SizedBox(
+              width: 220,
+              height: 172,
+              child: characterImageUrl == null
+                  ? const _CharacterPlaceholder()
+                  : Image.network(
+                      characterImageUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) =>
+                          const _CharacterPlaceholder(),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CharacterPlaceholder extends StatelessWidget {
+  const _CharacterPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      child: Image.asset('assets/myPageChar.png', fit: BoxFit.fitHeight),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   final String title;
   final Color color;
@@ -311,7 +391,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.w800),
+      style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w900),
     );
   }
 }

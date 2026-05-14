@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://3.38.67.165:8081/api/:path*"
+      "destination": "https://api.dev.akiba-shop.com/api/:path*"
     },
     {
       "source": "/(.*)",

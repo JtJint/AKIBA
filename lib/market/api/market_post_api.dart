@@ -15,7 +15,7 @@ class MarketPostApi {
 
   static Future<http.Response> createAuctionPost(AuctionPostPayload payload) {
     return AuthHttpClient.post(
-      ApiConfig.uri('api/auction'),
+      ApiConfig.uri('api/auction/posts'),
       headers: const {'Content-Type': 'application/json'},
       body: jsonEncode(payload.toJson()),
     );
