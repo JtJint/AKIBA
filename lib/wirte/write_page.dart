@@ -3,6 +3,8 @@ import 'dart:html' as html;
 import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/market/api/market_post_api.dart';
 import 'package:akiba/media/api/media_api.dart';
+import 'package:akiba/used/api/used_trade_api.dart';
+import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -10,10 +12,16 @@ import 'package:http/http.dart' as http;
 enum WriteMode { used, wanted, auction }
 
 class WritePage extends StatefulWidget {
-  const WritePage({super.key, this.initialMode, this.wantedEditPost});
+  const WritePage({
+    super.key,
+    this.initialMode,
+    this.wantedEditPost,
+    this.usedEditPost,
+  });
 
   final WriteMode? initialMode;
   final WantedPostDetail? wantedEditPost;
+  final UsedTradeItem? usedEditPost;
 
   @override
   State<WritePage> createState() => _WritePageState();
@@ -48,12 +56,15 @@ class _WritePageState extends State<WritePage> {
   html.File? _receiptFile;
 
   bool get _isWantedEdit => widget.wantedEditPost != null;
+  bool get _isUsedEdit => widget.usedEditPost != null;
+  bool get _isEdit => _isWantedEdit || _isUsedEdit;
 
   @override
   void initState() {
     super.initState();
     _mode =
         widget.initialMode ??
+        (_isUsedEdit ? WriteMode.used : null) ??
         (_isWantedEdit ? WriteMode.wanted : WriteMode.used);
 
     final wantedPost = widget.wantedEditPost;
@@ -63,6 +74,17 @@ class _WritePageState extends State<WritePage> {
       _priceController.text = wantedPost.price.toString();
       _wantedCondition = wantedPost.conditionTxt;
       _tradeMethod = wantedPost.deliveryMethod;
+    }
+
+    final usedPost = widget.usedEditPost;
+    if (usedPost != null) {
+      _titleController.text = usedPost.title;
+      _descController.text = usedPost.description;
+      _priceController.text = usedPost.price.toString();
+      _itemCondition = usedPost.condition;
+      _tradeMethod = usedPost.deliveryMethod;
+      _purchasePlaceController.text = usedPost.purchaseSource;
+      _tagController.text = usedPost.tags.join(' ');
     }
   }
 
@@ -162,12 +184,17 @@ class _WritePageState extends State<WritePage> {
     });
 
     try {
-      final imageMediaIds = _isWantedEdit && _imageFiles.isEmpty
-          ? widget.wantedEditPost!.imageMediaIds
-          : await MediaApi.uploadAll(_imageFiles);
+      final imageMediaIds =
+          _existingImageMediaIdsIfEdit() ??
+          await MediaApi.uploadAll(_imageFiles);
       final receiptMediaId = _receiptFile == null
           ? null
           : await MediaApi.upload(_receiptFile!);
+
+      if ((_mode == WriteMode.used || _mode == WriteMode.auction) &&
+          imageMediaIds.isEmpty) {
+        throw StateError('이미지를 1개 이상 추가해주세요.');
+      }
 
       final response = switch (_mode) {
         WriteMode.wanted => await _submitWanted(
@@ -199,10 +226,12 @@ class _WritePageState extends State<WritePage> {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isWantedEdit ? '구해요 글이 수정되었습니다.' : '글이 등록되었습니다.'),
+            content: Text(
+              _isWantedEdit || _isUsedEdit ? '글이 수정되었습니다.' : '글이 등록되었습니다.',
+            ),
           ),
         );
-        if (_isWantedEdit) {
+        if (_isWantedEdit || _isUsedEdit) {
           Navigator.of(context).pop();
         } else {
           Navigator.of(context).pushReplacementNamed('/main');
@@ -231,6 +260,13 @@ class _WritePageState extends State<WritePage> {
         });
       }
     }
+  }
+
+  List<int>? _existingImageMediaIdsIfEdit() {
+    if (_imageFiles.isNotEmpty) return null;
+    if (_isWantedEdit) return widget.wantedEditPost!.imageMediaIds;
+    if (_isUsedEdit) return widget.usedEditPost!.imageMediaIds;
+    return null;
   }
 
   Future<http.Response> _submitWanted({
@@ -266,36 +302,27 @@ class _WritePageState extends State<WritePage> {
     required List<int> imageMediaIds,
     required List<String> tagNames,
   }) {
-    print(
-      UsedPostPayload(
-        title: title,
-        content: content,
-        price: price,
-        productCondition: _itemCondition,
-        specialType: 'NONE',
-        categoryId: _categoryId,
-        deliveryMethod: _tradeMethod,
-        purchaseSource: _purchasePlaceController.text.trim(),
-        receiptMediaId: receiptMediaId ?? 0,
-        imageMediaIds: imageMediaIds,
-        tagNames: tagNames,
-      ),
+    final payload = UsedPostPayload(
+      title: title,
+      content: content,
+      price: price,
+      productCondition: _itemCondition,
+      specialType: 'NONE',
+      categoryId: _categoryId,
+      deliveryMethod: _tradeMethod,
+      purchaseSource: _purchasePlaceController.text.trim(),
+      receiptMediaId:
+          receiptMediaId ?? widget.usedEditPost?.receiptMediaId ?? 0,
+      imageMediaIds: imageMediaIds,
+      tagNames: tagNames,
     );
-    return MarketPostApi.createUsedPost(
-      UsedPostPayload(
-        title: title,
-        content: content,
-        price: price,
-        productCondition: _itemCondition,
-        specialType: 'NONE',
-        categoryId: _categoryId,
-        deliveryMethod: _tradeMethod,
-        purchaseSource: _purchasePlaceController.text.trim(),
-        receiptMediaId: receiptMediaId ?? 0,
-        imageMediaIds: imageMediaIds,
-        tagNames: tagNames,
-      ),
-    );
+
+    return _isUsedEdit
+        ? UsedTradeApi.updatePost(
+            postId: widget.usedEditPost!.id,
+            payload: payload,
+          )
+        : MarketPostApi.createUsedPost(payload);
   }
 
   Future<http.Response> _submitAuction({
@@ -353,8 +380,8 @@ class _WritePageState extends State<WritePage> {
               children: [
                 _buildTopBar(),
                 const SizedBox(height: 20),
-                if (!_isWantedEdit) _buildModeSelector(),
-                if (!_isWantedEdit) const SizedBox(height: 18),
+                if (!_isEdit) _buildModeSelector(),
+                if (!_isEdit) const SizedBox(height: 18),
                 _buildSectionLabel('이미지 *'),
                 const SizedBox(height: 8),
                 _buildImagePickerRow(),
@@ -393,7 +420,7 @@ class _WritePageState extends State<WritePage> {
                     child: Text(
                       _isSubmitting
                           ? '등록 중...'
-                          : _isWantedEdit
+                          : _isEdit
                           ? '수정 완료'
                           : '작성 완료',
                       style: const TextStyle(
@@ -427,7 +454,7 @@ class _WritePageState extends State<WritePage> {
           // ),
           Center(
             child: Text(
-              _isWantedEdit ? '구해요 수정' : '글쓰기',
+              _isEdit ? '글 수정' : '글쓰기',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,

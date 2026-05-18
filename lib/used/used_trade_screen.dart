@@ -15,7 +15,8 @@ class UsedTradeScreen extends StatefulWidget {
 }
 
 class _UsedTradeScreenState extends State<UsedTradeScreen> {
-  List<UsedTradeItem> _items = usedTradeDummyItems;
+  List<UsedTradeItem> _items = const [];
+  List<UsedTradeItem> _popularItems = const [];
   bool _isLoading = true;
   String? _errorText;
 
@@ -32,16 +33,21 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
     });
 
     try {
-      final items = await UsedTradeApi.getPosts();
+      final results = await Future.wait([
+        UsedTradeApi.getPosts(),
+        UsedTradeApi.getPopularPosts(limit: 10),
+      ]);
       if (!mounted) return;
       setState(() {
-        _items = items.isEmpty ? usedTradeDummyItems : items;
+        _items = results[0];
+        _popularItems = results[1];
         _isLoading = false;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _items = usedTradeDummyItems;
+        _items = const [];
+        _popularItems = const [];
         _isLoading = false;
         _errorText = '중고거래 글을 불러오지 못했습니다.';
       });
@@ -51,7 +57,9 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hotItems = _items.take(6).toList();
+    final hotItems = (_popularItems.isEmpty ? _items : _popularItems)
+        .take(6)
+        .toList();
     final recentItems = _items.reversed.take(6).toList();
     final recommendItems = buildRecommendItemsFromUsed(_items);
 
@@ -94,30 +102,38 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
               onTapItem: (item) {
                 Navigator.of(context).pushNamed(
                   AppRouter.usedDetail,
-                  arguments: UsedTradeDetailRouteArgs(item: item),
+                  arguments: UsedTradeDetailRouteArgs(
+                    postId: item.id,
+                    item: item,
+                  ),
                 );
               },
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 18)),
-          SliverToBoxAdapter(
-            child: SectionHeader(title: '이런 굿즈는 어때요?', onMore: () {}),
-          ),
-          SliverToBoxAdapter(
-            child: RecommendCarousel(
-              items: recommendItems,
-              onTapItem: (item) {
-                final match = _items.firstWhere(
-                  (element) => element.title == item.title,
-                  orElse: () => _items.first,
-                );
-                Navigator.of(context).pushNamed(
-                  AppRouter.usedDetail,
-                  arguments: UsedTradeDetailRouteArgs(item: match),
-                );
-              },
+          if (recommendItems.isNotEmpty) ...[
+            const SliverToBoxAdapter(child: SizedBox(height: 18)),
+            SliverToBoxAdapter(
+              child: SectionHeader(title: '이런 굿즈는 어때요?', onMore: () {}),
             ),
-          ),
+            SliverToBoxAdapter(
+              child: RecommendCarousel(
+                items: recommendItems,
+                onTapItem: (item) {
+                  final match = _items.firstWhere(
+                    (element) => element.title == item.title,
+                    orElse: () => _items.first,
+                  );
+                  Navigator.of(context).pushNamed(
+                    AppRouter.usedDetail,
+                    arguments: UsedTradeDetailRouteArgs(
+                      postId: match.id,
+                      item: match,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
           const SliverToBoxAdapter(child: SizedBox(height: 18)),
           SliverToBoxAdapter(
             child: UsedTradeHorizontalSection(
@@ -126,7 +142,10 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
               onTapItem: (item) {
                 Navigator.of(context).pushNamed(
                   AppRouter.usedDetail,
-                  arguments: UsedTradeDetailRouteArgs(item: item),
+                  arguments: UsedTradeDetailRouteArgs(
+                    postId: item.id,
+                    item: item,
+                  ),
                 );
               },
             ),

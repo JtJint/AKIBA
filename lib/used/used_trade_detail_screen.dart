@@ -1,21 +1,180 @@
+import 'dart:convert';
+import 'dart:html' as html;
+
 import 'package:akiba/app_router.dart';
+import 'package:akiba/chat/api/chatApi.dart';
+import 'package:akiba/used/api/used_trade_api.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
-import 'package:akiba/used/used_trade_screen.dart';
 import 'package:akiba/used/widgets/used_trade_widgets.dart';
 import 'package:akiba/utils/headerFiles.dart';
+import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
-class UsedTradeDetailScreen extends StatelessWidget {
-  const UsedTradeDetailScreen({super.key, required this.item});
+class UsedTradeDetailScreen extends StatefulWidget {
+  const UsedTradeDetailScreen({super.key, this.postId, this.initialItem});
 
-  final UsedTradeItem item;
+  final int? postId;
+  final UsedTradeItem? initialItem;
+
+  @override
+  State<UsedTradeDetailScreen> createState() => _UsedTradeDetailScreenState();
+}
+
+class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
+  UsedTradeItem? _item;
+  List<UsedTradeItem> _similarItems = const [];
+  bool _isLoading = true;
+  bool _isDeleting = false;
+
+  bool get _canEdit {
+    final myUserId = int.tryParse(html.window.localStorage['userId'] ?? '');
+    final sellerUserId = _item?.seller.userId;
+    return myUserId != null && sellerUserId != null && myUserId == sellerUserId;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _item = widget.initialItem;
+    _fetchDetail();
+    _fetchSimilarItems();
+  }
+
+  Future<void> _fetchDetail() async {
+    final postId = widget.postId ?? widget.initialItem?.id;
+    if (postId == null || postId == 0) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final item = await UsedTradeApi.getPostDetail(postId);
+      if (!mounted) return;
+      setState(() {
+        _item = item;
+        _isLoading = false;
+      });
+    } catch (error) {
+      debugPrint('used detail fetch error: $error');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchSimilarItems() async {
+    try {
+      final items = await UsedTradeApi.getPopularPosts(limit: 8);
+      if (!mounted) return;
+      final currentId = widget.postId ?? widget.initialItem?.id;
+      setState(() {
+        _similarItems = items.where((item) => item.id != currentId).toList();
+      });
+    } catch (error) {
+      debugPrint('used popular fetch error: $error');
+    }
+  }
+
+  Future<void> _deletePost() async {
+    final item = _item;
+    if (item == null || _isDeleting) return;
+
+    setState(() {
+      _isDeleting = true;
+    });
+
+    final response = await UsedTradeApi.deletePost(item.id);
+    if (!mounted) return;
+
+    setState(() {
+      _isDeleting = false;
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('중고거래 글이 삭제되었습니다.')));
+      Navigator.of(context).pop();
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('삭제 실패 (${response.statusCode}): ${response.body}'),
+      ),
+    );
+  }
+
+  Future<void> _openChatRoom() async {
+    final item = _item;
+    if (item == null) return;
+
+    final myUserId = int.tryParse(html.window.localStorage['userId'] ?? '');
+    if (myUserId != null && myUserId == item.seller.userId) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('내 글에는 채팅을 시작할 수 없습니다.')));
+      return;
+    }
+
+    final response = await Chatapi.postRoom(
+      'USED',
+      item.id,
+      item.seller.userId,
+    );
+    if (!mounted) return;
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('채팅방 생성 실패 (${response.statusCode})')),
+      );
+      return;
+    }
+
+    final dynamic body = response.body.isNotEmpty
+        ? jsonDecode(response.body)
+        : {};
+    final roomId = _extractRoomId(body);
+    if (roomId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('채팅방 정보가 올바르지 않습니다.')));
+      return;
+    }
+
+    Navigator.of(context).pushNamed(
+      AppRouter.chatRoomPath(roomId),
+      arguments: ChatRoomRouteArgs(
+        userName: item.seller.nickname,
+        itemTitle: item.title,
+        itemImageUrl: item.imageUrls.isNotEmpty ? item.imageUrls.first : null,
+        priceText: formatUsedTradePrice(item.price),
+      ),
+    );
+  }
+
+  int? _extractRoomId(dynamic body) {
+    if (body is Map<String, dynamic>) {
+      final candidates = [
+        body['roomId'],
+        body['id'],
+        body['data'] is Map ? body['data']['roomId'] : null,
+        body['result'] is Map ? body['result']['roomId'] : null,
+      ];
+      for (final candidate in candidates) {
+        final parsed = int.tryParse(candidate?.toString() ?? '');
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final similarItems = usedTradeDummyItems
-        .where((element) => element.id != item.id)
-        .take(6)
-        .toList();
+    final item = _item;
 
     return Scaffold(
       backgroundColor: const Color(0xff070707),
@@ -25,45 +184,79 @@ class UsedTradeDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
         ),
-        actions: const [
-          Icon(Icons.ios_share_outlined, color: Colors.white),
-          SizedBox(width: 20),
+        actions: [
+          const Icon(Icons.ios_share_outlined, color: Colors.white),
+          const SizedBox(width: 10),
+          if (_canEdit)
+            PopupMenuButton<String>(
+              color: const Color(0xff1b1b1b),
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onSelected: (value) async {
+                if (value == 'edit' && item != null) {
+                  await Navigator.of(context).pushNamed(
+                    AppRouter.write,
+                    arguments: WritePageRouteArgs(
+                      initialMode: WriteMode.used,
+                      usedEditPost: item,
+                    ),
+                  );
+                  _fetchDetail();
+                }
+                if (value == 'delete') {
+                  _deletePost();
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(value: 'edit', child: Text('수정')),
+                PopupMenuItem(
+                  value: 'delete',
+                  enabled: !_isDeleting,
+                  child: Text(_isDeleting ? '삭제 중...' : '삭제'),
+                ),
+              ],
+            ),
+          const SizedBox(width: 10),
         ],
       ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final maxContentWidth = constraints.maxWidth >= 900
-                ? 1100.0
-                : 520.0;
-
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: maxContentWidth),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: constraints.maxWidth >= 900
-                      ? _DesktopDetailLayout(
-                          item: item,
-                          similarItems: similarItems,
-                        )
-                      : _MobileDetailLayout(
-                          item: item,
-                          similarItems: similarItems,
-                        ),
-                ),
+      body: _isLoading && item == null
+          ? const Center(child: CircularProgressIndicator())
+          : item == null
+          ? const Center(
+              child: Text(
+                '중고거래 글을 불러오지 못했습니다.',
+                style: TextStyle(color: Colors.white70),
               ),
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: UsedTradeBottomCta(
-        onChatTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('채팅 연결은 추후 API와 함께 붙일 예정입니다.')),
-          );
-        },
-      ),
+            )
+          : SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxContentWidth = constraints.maxWidth >= 900
+                      ? 1100.0
+                      : 520.0;
+
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxContentWidth),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: constraints.maxWidth >= 900
+                            ? _DesktopDetailLayout(
+                                item: item,
+                                similarItems: _similarItems,
+                              )
+                            : _MobileDetailLayout(
+                                item: item,
+                                similarItems: _similarItems,
+                              ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+      bottomNavigationBar: item == null
+          ? null
+          : UsedTradeBottomCta(onChatTap: _openChatRoom),
     );
   }
 }

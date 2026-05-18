@@ -65,6 +65,7 @@ class AppRouter {
         builder: (_) => WritePage(
           initialMode: routeArgs?.initialMode,
           wantedEditPost: routeArgs?.wantedEditPost,
+          usedEditPost: routeArgs?.usedEditPost,
         ),
       );
     }
@@ -86,7 +87,10 @@ class AppRouter {
       if (routeArgs != null) {
         return _buildRoute(
           settings: settings,
-          builder: (_) => UsedTradeDetailScreen(item: routeArgs.item),
+          builder: (_) => UsedTradeDetailScreen(
+            postId: routeArgs.postId,
+            initialItem: routeArgs.item,
+          ),
         );
       }
     }
@@ -182,10 +186,15 @@ class SearchRouteArgs {
 }
 
 class WritePageRouteArgs {
-  const WritePageRouteArgs({this.initialMode, this.wantedEditPost});
+  const WritePageRouteArgs({
+    this.initialMode,
+    this.wantedEditPost,
+    this.usedEditPost,
+  });
 
   final WriteMode? initialMode;
   final WantedPostDetail? wantedEditPost;
+  final UsedTradeItem? usedEditPost;
 }
 
 class SearchResultRouteArgs {
@@ -195,9 +204,10 @@ class SearchResultRouteArgs {
 }
 
 class UsedTradeDetailRouteArgs {
-  const UsedTradeDetailRouteArgs({required this.item});
+  const UsedTradeDetailRouteArgs({this.postId, this.item});
 
-  final UsedTradeItem item;
+  final int? postId;
+  final UsedTradeItem? item;
 }
 
 class ChatRoomRouteArgs {
