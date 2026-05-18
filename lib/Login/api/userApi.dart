@@ -3,7 +3,7 @@ import 'dart:html' as html;
 import 'package:akiba/chat/api/chatApi.dart';
 import 'package:http/http.dart' as http;
 
-String baseURL = 'https://dev-api.akibaha.shop/';
+String baseURL = 'https://api.dev.akiba-shop.com/';
 
 class Loginapi {
   static Future<http.Response> loginAct(String Code, String state) async {
