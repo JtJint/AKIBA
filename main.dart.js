@@ -31918,7 +31918,7 @@ aU8(a,b,c){var s=null
 return c.a(A.b5H(a,b,s,s,s,s))},
 ajj(a,b){var s=0,r=A.O(t.Wd),q,p,o,n,m,l,k
 var $async$ajj=A.K(function(c,d){if(c===1)return A.L(d,r)
-for(;;)switch(s){case 0:m=A.fv("https://dev-api.akibaha.shop/api/users/login")
+for(;;)switch(s){case 0:m=A.fv("https://api.dev.akiba-shop.com/api/users/login")
 l=t.N
 k=A.aB(["provider","NAVER","code",a,"state",b,"env","prod"],l,l)
 A.f9("Login Request Body: "+k.j(0))
