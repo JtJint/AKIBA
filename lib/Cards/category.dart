@@ -37,10 +37,15 @@ class category extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: spacing),
-                Categorybox(
-                  png: 'Suitcase.png',
-                  categoryName: '경매',
-                  width: itemWidth,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(AppRouter.auction);
+                  },
+                  child: Categorybox(
+                    png: 'Suitcase.png',
+                    categoryName: '경매',
+                    width: itemWidth,
+                  ),
                 ),
                 SizedBox(width: spacing),
                 GestureDetector(

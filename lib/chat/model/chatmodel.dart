@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class ChatItemModel {
   final int roodId;
   final String imageUrl;

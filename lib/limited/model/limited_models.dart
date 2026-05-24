@@ -1,3 +1,5 @@
+import 'package:akiba/config/api_config.dart';
+
 class LimitedItem {
   const LimitedItem({
     required this.id,
@@ -47,14 +49,16 @@ int _parseInt(dynamic value) {
 
 String _parseImageUrl(Map<String, dynamic> map) {
   final raw = map['imageUrl'] ?? map['thumbnailUrl'];
-  if (raw is String && raw.isNotEmpty) return raw;
+  if (raw is String && raw.isNotEmpty) return ApiConfig.resourceUrl(raw);
 
   final images = map['images'] ?? map['imageUrls'];
   if (images is List && images.isNotEmpty) {
     final first = images.first;
-    if (first is String) return first;
+    if (first is String) return ApiConfig.resourceUrl(first);
     if (first is Map) {
-      return (first['imageUrl'] ?? first['url'] ?? '').toString();
+      return ApiConfig.resourceUrl(
+        (first['imageUrl'] ?? first['url'])?.toString(),
+      );
     }
   }
   return 'https://picsum.photos/seed/limited-fallback/600/600';

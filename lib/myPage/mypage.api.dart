@@ -6,9 +6,9 @@ String baseURL = ApiConfig.baseUrl;
 
 class myPageAPI {
   static Future<http.Response> getProfile() async {
-    final url = Uri.parse('${baseURL}api/profile/me');
+    final url = Uri.parse('${baseURL}api/users/me');
     final response = await AuthHttpClient.get(url);
-    print("getProfile response: ${response.body}");
+    // print("getProfile response: ${response.body}");
     return response;
   }
 }

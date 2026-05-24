@@ -25,6 +25,24 @@ class LimitedApi {
         .toList();
   }
 
+  static Future<List<LimitedItem>> getPopularPosts({int limit = 10}) async {
+    final response = await AuthHttpClient.get(
+      ApiConfig.uri(
+        'api/limited/posts/popular',
+      ).replace(queryParameters: {'limit': limit.toString()}),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw LimitedApiException(response.statusCode, response.body);
+    }
+
+    final decoded = jsonDecode(response.body);
+    return _extractList(decoded)
+        .map((item) => LimitedItem.fromJson(item))
+        .where((item) => item.id != 0 || item.title.isNotEmpty)
+        .toList();
+  }
+
   static List<dynamic> _extractList(dynamic decoded) {
     if (decoded is List) return decoded;
     if (decoded is Map<String, dynamic>) {

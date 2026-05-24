@@ -1,5 +1,6 @@
 import 'package:akiba/colors.dart';
 import 'package:akiba/app_router.dart';
+import 'package:akiba/search/api/market_search_api.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -22,11 +23,14 @@ class _SearchScreenState extends State<SearchScreen_> {
     '닌텐도 스위치',
   ];
 
-  /// 추천 검색어 태그
-  static const List<String> _recommendedTags = ['중고거래', '경매', '한정판', '특전'];
+  static const List<String> _fallbackRecommendedTags = [
+    '중고거래',
+    '경매',
+    '한정판',
+    '특전',
+  ];
 
-  /// 인기 검색어 10위 (1위~10위)
-  static const List<String> _popularSearchesTop10 = [
+  static const List<String> _fallbackPopularSearchesTop10 = [
     '아이폰 15 Pro',
     '맥북 에어 M3',
     '에어팟 프로 2',
@@ -39,7 +43,10 @@ class _SearchScreenState extends State<SearchScreen_> {
     'Xbox 시리즈 X',
   ];
 
+  List<String> _recommendedTags = _fallbackRecommendedTags;
+  List<PopularKeyword> _popularKeywords = const [];
   bool _isPopularBoxExpanded = false;
+  bool _isKeywordLoading = true;
 
   void _onSearchChanged() => setState(() {});
 
@@ -50,6 +57,41 @@ class _SearchScreenState extends State<SearchScreen_> {
     selectedType = widget.initialType == 'home'
         ? null
         : widget.initialType; // ✅ 여기서 미리 고정 칩 세팅
+    _fetchSearchMeta();
+  }
+
+  Future<void> _fetchSearchMeta() async {
+    try {
+      final results = await Future.wait([
+        MarketSearchApi.getRecommendedTags(type: _typeQueryValue, limit: 10),
+        MarketSearchApi.getPopularKeywords(limit: 10),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        final tags = results[0] as List<String>;
+        final keywords = results[1] as List<PopularKeyword>;
+        _recommendedTags = tags.isEmpty ? _fallbackRecommendedTags : tags;
+        _popularKeywords = keywords;
+        _isKeywordLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _recommendedTags = _fallbackRecommendedTags;
+        _popularKeywords = const [];
+        _isKeywordLoading = false;
+      });
+      debugPrint('search meta fetch error: $error');
+    }
+  }
+
+  String? get _typeQueryValue {
+    return switch (selectedType) {
+      '중고거래' => 'USED',
+      '특전/한정판' || '한정판' || '특전' => 'LIMITED',
+      '경매' => 'AUCTION',
+      _ => null,
+    };
   }
 
   @override
@@ -102,9 +144,10 @@ class _SearchScreenState extends State<SearchScreen_> {
                   // 검색창
                   _SearchBar(
                     typeChip: selectedType,
-                    controller: TextEditingController(),
+                    controller: _searchController,
                     onRemoveType: () => setState(() => selectedType = null),
                     onChanged: (value) => setState(() {}),
+                    onSubmitted: _performSearch,
                   ),
                   SizedBox(height: Responsive.ref(context) * 0.04),
                   // 최근 검색어
@@ -123,67 +166,6 @@ class _SearchScreenState extends State<SearchScreen_> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return GestureDetector(
-      onTap: () => _searchFocusNode.requestFocus(),
-      child: Container(
-        width: double.infinity,
-        height: Responsive.ref(context) * 0.06,
-        decoration: BoxDecoration(
-          color: Color(0xff070707),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Color(0xff2A2A2A), width: 1),
-        ),
-        child: Row(
-          children: [
-            SizedBox(width: Responsive.ref(context) * 0.03),
-            Icon(
-              Icons.search,
-              color: PointColor,
-              size: Responsive.ref(context) * 0.04,
-            ),
-            SizedBox(width: Responsive.ref(context) * 0.02),
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: Responsive.ref(context) * 0.035,
-                ),
-                decoration: InputDecoration(
-                  hintText: '검색어를 입력하세요',
-                  hintStyle: TextStyle(
-                    color: Color(0xff838383),
-                    fontSize: Responsive.ref(context) * 0.035,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: Responsive.ref(context) * 0.015,
-                  ),
-                ),
-                onSubmitted: (value) => _performSearch(value),
-              ),
-            ),
-            if (_searchController.text.isNotEmpty)
-              IconButton(
-                icon: Icon(
-                  Icons.clear,
-                  color: Color(0xff838383),
-                  size: Responsive.ref(context) * 0.03,
-                ),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {});
-                },
-              ),
-            SizedBox(width: Responsive.ref(context) * 0.02),
-          ],
         ),
       ),
     );
@@ -359,45 +341,51 @@ class _SearchScreenState extends State<SearchScreen_> {
               secondChild: Column(
                 children: [
                   SizedBox(height: ref * 0.02),
-                  ...List.generate(_popularSearchesTop10.length, (index) {
-                    final rank = index + 1;
-                    final item = _popularSearchesTop10[index];
-                    return GestureDetector(
-                      onTap: () => _performSearch(item),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: ref * 0.012),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: ref * 0.06,
-                              alignment: Alignment.center,
-                              child: Text(
-                                '$rank',
-                                style: TextStyle(
-                                  color: rank <= 3
-                                      ? PointColor
-                                      : Color(0xff838383),
-                                  fontSize: ref * 0.028,
-                                  fontWeight: FontWeight.w700,
+                  if (_isKeywordLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 18),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else
+                    ...List.generate(_popularSearchLabels.length, (index) {
+                      final rank = index + 1;
+                      final item = _popularSearchLabels[index];
+                      return GestureDetector(
+                        onTap: () => _performSearch(item),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: ref * 0.012),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: ref * 0.06,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '$rank',
+                                  style: TextStyle(
+                                    color: rank <= 3
+                                        ? PointColor
+                                        : Color(0xff838383),
+                                    fontSize: ref * 0.028,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: ref * 0.02),
-                            Expanded(
-                              child: Text(
-                                item,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: ref * 0.03,
-                                  fontWeight: FontWeight.w500,
+                              SizedBox(width: ref * 0.02),
+                              Expanded(
+                                child: Text(
+                                  item,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: ref * 0.03,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
                 ],
               ),
               crossFadeState: _isPopularBoxExpanded
@@ -412,20 +400,29 @@ class _SearchScreenState extends State<SearchScreen_> {
   }
 
   void _performSearch(String query) {
-    if (query.isEmpty) return;
-    // TODO: 실제 검색 로직 구현
+    final normalized = query.trim();
+    if (normalized.isEmpty) return;
     Navigator.of(context).pushNamed(
       AppRouter.searchResult,
-      arguments: SearchResultRouteArgs(query: query),
+      arguments: SearchResultRouteArgs(
+        query: normalized,
+        type: _typeQueryValue,
+      ),
     );
+  }
+
+  List<String> get _popularSearchLabels {
+    if (_popularKeywords.isEmpty) return _fallbackPopularSearchesTop10;
+    return _popularKeywords.map((item) => item.keyword).toList();
   }
 }
 
 /// 검색 결과 화면
 class SearchResultScreen extends StatelessWidget {
   final String query;
+  final String? type;
 
-  const SearchResultScreen({super.key, required this.query});
+  const SearchResultScreen({super.key, required this.query, this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -452,28 +449,100 @@ class SearchResultScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search_off, size: 64, color: Color(0xff838383)),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            Text(
-              '검색 결과가 없습니다',
-              style: TextStyle(
-                color: Color(0xff838383),
-                fontSize: Responsive.ref(context) * 0.035,
+      body: FutureBuilder<List<MarketSearchPost>>(
+        future: MarketSearchApi.searchPosts(keyword: query, type: type),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final items = snapshot.data ?? const <MarketSearchPost>[];
+          if (items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off, size: 64, color: Color(0xff838383)),
+                  SizedBox(height: Responsive.ref(context) * 0.02),
+                  Text(
+                    '검색 결과가 없습니다',
+                    style: TextStyle(
+                      color: Color(0xff838383),
+                      fontSize: Responsive.ref(context) * 0.035,
+                    ),
+                  ),
+                  SizedBox(height: Responsive.ref(context) * 0.02),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('돌아가기', style: TextStyle(color: PointColor)),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(height: Responsive.ref(context) * 0.02),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('돌아가기', style: TextStyle(color: PointColor)),
-            ),
-          ],
-        ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return _SearchResultTile(item: item);
+            },
+            separatorBuilder: (_, __) => const Divider(color: Colors.white12),
+            itemCount: items.length,
+          );
+        },
       ),
     );
+  }
+}
+
+class _SearchResultTile extends StatelessWidget {
+  const _SearchResultTile({required this.item});
+
+  final MarketSearchPost item;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: item.thumbnailUrl.isEmpty
+              ? Container(color: const Color(0xff202020))
+              : Image.network(
+                  item.thumbnailUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: const Color(0xff202020)),
+                ),
+        ),
+      ),
+      title: Text(
+        item.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      subtitle: Text(
+        _formatPrice(item.price),
+        style: TextStyle(color: PointColor, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  String _formatPrice(int price) {
+    if (price <= 0) return '가격문의';
+    final formatted = price.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => ',',
+    );
+    return '$formatted원';
   }
 }
 
@@ -483,12 +552,14 @@ class _SearchBar extends StatelessWidget {
     required this.controller,
     required this.onRemoveType,
     required this.onChanged,
+    required this.onSubmitted,
   });
 
   final String? typeChip;
   final TextEditingController controller;
   final VoidCallback onRemoveType;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String> onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -539,6 +610,7 @@ class _SearchBar extends StatelessWidget {
             child: TextField(
               controller: controller,
               onChanged: onChanged,
+              onSubmitted: onSubmitted,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 hintText: "검색어를 입력하세요",

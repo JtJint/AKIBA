@@ -74,7 +74,7 @@ class AuctionPostPayload {
     required this.specialType,
     required this.categoryId,
     required this.startPrice,
-    required this.buyNowPrice,
+    this.buyNowPrice,
     required this.bidStep,
     required this.endsAt,
     required this.deliveryMethod,
@@ -90,7 +90,7 @@ class AuctionPostPayload {
   final String specialType;
   final int categoryId;
   final int startPrice;
-  final int buyNowPrice;
+  final int? buyNowPrice;
   final int bidStep;
   final DateTime endsAt;
   final String deliveryMethod;
@@ -107,9 +107,9 @@ class AuctionPostPayload {
       'specialType': specialType,
       'categoryId': categoryId,
       'startPrice': startPrice,
-      'buyNowPrice': buyNowPrice,
+      if (buyNowPrice != null) 'buyNowPrice': buyNowPrice,
       'bidStep': bidStep,
-      'endsAt': endsAt.toUtc().toIso8601String(),
+      'endsAt': endsAt.toIso8601String(),
       'deliveryMethod': deliveryMethod,
       'purchaseSource': purchaseSource,
       'receiptMediaId': receiptMediaId,

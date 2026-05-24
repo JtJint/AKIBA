@@ -1,5 +1,5 @@
-import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/models/sideBar.dart';
+import 'package:akiba/widgets/akiba_logo_button.dart';
 import 'package:akiba/search/SearchWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -38,9 +38,9 @@ class AkibaShell extends StatelessWidget {
                   backgroundColor: backgroundColor,
                   elevation: 0,
                   leadingWidth: 140,
-                  leading: Align(
+                  leading: const Align(
                     alignment: Alignment.centerLeft,
-                    child: logo(width: .18, height: 0.05),
+                    child: AkibaLogoButton(),
                   ),
                   actions: [
                     const SearchWidget(type: 'home'),

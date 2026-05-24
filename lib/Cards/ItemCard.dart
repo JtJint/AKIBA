@@ -1,5 +1,6 @@
 import 'package:akiba/colors.dart';
 import 'package:akiba/utils/responsive.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// 핫한 매물 카드
@@ -35,11 +36,21 @@ class Itemcard extends StatelessWidget {
             height: ref * 0.2,
             child: ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-              child: Image.network(
-                img,
+              child: AkibaNetworkImage(
+                url: img,
                 width: ref * 0.3,
                 height: ref * 0.3,
                 fit: BoxFit.cover,
+                errorBuilder: (_) => Container(
+                  width: ref * 0.3,
+                  height: ref * 0.3,
+                  color: const Color(0xff2A2A2A),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Colors.white54,
+                  ),
+                ),
               ),
             ),
           ),

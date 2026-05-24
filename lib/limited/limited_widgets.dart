@@ -1,4 +1,5 @@
 import 'package:akiba/limited/model/limited_models.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 String formatLimitedPrice(int price) {
@@ -82,10 +83,10 @@ class LimitedLargeCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: AspectRatio(
                 aspectRatio: 1,
-                child: Image.network(
-                  item.imageUrl,
+                child: AkibaNetworkImage(
+                  url: item.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _ImageFallback(),
+                  errorBuilder: (_) => _ImageFallback(),
                 ),
               ),
             ),
@@ -135,10 +136,10 @@ class LimitedThumbCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: AspectRatio(
                 aspectRatio: 1,
-                child: Image.network(
-                  item.imageUrl,
+                child: AkibaNetworkImage(
+                  url: item.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _ImageFallback(),
+                  errorBuilder: (_) => _ImageFallback(),
                 ),
               ),
             ),
@@ -189,10 +190,10 @@ class LimitedResultTile extends StatelessWidget {
             child: SizedBox(
               width: 96,
               height: 96,
-              child: Image.network(
-                item.imageUrl,
+              child: AkibaNetworkImage(
+                url: item.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _ImageFallback(),
+                errorBuilder: (_) => _ImageFallback(),
               ),
             ),
           ),

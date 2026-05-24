@@ -1,3 +1,5 @@
+import 'package:akiba/config/api_config.dart';
+
 class UsedTradeSeller {
   final int userId;
   final String nickname;
@@ -22,10 +24,13 @@ class UsedTradeSeller {
       nickname: (map['nickname'] ?? map['name'] ?? map['sellerName'] ?? '판매자')
           .toString(),
       profileImageUrl:
-          (map['profileImageUrl'] ??
-                  map['profileUrl'] ??
-                  'https://picsum.photos/seed/used-seller/200/200')
-              .toString(),
+          ApiConfig.resourceUrl(
+            (map['profileImageUrl'] ?? map['profileUrl'])?.toString(),
+          ).isEmpty
+          ? 'https://picsum.photos/seed/used-seller/200/200'
+          : ApiConfig.resourceUrl(
+              (map['profileImageUrl'] ?? map['profileUrl'])?.toString(),
+            ),
       intro: (map['intro'] ?? map['bio'] ?? '언제든 쪽지 환영입니다!').toString(),
       dealCount: _parseInt(map['dealCount'] ?? map['tradeCount']),
       reviewCount: _parseInt(map['reviewCount'] ?? map['reviewsCount']),
@@ -108,7 +113,7 @@ class UsedTradeItem {
       receiptMediaId: _parseInt(map['receiptMediaId']),
       imageUrls: images.isEmpty
           ? const ['https://picsum.photos/seed/used-fallback/600/600']
-          : images,
+          : images.map(ApiConfig.resourceUrl).toList(),
       imageMediaIds: _parseImageMediaIds(map),
       tags: _parseStringList(map['tags'] ?? map['tagNames'] ?? map['hashtags']),
       seller: UsedTradeSeller.fromJson(map['seller'] ?? map['author']),

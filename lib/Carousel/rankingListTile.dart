@@ -1,3 +1,4 @@
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 class RankingListTile extends StatelessWidget {
@@ -75,11 +76,10 @@ class RankingListTile extends StatelessWidget {
                 width: 64,
                 height: 64,
                 color: Colors.white10,
-                child: Image.network(
-                  thumbnailUrl,
+                child: AkibaNetworkImage(
+                  url: thumbnailUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.image_not_supported),
+                  errorBuilder: (_) => const Icon(Icons.image_not_supported),
                 ),
               ),
             ),

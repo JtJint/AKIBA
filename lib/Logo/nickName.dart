@@ -1,5 +1,4 @@
 import 'package:akiba/Logo/genre.dart';
-import 'package:akiba/Logo/logo.dart';
 import 'package:akiba/app_router.dart';
 import 'package:flutter/material.dart';
 

@@ -1,8 +1,5 @@
-import 'package:akiba/Login/Login_Button.dart';
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/logo.dart';
-import 'package:akiba/Logo/nickName.dart';
-import 'package:akiba/home.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingPage extends StatefulWidget {

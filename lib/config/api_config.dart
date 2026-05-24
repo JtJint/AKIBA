@@ -15,4 +15,11 @@ class ApiConfig {
     final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
     return Uri.parse('$baseUrl$normalizedPath');
   }
+
+  static String resourceUrl(String? path) {
+    final raw = path?.trim() ?? '';
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    return uri(raw).toString();
+  }
 }

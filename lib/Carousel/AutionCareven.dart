@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:akiba/auction/api/auction_api.dart';
 import 'package:akiba/Cards/AuctionCard.careven.dart';
 import 'package:akiba/utils/responsive.dart';
 import 'package:flutter/material.dart';
@@ -12,75 +15,67 @@ class Autioncareven extends StatefulWidget {
 
 class _AutioncarevenState extends State<Autioncareven> {
   final PageController _pageController = PageController(viewportFraction: 0.28);
+  List<AuctionSummary> _auctionItems = const [];
+  bool _isLoading = true;
+  late final Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+    _fetchEndingSoonAuctions();
+  }
+
+  Future<void> _fetchEndingSoonAuctions() async {
+    try {
+      final items = await AuctionApi.getEndingSoon(limit: 10);
+      if (!mounted) return;
+      setState(() {
+        _auctionItems = items;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _auctionItems = const [];
+        _isLoading = false;
+      });
+      debugPrint('ending soon auctions fetch error: $error');
+    }
+  }
 
   @override
   void dispose() {
+    _timer.cancel();
     _pageController.dispose();
     super.dispose();
   }
 
-  /// 입찰 종료 임박 순 정렬된 목록 (실제로는 API에서 endTime 기준 정렬)
-  static final List<Map<String, dynamic>> _auctionItems = [
-    {
-      'img': 'https://picsum.photos/seed/101/400/400',
-      'name': '아이폰 15 Pro',
-      'endTime': '30분 남음',
-      'price': '1,250,000원',
-      'rateOfChange': 5.2,
-    },
-    {
-      'img': 'https://picsum.photos/seed/102/400/400',
-      'name': '맥북 에어 M3',
-      'endTime': '1시간 15분',
-      'price': '980,000원',
-      'rateOfChange': -2.1,
-    },
-    {
-      'img': 'https://picsum.photos/seed/103/400/400',
-      'name': '에어팟 프로 2',
-      'endTime': '2시간 30분',
-      'price': '185,000원',
-      'rateOfChange': 12.3,
-    },
-    {
-      'img': 'https://picsum.photos/seed/104/400/400',
-      'name': '닌텐도 스위치',
-      'endTime': '3시간 00분',
-      'price': '320,000원',
-      'rateOfChange': 0.0,
-    },
-    {
-      'img': 'https://picsum.photos/seed/105/400/400',
-      'name': '소니 WH-1000XM5',
-      'endTime': '4시간 45분',
-      'price': '410,000원',
-      'rateOfChange': -1.5,
-    },
-    {
-      'img': 'https://picsum.photos/seed/106/400/400',
-      'name': '갤럭시 버즈2',
-      'endTime': '5시간 20분',
-      'price': '95,000원',
-      'rateOfChange': 8.7,
-    },
-    {
-      'img': 'https://picsum.photos/seed/107/400/400',
-      'name': '아이패드 미니',
-      'endTime': '6시간 10분',
-      'price': '520,000원',
-      'rateOfChange': -0.8,
-    },
-    {
-      'img': 'https://picsum.photos/seed/108/400/400',
-      'name': '애플워치 울트라',
-      'endTime': '7시간 00분',
-      'price': '890,000원',
-      'rateOfChange': 3.2,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return SizedBox(
+        width: Responsive.w(context) * 0.9,
+        height: Responsive.ref(context) * 0.18,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_auctionItems.isEmpty) {
+      return SizedBox(
+        width: Responsive.w(context) * 0.9,
+        height: Responsive.ref(context) * 0.18,
+        child: const Center(
+          child: Text(
+            '마감 임박 경매를 불러오지 못했습니다.',
+            style: TextStyle(color: Colors.white54),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       width: Responsive.w(context) * 0.9,
       height: Responsive.ref(context) * 0.32,
@@ -97,16 +92,36 @@ class _AutioncarevenState extends State<Autioncareven> {
             ),
             child: Center(
               child: Auctioncardcareven(
-                img: item['img'] as String,
-                name: item['name'] as String,
-                endTime: item['endTime'] as String,
-                price: item['price'] as String,
-                rateOfChange: (item['rateOfChange'] as num).toDouble(),
+                img: item.thumbnailUrl.isEmpty
+                    ? 'https://picsum.photos/seed/auction-${item.postId}/400/400'
+                    : item.thumbnailUrl,
+                name: item.title,
+                endTime: _formatRemainingTime(item.endsAt),
+                price: _formatPrice(item.currentPrice),
+                rateOfChange: item.bidCount.toDouble(),
               ),
             ),
           );
         },
       ),
     );
+  }
+
+  String _formatPrice(int price) {
+    final formatted = price.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => ',',
+    );
+    return '$formatted원';
+  }
+
+  String _formatRemainingTime(DateTime? endsAt) {
+    if (endsAt == null) return '마감 임박';
+    final diff = endsAt.toLocal().difference(DateTime.now());
+    if (diff.isNegative) return '마감';
+    if (diff.inDays > 0) return '${diff.inDays}일 남음';
+    if (diff.inHours > 0) return '${diff.inHours}시간 ${diff.inMinutes % 60}분';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}분 남음';
+    return '곧 마감';
   }
 }

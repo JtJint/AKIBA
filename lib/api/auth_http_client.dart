@@ -73,7 +73,7 @@ class AuthHttpClient {
     _isRefreshing = true;
     try {
       final response = await http.post(
-        ApiConfig.uri('api/users/reissue'),
+        ApiConfig.uri('api/users/refresh'),
         headers: const {'Content-Type': 'application/json'},
         body: jsonEncode({'refreshToken': refreshToken}),
       );

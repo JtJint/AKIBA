@@ -1,9 +1,14 @@
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/nickName.dart';
 import 'package:akiba/Logo/onBoarding.dart';
+import 'package:akiba/auction/auction_screen.dart';
 import 'package:akiba/chat/chatingPage.dart';
 import 'package:akiba/chat/chatMain.dart';
+import 'package:akiba/community/api/board_api.dart';
+import 'package:akiba/community/community_board_posts_screen.dart';
 import 'package:akiba/community/communityMain.dart';
+import 'package:akiba/community/community_popular_posts_screen.dart';
+import 'package:akiba/community/community_post_detail_screen.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/demand/guhaeyo.dart';
 import 'package:akiba/demand/guhaeyo.detail.dart';
@@ -14,6 +19,7 @@ import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/used/used_trade_detail_screen.dart';
 import 'package:akiba/used/used_trade_screen.dart';
+import 'package:akiba/wirte/community_wirte_page.dart';
 import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +30,12 @@ class AppRouter {
   static const String main = '/main';
   static const String write = '/write';
   static const String community = '/community';
+  static const String communityPopular = '/community/popular';
+  static const String communityWrite = '/community/write';
   static const String used = '/used';
   static const String usedDetail = '/used/detail';
   static const String limited = '/limited';
+  static const String auction = '/auction';
   static const String wanted = '/wanted';
   static const String chat = '/chat';
   static const String mypage = '/mypage';
@@ -35,6 +44,9 @@ class AppRouter {
 
   static String wantedDetailPath(int postId) => '/wanted/$postId';
   static String chatRoomPath(int roomId) => '/chat/$roomId';
+  static String communityPostDetailPath(String boardCode, int postId) =>
+      '/community/$boardCode/posts/$postId';
+  static String communityBoardPath(String boardCode) => '/community/$boardCode';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final uri = Uri.parse(settings.name ?? onboarding);
@@ -74,6 +86,50 @@ class AppRouter {
       return _buildRoute(settings: settings, builder: (_) => communityMain());
     }
 
+    if (uri.path == communityPopular) {
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => const CommunityPopularPostsScreen(),
+      );
+    }
+
+    if (uri.path == communityWrite) {
+      final args = settings.arguments;
+      final routeArgs = args is CommunityWriteRouteArgs ? args : null;
+      return _buildRoute(
+        settings: settings,
+        builder: (_) =>
+            CommunityWritePage(boardCode: routeArgs?.boardCode ?? 'FREE'),
+      );
+    }
+
+    if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'community') {
+      final boardCode = uri.pathSegments[1];
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => CommunityBoardPostsScreen(boardCode: boardCode),
+      );
+    }
+
+    if (uri.pathSegments.length == 4 &&
+        uri.pathSegments.first == 'community' &&
+        uri.pathSegments[2] == 'posts') {
+      final boardCode = uri.pathSegments[1];
+      final postId = int.tryParse(uri.pathSegments[3]);
+      final args = settings.arguments;
+      final routeArgs = args is CommunityPostDetailRouteArgs ? args : null;
+      if (postId != null) {
+        return _buildRoute(
+          settings: settings,
+          builder: (_) => CommunityPostDetailScreen(
+            boardCode: boardCode,
+            postId: postId,
+            initialPost: routeArgs?.initialPost,
+          ),
+        );
+      }
+    }
+
     if (uri.path == used) {
       return _buildRoute(
         settings: settings,
@@ -99,6 +155,13 @@ class AppRouter {
       return _buildRoute(
         settings: settings,
         builder: (_) => const LimitedScreen(),
+      );
+    }
+
+    if (uri.path == auction) {
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => const AuctionScreen(),
       );
     }
 
@@ -160,7 +223,8 @@ class AppRouter {
       if (routeArgs != null) {
         return _buildRoute(
           settings: settings,
-          builder: (_) => SearchResultScreen(query: routeArgs.query),
+          builder: (_) =>
+              SearchResultScreen(query: routeArgs.query, type: routeArgs.type),
         );
       }
     }
@@ -198,9 +262,22 @@ class WritePageRouteArgs {
 }
 
 class SearchResultRouteArgs {
-  const SearchResultRouteArgs({required this.query});
+  const SearchResultRouteArgs({required this.query, this.type});
 
   final String query;
+  final String? type;
+}
+
+class CommunityPostDetailRouteArgs {
+  const CommunityPostDetailRouteArgs({this.initialPost});
+
+  final BoardPostSummary? initialPost;
+}
+
+class CommunityWriteRouteArgs {
+  const CommunityWriteRouteArgs({required this.boardCode});
+
+  final String boardCode;
 }
 
 class UsedTradeDetailRouteArgs {

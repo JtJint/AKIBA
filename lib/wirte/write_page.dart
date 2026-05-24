@@ -336,8 +336,14 @@ class _WritePageState extends State<WritePage> {
     if (startPrice == null) {
       throw StateError('경매 시작가를 올바르게 입력해주세요.');
     }
-    final buyNowPrice =
-        int.tryParse(_instantBuyPriceController.text.trim()) ?? 0;
+    final buyNowPrice = int.tryParse(_instantBuyPriceController.text.trim());
+    final purchaseSource = _purchasePlaceController.text.trim();
+    if (purchaseSource.isEmpty) {
+      throw StateError('경매 구매처를 입력해주세요.');
+    }
+    if (receiptMediaId == null && widget.usedEditPost?.receiptMediaId == null) {
+      throw StateError('경매 영수증 이미지를 추가해주세요.');
+    }
     final endsAt = DateTime(
       _auctionDate.year,
       _auctionDate.month,
@@ -358,7 +364,7 @@ class _WritePageState extends State<WritePage> {
         bidStep: _bidUnit,
         endsAt: endsAt,
         deliveryMethod: _tradeMethod,
-        purchaseSource: _purchasePlaceController.text.trim(),
+        purchaseSource: purchaseSource,
         receiptMediaId: receiptMediaId ?? 0,
         imageMediaIds: imageMediaIds,
         tagNames: tagNames,

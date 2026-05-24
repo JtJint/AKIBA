@@ -1,6 +1,7 @@
 import 'package:akiba/models/recommendItem.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/utils/headerFiles.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 class UsedTradeSearchBar extends StatelessWidget {
@@ -57,10 +58,10 @@ class UsedTradeThumbCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: AspectRatio(
                 aspectRatio: 1,
-                child: Image.network(
-                  item.imageUrls.first,
+                child: AkibaNetworkImage(
+                  url: item.imageUrls.first,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_) => Container(
                     color: Colors.white10,
                     alignment: Alignment.center,
                     child: const Icon(
@@ -351,10 +352,10 @@ class _UsedTradeImageCarouselState extends State<UsedTradeImageCarousel> {
                   _currentIndex = index;
                 });
               },
-              itemBuilder: (_, index) => Image.network(
-                widget.imageUrls[index],
+              itemBuilder: (_, index) => AkibaNetworkImage(
+                url: widget.imageUrls[index],
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_) => Container(
                   color: Colors.white10,
                   alignment: Alignment.center,
                   child: const Icon(
