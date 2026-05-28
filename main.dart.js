@@ -33579,7 +33579,7 @@ amO(a,b){var s=0,r=A.J(t.Wd),q,p,o,n,m,l,k
 var $async$amO=A.F(function(c,d){if(c===1)return A.G(d,r)
 for(;;)switch(s){case 0:m=A.ft("https://api.dev.akiba-shop.com/api/users/login",0,null)
 l=t.N
-k=A.aI(["provider","NAVER","code",a,"state",b,"env","dev"],l,l)
+k=A.aI(["provider","NAVER","code",a,"state",b,"env","prod"],l,l)
 A.fV("Login Request Body: "+k.j(0))
 s=3
 return A.E(A.aXT(m,B.W.lc(k,null),A.aI(["Content-Type","application/json"],l,l)),$async$amO)
@@ -52905,7 +52905,7 @@ $S:0}
 A.aKe.prototype={
 $0(){var s,r=A.bnm()
 window.sessionStorage.setItem("naver_state",r)
-s=A.bix("https","nid.naver.com","/oauth2.0/authorize",A.aI(["response_type","code","client_id","ZfdrzEhizfq8bi0KaKTQ","redirect_uri","http://localhost:8000/oauth/callback","state",r],t.N,t.z)).go9()
+s=A.bix("https","nid.naver.com","/oauth2.0/authorize",A.aI(["response_type","code","client_id","quwp3RTYyaTzBPWUj59t","redirect_uri","https://akiba-bay.vercel.app/oauth/callback","state",r],t.N,t.z)).go9()
 window.location.href=s},
 $S:0}
 A.adM.prototype={
