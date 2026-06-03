@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:akiba/app_router.dart';
 import 'package:akiba/auction/api/auction_api.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/widgets/akiba_network_image.dart';
@@ -90,6 +91,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
                 child: _AuctionHorizontalSection(
                   title: '곧 입찰이 끝나요!',
                   items: featuredItems,
+                  onMore: () =>
+                      Navigator.of(context).pushNamed(AppRouter.auctionEndingSoon),
                 ),
               ),
             if (_popularItems.isNotEmpty)
@@ -97,6 +100,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
                 child: _AuctionHorizontalSection(
                   title: '인기 경매',
                   items: _popularItems,
+                  onMore: () =>
+                      Navigator.of(context).pushNamed(AppRouter.auctionPopular),
                 ),
               ),
             SliverToBoxAdapter(
@@ -142,10 +147,15 @@ class _AuctionScreenState extends State<AuctionScreen> {
 }
 
 class _AuctionHorizontalSection extends StatelessWidget {
-  const _AuctionHorizontalSection({required this.title, required this.items});
+  const _AuctionHorizontalSection({
+    required this.title,
+    required this.items,
+    required this.onMore,
+  });
 
   final String title;
   final List<AuctionSummary> items;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +163,7 @@ class _AuctionHorizontalSection extends StatelessWidget {
 
     return Column(
       children: [
-        SectionHeader(title: title, onMore: () {}),
+        SectionHeader(title: title, onMore: onMore),
         SizedBox(
           height: 240,
           child: ListView.separated(
@@ -176,41 +186,45 @@ class _AuctionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 156,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: _AuctionImage(item: item),
+    return InkWell(
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRouter.auctionDetailPath(item.postId),
+        arguments: AuctionDetailRouteArgs(initialItem: item),
+      ),
+      child: SizedBox(
+        width: 156,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: _AuctionImageWithCountdown(item: item),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          _CountdownText(endsAt: item.endsAt),
-          const SizedBox(height: 5),
-          Text(
-            item.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+            const SizedBox(height: 10),
+            Text(
+              item.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _formatPrice(item.currentPrice),
-            style: const TextStyle(
-              color: Color(0xffD1FF00),
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
+            const SizedBox(height: 4),
+            Text(
+              _formatPrice(item.currentPrice),
+              style: const TextStyle(
+                color: Color(0xffD1FF00),
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -223,59 +237,63 @@ class _AuctionListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 92,
-              height: 92,
-              child: _AuctionImage(item: item),
+    return InkWell(
+      onTap: () => Navigator.of(context).pushNamed(
+        AppRouter.auctionDetailPath(item.postId),
+        arguments: AuctionDetailRouteArgs(initialItem: item),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 92,
+                height: 92,
+                child: _AuctionImageWithCountdown(item: item),
+              ),
             ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _CountdownText(endsAt: item.endsAt),
-                const SizedBox(height: 7),
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '현재가 ${_formatPrice(item.currentPrice)} · 입찰 ${item.bidCount}회',
-                  style: const TextStyle(color: Colors.white60, fontSize: 13),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    '현재가 ${_formatPrice(item.currentPrice)} · 입찰 ${item.bidCount}회',
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CountdownText extends StatefulWidget {
-  const _CountdownText({required this.endsAt});
+class _CountdownBadge extends StatefulWidget {
+  const _CountdownBadge({required this.endsAt});
 
   final DateTime? endsAt;
 
   @override
-  State<_CountdownText> createState() => _CountdownTextState();
+  State<_CountdownBadge> createState() => _CountdownBadgeState();
 }
 
-class _CountdownTextState extends State<_CountdownText> {
+class _CountdownBadgeState extends State<_CountdownBadge> {
   late Timer _timer;
 
   @override
@@ -297,15 +315,43 @@ class _CountdownTextState extends State<_CountdownText> {
     final remaining = _remainingText(widget.endsAt);
     final isEnded = remaining == '마감';
 
-    return Text(
-      remaining,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: isEnded ? Colors.white38 : const Color(0xffD1FF00),
-        fontSize: 13,
-        fontWeight: FontWeight.w800,
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 128),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: isEnded ? const Color(0xff242424) : const Color(0xffD0FF00),
+        borderRadius: BorderRadius.circular(2),
       ),
+      child: Text(
+        remaining,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: isEnded ? Colors.white70 : Colors.black,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _AuctionImageWithCountdown extends StatelessWidget {
+  const _AuctionImageWithCountdown({required this.item});
+
+  final AuctionSummary item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(child: _AuctionImage(item: item)),
+        Positioned(
+          left: 8,
+          top: 8,
+          child: _CountdownBadge(endsAt: item.endsAt),
+        ),
+      ],
     );
   }
 }

@@ -55,11 +55,13 @@ class ChatService {
   bool _isConnecting = false;
   bool _isConnected = false;
   bool _lifecycleRegistered = false;
+  bool _authListenerRegistered = false;
   String? _connectedToken;
   final List<StreamSubscription> _lifecycleSubscriptions = [];
 
   // roomId별 구독 해제 함수 저장
   final Map<int, StompUnsubscribe> _subscriptions = {};
+  final Map<int, Function(dynamic)> _subscriptionCallbacks = {};
 
   bool get isConnected => _isConnected;
 
@@ -99,6 +101,7 @@ class ChatService {
           debugPrint(
             '연결 성공: command=${frame.command}, headers=${frame.headers}',
           );
+          _resubscribeActiveRooms();
         },
         onDisconnect: (frame) {
           _isConnecting = false;
@@ -140,6 +143,11 @@ class ChatService {
   }
 
   void registerLifecycleHandlers() {
+    if (!_authListenerRegistered) {
+      _authListenerRegistered = true;
+      AuthHttpClient.addAccessTokenRefreshListener(_handleAccessTokenRefreshed);
+    }
+
     if (_lifecycleRegistered) {
       return;
     }
@@ -156,13 +164,19 @@ class ChatService {
   }
 
   void subscribeRoom(int roomId, Function(dynamic) onMessage) {
+    _subscriptionCallbacks[roomId] = onMessage;
+    _subscribeRoomSocket(roomId, onMessage);
+  }
+
+  void _subscribeRoomSocket(int roomId, Function(dynamic) onMessage) {
     final stompClient = _stompClient;
     if (stompClient == null || !_isConnected) {
       return;
     }
 
     // 이미 같은 방 구독 중이면 중복 구독 방지
-    unsubscribeRoom(roomId);
+    final existing = _subscriptions.remove(roomId);
+    existing?.call();
 
     final unsubscribe = stompClient.subscribe(
       destination: '/topic/chat/$roomId',
@@ -182,6 +196,37 @@ class ChatService {
       unsubscribe(); // 이게 진짜 구독 해제
       _subscriptions.remove(roomId);
     }
+    _subscriptionCallbacks.remove(roomId);
+  }
+
+  void _resubscribeActiveRooms() {
+    if (_subscriptionCallbacks.isEmpty) {
+      return;
+    }
+
+    final callbacks = Map<int, Function(dynamic)>.from(_subscriptionCallbacks);
+    for (final entry in callbacks.entries) {
+      _subscribeRoomSocket(entry.key, entry.value);
+    }
+  }
+
+  void _handleAccessTokenRefreshed(String accessToken) {
+    if (accessToken.isEmpty) {
+      disconnect();
+      return;
+    }
+
+    if (_subscriptionCallbacks.isEmpty && !_isConnected && !_isConnecting) {
+      return;
+    }
+
+    if (_connectedToken == accessToken && (_isConnected || _isConnecting)) {
+      return;
+    }
+
+    debugPrint('[chat] accessToken refreshed, reconnecting socket');
+    disconnect(clearSubscriptionCallbacks: false);
+    connect(accessToken);
   }
 
   void sendMessage(int roomId, String content) {
@@ -208,12 +253,15 @@ class ChatService {
     print('[chat] sendMessage done roomId=$roomId');
   }
 
-  void disconnect() {
+  void disconnect({bool clearSubscriptionCallbacks = true}) {
     for (final unsubscribe in _subscriptions.values) {
       unsubscribe();
     }
     print('모든 구독 해제 완료');
     _subscriptions.clear();
+    if (clearSubscriptionCallbacks) {
+      _subscriptionCallbacks.clear();
+    }
 
     _stompClient?.deactivate();
     _stompClient = null;

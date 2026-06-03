@@ -134,6 +134,10 @@ class BoardApi {
       ]) {
         final value = decoded[key];
         if (value is List) return value;
+        if (value is Map<String, dynamic>) {
+          final nested = _extractList(value);
+          if (nested.isNotEmpty) return nested;
+        }
       }
     }
     return [];
@@ -167,6 +171,7 @@ class BoardSummary {
 class BoardPostSummary {
   const BoardPostSummary({
     required this.postId,
+    required this.userId,
     required this.boardCode,
     required this.title,
     required this.content,
@@ -177,9 +182,13 @@ class BoardPostSummary {
     required this.bookmarkCount,
     required this.imageUrls,
     required this.hashtags,
+    required this.saleOrAuctionLink,
+    required this.authenticVoteCount,
+    required this.fakeVoteCount,
   });
 
   final int postId;
+  final int userId;
   final String boardCode;
   final String title;
   final String content;
@@ -190,11 +199,15 @@ class BoardPostSummary {
   final int bookmarkCount;
   final List<String> imageUrls;
   final List<String> hashtags;
+  final String saleOrAuctionLink;
+  final int authenticVoteCount;
+  final int fakeVoteCount;
 
   factory BoardPostSummary.fromJson(dynamic json, {String? fallbackBoard}) {
     final map = json is Map<String, dynamic> ? json : <String, dynamic>{};
     return BoardPostSummary(
       postId: _parseInt(map['postId'] ?? map['id']),
+      userId: _parseInt(map['userId'] ?? map['authorId']),
       boardCode: (map['boardCode'] ?? fallbackBoard ?? '').toString(),
       title: (map['title'] ?? '').toString(),
       content: (map['content'] ?? '').toString(),
@@ -210,7 +223,10 @@ class BoardPostSummary {
       commentCount: _parseInt(map['commentCount'] ?? map['commentsCount']),
       bookmarkCount: _parseInt(map['bookmarkCount'] ?? map['scrapCount']),
       imageUrls: _parseStringList(map['imageUrls'] ?? map['images']),
-      hashtags: _parseStringList(map['hashtags']),
+      hashtags: _parseHashtags(map['hashtags']),
+      saleOrAuctionLink: (map['saleOrAuctionLink'] ?? '').toString(),
+      authenticVoteCount: _parseInt(map['authenticVoteCount']),
+      fakeVoteCount: _parseInt(map['fakeVoteCount']),
     );
   }
 }
@@ -322,4 +338,12 @@ List<String> _parseStringList(dynamic value) {
         .toList();
   }
   return [];
+}
+
+List<String> _parseHashtags(dynamic value) {
+  return _parseStringList(value)
+      .map((tag) => tag.trim())
+      .map((tag) => tag.startsWith('#') ? tag.substring(1) : tag)
+      .where((tag) => tag.isNotEmpty)
+      .toList();
 }

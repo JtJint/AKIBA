@@ -12,19 +12,23 @@ class category extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        final spacing = availableWidth < 440 ? 10.0 : 14.0;
+        final spacing = 0.0;
         final itemWidth = (availableWidth - (spacing * 3)) / 4;
 
         return Container(
-          height: itemWidth + 20,
+          height: itemWidth + 30,
+          width: double.infinity,
           color: Colors.transparent,
           child: Padding(
             padding: EdgeInsets.only(
               top: Responsive.ref(context) * 0.009,
-              bottom: Responsive.ref(context) * 0.003,
+              bottom: Responsive.ref(context) * 0.004,
+              // left: Responsive.ref(context) * 0.002,
+              // right: Responsive.ref(context) * 0.002,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
                   onTap: () {
@@ -36,7 +40,7 @@ class category extends StatelessWidget {
                     width: itemWidth,
                   ),
                 ),
-                SizedBox(width: spacing),
+                // SizedBox(width: spacing),
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).pushNamed(AppRouter.auction);
@@ -47,7 +51,7 @@ class category extends StatelessWidget {
                     width: itemWidth,
                   ),
                 ),
-                SizedBox(width: spacing),
+                // SizedBox(width: spacing),
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).pushNamed(AppRouter.wanted);
@@ -58,7 +62,7 @@ class category extends StatelessWidget {
                     width: itemWidth,
                   ),
                 ),
-                SizedBox(width: spacing),
+                // SizedBox(width: spacing),
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).pushNamed(AppRouter.limited);

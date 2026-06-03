@@ -4,6 +4,7 @@ import 'package:akiba/limited/limited_widgets.dart';
 import 'package:akiba/limited/model/limited_models.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
+import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
 class LimitedScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class LimitedScreen extends StatefulWidget {
 }
 
 class _LimitedScreenState extends State<LimitedScreen> {
-  List<LimitedItem> _items = limitedDummyItems;
+  List<LimitedItem> _items = const [];
   bool _isLoading = true;
   String? _errorText;
 
@@ -29,13 +30,14 @@ class _LimitedScreenState extends State<LimitedScreen> {
       final items = await LimitedApi.getItems();
       if (!mounted) return;
       setState(() {
-        _items = items.isEmpty ? limitedDummyItems : items;
+        _items = items;
         _isLoading = false;
+        _errorText = null;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _items = limitedDummyItems;
+        _items = const [];
         _isLoading = false;
         _errorText = '특전/한정판 글을 불러오지 못했습니다.';
       });
@@ -52,69 +54,113 @@ class _LimitedScreenState extends State<LimitedScreen> {
     return AkibaShell(
       selectedIndex: 0,
       showAppBar: false,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: TopBar(
-              title: '특전/한정판',
-              onBack: () => Navigator.of(context).pop(),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRouter.search,
-                  arguments: const SearchRouteArgs(initialType: '특전/한정판'),
-                ),
-                child: const LimitedSearchBar(
-                  hintText: '특전/한정판 내에서 검색하세요',
-                  readOnly: true,
+      child: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: TopBar(
+                  title: '특전/한정판',
+                  onBack: () => Navigator.of(context).pop(),
                 ),
               ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 28),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-          if (_errorText != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Text(
-                  _errorText!,
-                  style: const TextStyle(color: Colors.white54),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pushNamed(
+                      AppRouter.search,
+                      arguments: const SearchRouteArgs(
+                        initialType: '특전/한정판',
+                      ),
+                    ),
+                    child: const LimitedSearchBar(
+                      hintText: '특전/한정판 내에서 검색하세요',
+                      readOnly: true,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 22)),
-          SliverToBoxAdapter(
-            child: _LargeLimitedSection(
-              title: '지금 가장 핫한 매물 !',
-              items: hotItems,
+              if (_isLoading)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 28),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+              if (_errorText != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Text(
+                      _errorText!,
+                      style: const TextStyle(color: Colors.white54),
+                    ),
+                  ),
+                ),
+              if (!_isLoading && _items.isEmpty && _errorText == null)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(20, 52, 20, 0),
+                    child: Center(
+                      child: Text(
+                        '등록된 특전/한정판 글이 없습니다.',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ),
+                  ),
+                ),
+              if (_items.isNotEmpty) ...[
+                const SliverToBoxAdapter(child: SizedBox(height: 22)),
+                SliverToBoxAdapter(
+                  child: _LargeLimitedSection(
+                    title: '지금 가장 핫한 매물 !',
+                    items: hotItems,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _LimitedHorizontalSection(
+                    title: '좋아하실 것 같아요!',
+                    items: recommendItems,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _LimitedHorizontalSection(
+                    title: '최근 본 상품',
+                    items: recentItems,
+                  ),
+                ),
+              ],
+              const SliverToBoxAdapter(child: SizedBox(height: 96)),
+            ],
+          ),
+          Positioned(
+            right: 20,
+            bottom: 24,
+            child: FloatingActionButton(
+              onPressed: _openWrite,
+              backgroundColor: const Color(0xffD0FF00),
+              foregroundColor: Colors.black,
+              child: const Icon(Icons.edit),
             ),
           ),
-          SliverToBoxAdapter(
-            child: _LimitedHorizontalSection(
-              title: '좋아하실 것 같아요!',
-              items: recommendItems,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: _LimitedHorizontalSection(
-              title: '최근 본 상품',
-              items: recentItems,
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
+  }
+
+  Future<void> _openWrite() async {
+    final created = await Navigator.of(context).pushNamed(
+      AppRouter.write,
+      arguments: const WritePageRouteArgs(initialMode: WriteMode.limited),
+    );
+
+    if (created == true) {
+      setState(() {
+        _isLoading = true;
+      });
+      await _fetchItems();
+    }
   }
 }
 

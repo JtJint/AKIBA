@@ -8,19 +8,19 @@ String baseURL = 'https://api.dev.akiba-shop.com/';
 class Loginapi {
   static Future<http.Response> loginAct(String Code, String state) async {
     final url = Uri.parse('${baseURL}api/users/login');
-    // final body = {
-    //   "provider": "NAVER",
-    //   "code": Code,
-    //   "state": state,
-    //   "env": "dev",
-    // };
     final body = {
-      // 배포 기준
       "provider": "NAVER",
       "code": Code,
       "state": state,
-      "env": "prod",
+      "env": "dev",
     };
+    // final body = {
+    //   // 배포 기준
+    //   "provider": "NAVER",
+    //   "code": Code,
+    //   "state": state,
+    //   "env": "prod",
+    // };
 
     print('Login Request Body: $body'); // 디버깅용 로그
     final reqBody = jsonEncode(body);

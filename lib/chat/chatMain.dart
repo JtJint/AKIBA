@@ -43,20 +43,7 @@ class _ChatPageState extends State<ChatPage> {
 
     final categories = ['전체', '중고거래', '구해요', '경매', '추천'];
 
-    final fallbackChats = [
-      ChatItemModel(
-        roodId: 1,
-        imageUrl: 'https://picsum.photos/seed/naruto/200/200',
-        title: '반프레스토 나루토 점프 우..',
-        preview: '네네 감사합니다.',
-        category: '중고거래',
-        userName: '아이디',
-        dateText: '1일전',
-      ),
-    ];
-    final chats = _buildChatItems().isNotEmpty
-        ? _buildChatItems()
-        : fallbackChats;
+    final chats = _buildChatItems();
     final filteredChats = _selectedCategory == '전체'
         ? chats
         : chats.where((item) => item.category == _selectedCategory).toList();

@@ -138,14 +138,13 @@ class _ChatingPageState extends State<ChatingPage> {
     }
 
     setState(() {
-      final alreadyExists = _messages.any(
-        (item) =>
-            item.content == message.content &&
-            item.timeLabel == message.timeLabel &&
-            item.isMine == message.isMine,
+      final optimisticIndex = _messages.indexWhere(
+        (item) => item.isOptimistic && _isSameMessage(item, message),
       );
 
-      if (!alreadyExists) {
+      if (optimisticIndex >= 0) {
+        _messages[optimisticIndex] = message;
+      } else if (!_messages.any((item) => _isSameMessage(item, message))) {
         _messages.add(message);
       }
     });
@@ -168,8 +167,10 @@ class _ChatingPageState extends State<ChatingPage> {
       timeLabel: _formatNowTime(),
       dateLabel: _formatNowDateLabel(),
       dateKey: _formatNowDateKey(),
+      createdAt: DateTime.now(),
       isMine: true,
       senderName: '나',
+      isOptimistic: true,
     );
 
     setState(() {
@@ -227,6 +228,31 @@ class _ChatingPageState extends State<ChatingPage> {
         curve: Curves.easeOut,
       );
     });
+  }
+
+  bool _isSameMessage(_ChatMessage left, _ChatMessage right) {
+    if (left.messageId != null && right.messageId != null) {
+      return left.messageId == right.messageId;
+    }
+
+    if (left.content != right.content || left.isMine != right.isMine) {
+      return false;
+    }
+
+    if (left.dateKey == right.dateKey && left.timeLabel == right.timeLabel) {
+      return true;
+    }
+
+    final leftCreatedAt = left.createdAt;
+    final rightCreatedAt = right.createdAt;
+    if (leftCreatedAt != null && rightCreatedAt != null) {
+      final delta = leftCreatedAt.isAfter(rightCreatedAt)
+          ? leftCreatedAt.difference(rightCreatedAt)
+          : rightCreatedAt.difference(leftCreatedAt);
+      return delta <= const Duration(seconds: 10);
+    }
+
+    return left.isOptimistic || right.isOptimistic;
   }
 
   @override
@@ -569,20 +595,26 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _ChatMessage {
+  final String? messageId;
   final String content;
   final String timeLabel;
   final String dateLabel;
   final String dateKey;
+  final DateTime? createdAt;
   final bool isMine;
   final String senderName;
+  final bool isOptimistic;
 
   const _ChatMessage({
+    this.messageId,
     required this.content,
     required this.timeLabel,
     required this.dateLabel,
     required this.dateKey,
+    this.createdAt,
     required this.isMine,
     required this.senderName,
+    this.isOptimistic = false,
   });
 
   factory _ChatMessage.fromJson(dynamic raw) {
@@ -617,6 +649,12 @@ class _ChatMessage {
     );
 
     return _ChatMessage(
+      messageId:
+          _firstNonNull([
+            map['messageId'],
+            map['chatMessageId'],
+            map['id'],
+          ])?.toString(),
       content:
           _firstNonNull([
             map['content'],
@@ -633,6 +671,7 @@ class _ChatMessage {
       dateKey: createdAt != null
           ? '${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}'
           : '',
+      createdAt: createdAt,
       isMine: isMine,
       senderName:
           _firstNonNull([

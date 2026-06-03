@@ -85,7 +85,10 @@ class _CommunityPopularPostsScreenState
             },
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => Navigator.of(context).pushNamed(AppRouter.write),
+            onPressed: () => Navigator.of(context).pushNamed(
+              AppRouter.communityWrite,
+              arguments: const CommunityWriteRouteArgs(boardCode: 'FREE'),
+            ),
             backgroundColor: const Color(0xffD0FF00),
             foregroundColor: Colors.black,
             icon: const Icon(Icons.edit, size: 20),
@@ -195,21 +198,54 @@ class _PopularPostListTile extends StatelessWidget {
             const SizedBox(width: 14),
             ClipRRect(
               borderRadius: BorderRadius.circular(2),
-              child: Image.network(
-                post.imageUrls.first,
-                width: 68,
-                height: 68,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 68,
-                  height: 68,
-                  color: const Color(0xff242424),
-                ),
-              ),
+              child: _PostThumbnail(imageUrls: post.imageUrls),
             ),
           ],
         ],
       ),
+    );
+  }
+}
+
+class _PostThumbnail extends StatelessWidget {
+  const _PostThumbnail({required this.imageUrls});
+
+  final List<String> imageUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        Image.network(
+          imageUrls.first,
+          width: 68,
+          height: 68,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 68,
+            height: 68,
+            color: const Color(0xff242424),
+          ),
+        ),
+        if (imageUrls.length > 1)
+          Container(
+            margin: const EdgeInsets.all(4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              imageUrls.length.toString(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

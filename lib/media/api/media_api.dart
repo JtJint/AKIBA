@@ -26,7 +26,10 @@ class MediaApi {
     return _handleUploadResponse(response);
   }
 
-  static Future<http.StreamedResponse> _sendUploadRequest(_UploadFile file) {
+  static Future<http.StreamedResponse> _sendUploadRequest(
+    _UploadFile file,
+  ) async {
+    await AuthHttpClient.ensureAccessTokenFresh();
     final request = http.MultipartRequest(
       'POST',
       ApiConfig.uri('api/media/upload'),

@@ -20,6 +20,14 @@ class MarketPostApi {
       body: jsonEncode(payload.toJson()),
     );
   }
+
+  static Future<http.Response> createLimitedPost(LimitedPostPayload payload) {
+    return AuthHttpClient.post(
+      ApiConfig.uri('api/limited/posts'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode(payload.toJson()),
+    );
+  }
 }
 
 class UsedPostPayload {
@@ -110,6 +118,50 @@ class AuctionPostPayload {
       if (buyNowPrice != null) 'buyNowPrice': buyNowPrice,
       'bidStep': bidStep,
       'endsAt': endsAt.toIso8601String(),
+      'deliveryMethod': deliveryMethod,
+      'purchaseSource': purchaseSource,
+      'receiptMediaId': receiptMediaId,
+      'imageMediaIds': imageMediaIds,
+      'tagNames': tagNames,
+    };
+  }
+}
+
+class LimitedPostPayload {
+  const LimitedPostPayload({
+    required this.title,
+    required this.content,
+    required this.price,
+    required this.productCondition,
+    required this.specialType,
+    required this.categoryId,
+    required this.deliveryMethod,
+    required this.purchaseSource,
+    required this.receiptMediaId,
+    required this.imageMediaIds,
+    required this.tagNames,
+  });
+
+  final String title;
+  final String content;
+  final int price;
+  final String productCondition;
+  final String specialType;
+  final int categoryId;
+  final String deliveryMethod;
+  final String purchaseSource;
+  final int receiptMediaId;
+  final List<int> imageMediaIds;
+  final List<String> tagNames;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'content': content,
+      'price': price,
+      'productCondition': productCondition,
+      'specialType': specialType,
+      'categoryId': categoryId,
       'deliveryMethod': deliveryMethod,
       'purchaseSource': purchaseSource,
       'receiptMediaId': receiptMediaId,

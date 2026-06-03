@@ -180,20 +180,20 @@ class _CommunityHero extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.asset(
-                    'assets/community/community_banner_bg.jpg',
+                    'assets/community/community_banner_bg.png',
                     fit: BoxFit.cover,
-                    alignment: Alignment.center,
+                    alignment: Alignment.topCenter,
                   ),
-                  Container(color: Colors.black.withValues(alpha: 0.42)),
+                  Container(color: Colors.black.withValues(alpha: 0.12)),
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                         colors: [
-                          Colors.black.withValues(alpha: 0.54),
-                          Colors.black.withValues(alpha: 0.16),
-                          Colors.black.withValues(alpha: 0.38),
+                          Colors.black.withValues(alpha: 0.34),
+                          Colors.black.withValues(alpha: 0.04),
+                          Colors.black.withValues(alpha: 0.20),
                         ],
                       ),
                     ),
@@ -273,14 +273,20 @@ class _CategoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              category.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
+            SizedBox(
+              width: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  category.title,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ),
             const Spacer(),

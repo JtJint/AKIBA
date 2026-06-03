@@ -14,12 +14,12 @@ void startNaverLogin() {
   final state = randomState();
   html.window.sessionStorage['naver_state'] = state;
 
-  // const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
+  const clientId = 'ZfdrzEhizfq8bi0KaKTQ';
 
-  // const redirectUri = 'http://localhost:8000/oauth/callback';
-  const clientId = 'quwp3RTYyaTzBPWUj59t';
-  const redirectUri =
-      'https://akiba-bay.vercel.app/oauth/callback'; //배포용 redirect URI
+  const redirectUri = 'http://localhost:8000/oauth/callback';
+  // const clientId = 'quwp3RTYyaTzBPWUj59t';
+  // const redirectUri =
+  //     'https://akiba-bay.vercel.app/oauth/callback'; //배포용 redirect URI
 
   final authUrl = Uri.https('nid.naver.com', '/oauth2.0/authorize', {
     'response_type': 'code',
@@ -86,23 +86,12 @@ class _NaverCallbackPageState extends State<NaverCallbackPage> {
         final isNewUser = decodingRt['isNewUser'];
 
         if (isNewUser == true) {
-          html.window.history.replaceState(
-            html.window.history.state,
-            '',
-            '/nickname',
-          );
           Navigator.of(context).pushReplacementNamed('/nickname');
         } else if (isNewUser == false) {
-          html.window.history.replaceState(
-            html.window.history.state,
-            '',
-            '/main',
-          );
           Navigator.of(
             context,
           ).pushNamedAndRemoveUntil('/main', (route) => false);
         } else {
-          html.window.history.replaceState(null, '', '/login');
           Navigator.of(context).pushReplacementNamed('/login');
         }
       } catch (e) {

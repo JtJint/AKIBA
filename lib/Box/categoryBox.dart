@@ -14,16 +14,16 @@ class Categorybox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final boxWidth = width ?? Responsive.ref(context) * 0.20;
-    final iconContainerSize = boxWidth * 0.8;
+    final boxWidth = width ?? Responsive.ref(context) * 0.15;
+    final iconContainerSize = boxWidth * 0.9;
     final iconSize = boxWidth * 0.4;
-    final labelFontSize = (boxWidth * 0.12).clamp(10.0, 14.0);
+    final labelFontSize = (boxWidth * 0.3).clamp(10.0, 14.0);
     final labelSpacing = (boxWidth * 0.035).clamp(4.0, 8.0);
 
     return Container(
       width: boxWidth,
       color: Colors.transparent,
-      // height: boxWidth + 20,
+      height: boxWidth + 20,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -47,7 +47,7 @@ class Categorybox extends StatelessWidget {
             ),
             SizedBox(height: labelSpacing),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 1),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(

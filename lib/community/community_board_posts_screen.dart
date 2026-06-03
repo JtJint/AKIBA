@@ -131,10 +131,18 @@ class _CommunityBoardPostsScreenState extends State<CommunityBoardPostsScreen> {
             width: 126,
             height: 54,
             child: FloatingActionButton.extended(
-              onPressed: () => Navigator.of(context).pushNamed(
-                AppRouter.communityWrite,
-                arguments: CommunityWriteRouteArgs(boardCode: widget.boardCode),
-              ),
+              onPressed: () async {
+                final created = await Navigator.of(context).pushNamed(
+                  AppRouter.communityWrite,
+                  arguments: CommunityWriteRouteArgs(
+                    boardCode: widget.boardCode,
+                  ),
+                );
+                if (!mounted || created != true) return;
+                setState(() {
+                  _posts = _fetchPosts();
+                });
+              },
               backgroundColor: const Color(0xffD0FF00),
               foregroundColor: Colors.black,
               elevation: 0,
@@ -218,7 +226,12 @@ class _BoardChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(iconPath, width: 23, height: 23),
+                Image.asset(
+                  iconPath,
+                  width: 23,
+                  height: 23,
+                  fit: BoxFit.contain,
+                ),
                 const SizedBox(width: 7),
                 Text(
                   label,
@@ -279,15 +292,15 @@ class _CommunityPostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tileHeight = post.imageUrls.isNotEmpty ? 124.0 : 110.0;
+
     return InkWell(
       onTap: () => Navigator.of(context).pushNamed(
         AppRouter.communityPostDetailPath(post.boardCode, post.postId),
         arguments: CommunityPostDetailRouteArgs(initialPost: post),
       ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: post.imageUrls.isNotEmpty ? 124 : 110,
-        ),
+      child: SizedBox(
+        height: tileHeight,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -352,17 +365,7 @@ class _CommunityPostTile extends StatelessWidget {
                   if (post.imageUrls.isNotEmpty)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        post.imageUrls.first,
-                        width: 68,
-                        height: 68,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 68,
-                          height: 68,
-                          color: const Color(0xff242424),
-                        ),
-                      ),
+                      child: _PostThumbnail(imageUrls: post.imageUrls),
                     )
                   else
                     const SizedBox(height: 68),
@@ -405,6 +408,49 @@ class _CommunityPostTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PostThumbnail extends StatelessWidget {
+  const _PostThumbnail({required this.imageUrls});
+
+  final List<String> imageUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        Image.network(
+          imageUrls.first,
+          width: 68,
+          height: 68,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 68,
+            height: 68,
+            color: const Color(0xff242424),
+          ),
+        ),
+        if (imageUrls.length > 1)
+          Container(
+            margin: const EdgeInsets.all(4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              imageUrls.length.toString(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

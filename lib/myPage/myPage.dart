@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:akiba/Login/api/userApi.dart';
 import 'package:akiba/myPage/mypage.api.dart';
@@ -8,25 +7,34 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 class MyPageScreen extends StatefulWidget {
-  const MyPageScreen({super.key});
+  const MyPageScreen({super.key, this.targetUserId});
+
+  final int? targetUserId;
 
   @override
   State<MyPageScreen> createState() => _MyPageScreenState();
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  Response rt = Response('', 200);
-  dynamic body = {
+  static const Map<String, dynamic> _defaultProfile = {
     "userId": 0,
     "nickname": "사용자",
     "bio": null,
     "profileImageUrl": null,
     "mannerScore": 0,
+    "completedDealCount": 0,
     "ongoingDealCount": 0,
     "followerCount": 0,
     "followingCount": 0,
     "isFollowing": false,
   };
+
+  Response rt = Response('', 200);
+  Map<String, dynamic> body = Map<String, dynamic>.from(_defaultProfile);
+  bool _isFollowSubmitting = false;
+
+  bool get _isMyProfile => widget.targetUserId == null;
+
   @override
   initState() {
     super.initState();
@@ -35,14 +43,31 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Future<void> fetchProfile() async {
     try {
-      final response = await myPageAPI.getProfile();
+      final response = await myPageAPI.getProfile(
+        targetUserId: widget.targetUserId,
+      );
+      final decoded = jsonDecode(response.body);
+      final profile = _extractProfile(decoded);
       setState(() {
         rt = response;
-        body = jsonDecode(rt.body);
+        body = {..._defaultProfile, ...profile};
       });
     } catch (e) {
       print('Error fetching profile: $e');
     }
+  }
+
+  Map<String, dynamic> _extractProfile(dynamic decoded) {
+    if (decoded is! Map) return <String, dynamic>{};
+
+    for (final key in ['data', 'result', 'profile', 'user']) {
+      final value = decoded[key];
+      if (value is Map) {
+        return Map<String, dynamic>.from(value);
+      }
+    }
+
+    return Map<String, dynamic>.from(decoded);
   }
 
   Future<void> _logout() async {
@@ -50,8 +75,48 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     if (!mounted) return;
 
-    html.window.history.replaceState(null, '', '/login');
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
+  Future<void> _toggleFollow() async {
+    final targetUserId = widget.targetUserId;
+    if (targetUserId == null || _isFollowSubmitting) return;
+
+    final isFollowing = body['isFollowing'] == true;
+    setState(() {
+      _isFollowSubmitting = true;
+    });
+
+    try {
+      final response = isFollowing
+          ? await myPageAPI.unfollow(targetUserId)
+          : await myPageAPI.follow(targetUserId);
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isFollowing ? '팔로우 취소에 실패했어요.' : '팔로우에 실패했어요.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      await fetchProfile();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('팔로우 상태 변경 중 오류가 발생했어요. $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFollowSubmitting = false;
+        });
+      }
+    }
   }
 
   //   {
@@ -81,10 +146,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
     const lime = Color(0xffd7ff00);
     const dividerColor = Color(0xff3a3a3f);
     final nickname = body['nickname']?.toString() ?? '아키바님';
-    final profileImageUrl = body['profileImageUrl']?.toString();
+    final isFollowing = body['isFollowing'] == true;
 
     return AkibaShell(
-      selectedIndex: getSelectedIndexFromRoute(context),
+      selectedIndex: _isMyProfile ? getSelectedIndexFromRoute(context) : 0,
       backgroundColor: bgColor,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -94,13 +159,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
             _ProfileStage(
               nickname: nickname,
               trustText: '신뢰도 ${body["mannerScore"]}%',
-              characterImageUrl:
-                  profileImageUrl != null && profileImageUrl.isNotEmpty
-                  ? profileImageUrl
-                  : null,
             ),
 
             const SizedBox(height: 18),
+
+            if (!_isMyProfile) ...[
+              _FollowButton(
+                isFollowing: isFollowing,
+                isLoading: _isFollowSubmitting,
+                onPressed: _toggleFollow,
+              ),
+              const SizedBox(height: 18),
+            ],
 
             Container(
               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -174,28 +244,79 @@ class _MyPageScreenState extends State<MyPageScreen> {
             const SizedBox(height: 28),
             const _MenuItem(title: '내 경매 현황'),
 
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: _logout,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xff3a3a3f)),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            if (_isMyProfile) ...[
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _logout,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xff3a3a3f)),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    '로그아웃',
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                child: const Text(
-                  '로그아웃',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
               ),
-            ),
+            ],
             const SizedBox(height: 16),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FollowButton extends StatelessWidget {
+  const _FollowButton({
+    required this.isFollowing,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  final bool isFollowing;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isFollowing
+              ? const Color(0xff242428)
+              : const Color(0xffd7ff00),
+          disabledBackgroundColor: const Color(0xff242428),
+          foregroundColor: isFollowing ? Colors.white : Colors.black,
+          disabledForegroundColor: const Color(0xff8d8d94),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 0,
+        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xffd7ff00),
+                ),
+              )
+            : Text(
+                isFollowing ? '팔로우취소' : '팔로우',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
       ),
     );
   }
@@ -249,134 +370,133 @@ class _StatItem extends StatelessWidget {
 }
 
 class _ProfileStage extends StatelessWidget {
-  const _ProfileStage({
-    required this.nickname,
-    required this.trustText,
-    this.characterImageUrl,
-  });
+  const _ProfileStage({required this.nickname, required this.trustText});
 
   final String nickname;
   final String trustText;
-  final String? characterImageUrl;
 
   @override
   Widget build(BuildContext context) {
     const purple = Color(0xff8a2be2);
 
-    return SizedBox(
-      height: 405,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            top: 66,
-            child: Container(
-              width: 455,
-              height: 320,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  center: Alignment.topCenter,
-                  radius: 0.86,
-                  colors: [
-                    Color(0xff242426),
-                    Color(0xff171719),
-                    Color(0xff0b0b0d),
-                  ],
-                  stops: [0.0, 0.58, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 26,
-            child: Container(
-              width: 300,
-              height: 24,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(120),
-                gradient: const RadialGradient(
-                  colors: [
-                    Color(0xffd7ff00),
-                    Color(0xff6f8d00),
-                    Color(0x000b0b0d),
-                  ],
-                  stops: [0.0, 0.36, 1.0],
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x77d7ff00),
-                    blurRadius: 18,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: 78,
-            child: Column(
-              children: [
-                Text(
-                  nickname,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: purple,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  child: Text(
-                    trustText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stageWidth = constraints.maxWidth.clamp(320.0, 664.0).toDouble();
+        final stageHeight = (stageWidth * 0.84).clamp(330.0, 500.0);
+        final ellipseWidth = stageWidth;
+        final ellipseHeight = ellipseWidth * 55 / 664;
+        final characterSize = (stageWidth * 0.62).clamp(210.0, 360.0);
+        final ellipseBottom = stageHeight * 0.12;
+        final characterBottom = ellipseBottom + ellipseHeight * 0.1;
+
+        return SizedBox(
+          height: stageHeight,
+          child: Stack(
+            alignment: Alignment.topCenter,
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: 0,
+                child: Container(
+                  width: stageWidth,
+                  height: stageHeight,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xff202020),
+                        Color(0xff171719),
+                        Color(0xff0b0b0d),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 176,
-            child: SizedBox(
-              width: 220,
-              height: 172,
-              child: characterImageUrl == null
-                  ? const _CharacterPlaceholder()
-                  : Image.network(
-                      characterImageUrl!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          const _CharacterPlaceholder(),
+              ),
+              Positioned(
+                top: 24,
+                child: Column(
+                  children: [
+                    Text(
+                      nickname,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-            ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: purple,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        trustText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: ellipseBottom,
+                child: Transform.rotate(
+                  angle: -0.018,
+                  child: Container(
+                    width: ellipseWidth,
+                    height: ellipseHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xffd7ff00), Color(0xff94c400)],
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xaad7ff00),
+                          blurRadius: 14,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: characterBottom,
+                child: _ProfileCharacter(size: characterSize),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _CharacterPlaceholder extends StatelessWidget {
-  const _CharacterPlaceholder();
+class _ProfileCharacter extends StatelessWidget {
+  const _ProfileCharacter({required this.size});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      child: Image.asset('assets/myPageChar.png', fit: BoxFit.fitHeight),
+    return Image.asset(
+      'assets/myPageCharacter.gif',
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      alignment: Alignment.bottomCenter,
     );
   }
 }

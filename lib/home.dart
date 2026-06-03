@@ -1,4 +1,3 @@
-import 'dart:html' as html;
 import 'package:akiba/app_router.dart';
 import 'package:akiba/Carousel/AutionCareven.dart';
 import 'package:akiba/Carousel/careven.dart';
@@ -30,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    html.window.history.replaceState(null, '', '/main');
     _fetchPopularItems();
   }
 
@@ -162,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _HomeSectionHeader(
                 title: '곧 입찰이 끝나요!',
                 onMoreTap: () =>
-                    Navigator.of(context).pushNamed(AppRouter.used),
+                    Navigator.of(context).pushNamed(AppRouter.auctionEndingSoon),
               ),
               SizedBox(height: Responsive.ref(context) * 0.02),
               const Autioncareven(),
@@ -192,22 +190,25 @@ class _HomeSectionHeader extends StatelessWidget {
             title,
             style: TextStyle(
               color: Colors.white,
-              fontSize: Responsive.ref(context) * 0.04,
+              fontSize: Responsive.ref(context) * 0.03,
             ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.only(right: Responsive.ref(context) * 0.03),
-          child: GestureDetector(
-            onTap: onMoreTap,
-            child: Text(
+        Row(
+          children: [
+            Text(
               '더보기',
               style: TextStyle(
-                color: Color(0xff838383),
-                fontSize: Responsive.ref(context) * 0.035,
+                color: Colors.white54,
+                fontSize: Responsive.ref(context) * 0.025,
               ),
             ),
-          ),
+            IconButton(
+              onPressed: onMoreTap,
+              icon: const Icon(Icons.arrow_forward_ios, size: 16),
+              color: Colors.white54,
+            ),
+          ],
         ),
       ],
     );

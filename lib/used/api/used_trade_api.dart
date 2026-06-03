@@ -76,6 +76,27 @@ class UsedTradeApi {
         .toList();
   }
 
+  static Future<List<UsedTradeItem>> getSimilarPosts({
+    required int postId,
+    int limit = 10,
+  }) async {
+    final response = await AuthHttpClient.get(
+      ApiConfig.uri(
+        'api/market/posts/$postId/similar',
+      ).replace(queryParameters: {'limit': limit.toString()}),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw UsedTradeApiException(response.statusCode, response.body);
+    }
+
+    final decoded = jsonDecode(response.body);
+    return _extractList(decoded)
+        .map((item) => UsedTradeItem.fromJson(item))
+        .where((item) => item.id != 0 || item.title.isNotEmpty)
+        .toList();
+  }
+
   static Future<http.Response> updatePost({
     required int postId,
     required UsedPostPayload payload,

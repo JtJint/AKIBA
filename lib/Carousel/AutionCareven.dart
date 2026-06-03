@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:akiba/app_router.dart';
 import 'package:akiba/auction/api/auction_api.dart';
 import 'package:akiba/Cards/AuctionCard.careven.dart';
 import 'package:akiba/utils/responsive.dart';
@@ -98,7 +99,11 @@ class _AutioncarevenState extends State<Autioncareven> {
                 name: item.title,
                 endTime: _formatRemainingTime(item.endsAt),
                 price: _formatPrice(item.currentPrice),
-                rateOfChange: item.bidCount.toDouble(),
+                bidCount: item.bidCount,
+                onTap: () => Navigator.of(context).pushNamed(
+                  AppRouter.auctionDetailPath(item.postId),
+                  arguments: AuctionDetailRouteArgs(initialItem: item),
+                ),
               ),
             ),
           );
@@ -119,9 +124,14 @@ class _AutioncarevenState extends State<Autioncareven> {
     if (endsAt == null) return '마감 임박';
     final diff = endsAt.toLocal().difference(DateTime.now());
     if (diff.isNegative) return '마감';
-    if (diff.inDays > 0) return '${diff.inDays}일 남음';
-    if (diff.inHours > 0) return '${diff.inHours}시간 ${diff.inMinutes % 60}분';
-    if (diff.inMinutes > 0) return '${diff.inMinutes}분 남음';
-    return '곧 마감';
+    final days = diff.inDays;
+    final hours = diff.inHours % 24;
+    final minutes = diff.inMinutes % 60;
+    final seconds = diff.inSeconds % 60;
+
+    if (days > 0) {
+      return '$days일 ${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 }

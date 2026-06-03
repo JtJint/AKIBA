@@ -55,16 +55,22 @@ class MarketSearchApi {
   static Future<List<MarketSearchPost>> searchPosts({
     required String keyword,
     String? type,
-    int page = 0,
-    int size = 20,
+    bool? onlyActive,
+    bool? unOpenedOnly,
+    String? sort,
+    int? page,
+    int? size,
   }) async {
     final response = await AuthHttpClient.get(
       ApiConfig.uri('api/market/search').replace(
         queryParameters: {
           'keyword': keyword,
           if (type != null && type.trim().isNotEmpty) 'type': type.trim(),
-          'page': page.toString(),
-          'size': size.toString(),
+          if (onlyActive != null) 'onlyActive': onlyActive.toString(),
+          if (unOpenedOnly != null) 'unOpenedOnly': unOpenedOnly.toString(),
+          if (sort != null && sort.trim().isNotEmpty) 'sort': sort.trim(),
+          if (page != null) 'page': page.toString(),
+          if (size != null) 'size': size.toString(),
         },
       ),
     );
@@ -99,16 +105,22 @@ class MarketSearchApi {
 }
 
 class PopularKeyword {
-  const PopularKeyword({required this.rank, required this.keyword});
+  const PopularKeyword({
+    required this.rank,
+    required this.keyword,
+    required this.trend,
+  });
 
   final int rank;
   final String keyword;
+  final String trend;
 
   factory PopularKeyword.fromJson(dynamic json) {
     final map = json is Map<String, dynamic> ? json : <String, dynamic>{};
     return PopularKeyword(
       rank: _parseInt(map['rank']),
       keyword: (map['keyword'] ?? '').toString(),
+      trend: (map['trend'] ?? 'SAME').toString(),
     );
   }
 }
@@ -119,12 +131,16 @@ class MarketSearchPost {
     required this.title,
     required this.price,
     required this.thumbnailUrl,
+    required this.type,
+    required this.createdAtText,
   });
 
   final int postId;
   final String title;
   final int price;
   final String thumbnailUrl;
+  final String type;
+  final String createdAtText;
 
   factory MarketSearchPost.fromJson(dynamic json) {
     final map = json is Map<String, dynamic> ? json : <String, dynamic>{};
@@ -134,7 +150,10 @@ class MarketSearchPost {
       price: _parseInt(
         map['price'] ?? map['currentPrice'] ?? map['startPrice'],
       ),
-      thumbnailUrl: (map['thumbnailUrl'] ?? map['imageUrl'] ?? '').toString(),
+      thumbnailUrl: _parseThumbnailUrl(map),
+      type: (map['type'] ?? map['postType'] ?? map['marketType'] ?? 'USED')
+          .toString(),
+      createdAtText: _formatDateText(map['createdAt'] ?? map['createdAtText']),
     );
   }
 }
@@ -153,4 +172,36 @@ int _parseInt(dynamic value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String _parseThumbnailUrl(Map<String, dynamic> map) {
+  final direct = map['thumbnailUrl'] ?? map['imageUrl'];
+  if (direct is String && direct.isNotEmpty) {
+    return ApiConfig.resourceUrl(direct);
+  }
+
+  final images = map['images'] ?? map['imageUrls'];
+  if (images is List && images.isNotEmpty) {
+    final first = images.first;
+    if (first is String) return ApiConfig.resourceUrl(first);
+    if (first is Map) {
+      return ApiConfig.resourceUrl(
+        (first['imageUrl'] ?? first['url'])?.toString(),
+      );
+    }
+  }
+
+  return '';
+}
+
+String _formatDateText(dynamic value) {
+  final raw = value?.toString() ?? '';
+  final date = DateTime.tryParse(raw);
+  if (date == null) return raw;
+
+  final diff = DateTime.now().difference(date.toLocal());
+  if (diff.inDays > 0) return '${diff.inDays}일전';
+  if (diff.inHours > 0) return '${diff.inHours}시간전';
+  if (diff.inMinutes > 0) return '${diff.inMinutes}분전';
+  return '방금 전';
 }

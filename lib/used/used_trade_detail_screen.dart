@@ -66,15 +66,20 @@ class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
   }
 
   Future<void> _fetchSimilarItems() async {
+    final currentId = widget.postId ?? widget.initialItem?.id;
+    if (currentId == null || currentId == 0) return;
+
     try {
-      final items = await UsedTradeApi.getPopularPosts(limit: 8);
+      final items = await UsedTradeApi.getSimilarPosts(
+        postId: currentId,
+        limit: 8,
+      );
       if (!mounted) return;
-      final currentId = widget.postId ?? widget.initialItem?.id;
       setState(() {
         _similarItems = items.where((item) => item.id != currentId).toList();
       });
     } catch (error) {
-      debugPrint('used popular fetch error: $error');
+      debugPrint('used similar fetch error: $error');
     }
   }
 

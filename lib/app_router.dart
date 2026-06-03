@@ -1,6 +1,9 @@
 import 'package:akiba/Login/URL.dart';
 import 'package:akiba/Logo/nickName.dart';
 import 'package:akiba/Logo/onBoarding.dart';
+import 'package:akiba/auction/api/auction_api.dart';
+import 'package:akiba/auction/auction_detail_screen.dart';
+import 'package:akiba/auction/auction_list_screen.dart';
 import 'package:akiba/auction/auction_screen.dart';
 import 'package:akiba/chat/chatingPage.dart';
 import 'package:akiba/chat/chatMain.dart';
@@ -36,14 +39,19 @@ class AppRouter {
   static const String usedDetail = '/used/detail';
   static const String limited = '/limited';
   static const String auction = '/auction';
+  static const String auctionEndingSoon = '/auction/ending-soon';
+  static const String auctionPopular = '/auction/popular';
   static const String wanted = '/wanted';
   static const String chat = '/chat';
   static const String mypage = '/mypage';
+  static const String profile = '/profile';
   static const String search = '/search';
   static const String searchResult = '/search/result';
 
   static String wantedDetailPath(int postId) => '/wanted/$postId';
+  static String auctionDetailPath(int postId) => '/auction/$postId';
   static String chatRoomPath(int roomId) => '/chat/$roomId';
+  static String profilePath(int targetUserId) => '/profile/$targetUserId';
   static String communityPostDetailPath(String boardCode, int postId) =>
       '/community/$boardCode/posts/$postId';
   static String communityBoardPath(String boardCode) => '/community/$boardCode';
@@ -165,6 +173,35 @@ class AppRouter {
       );
     }
 
+    if (uri.path == auctionEndingSoon) {
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => const AuctionListScreen(type: AuctionListType.endingSoon),
+      );
+    }
+
+    if (uri.path == auctionPopular) {
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => const AuctionListScreen(type: AuctionListType.popular),
+      );
+    }
+
+    if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'auction') {
+      final postId = int.tryParse(uri.pathSegments[1]);
+      final args = settings.arguments;
+      final routeArgs = args is AuctionDetailRouteArgs ? args : null;
+      if (postId != null) {
+        return _buildRoute(
+          settings: settings,
+          builder: (_) => AuctionDetailScreen(
+            postId: postId,
+            initialItem: routeArgs?.initialItem,
+          ),
+        );
+      }
+    }
+
     if (uri.path == wanted) {
       return _buildRoute(
         settings: settings,
@@ -205,7 +242,20 @@ class AppRouter {
     }
 
     if (uri.path == mypage) {
-      return _buildRoute(settings: settings, builder: (_) => MyPageScreen());
+      return _buildRoute(
+        settings: settings,
+        builder: (_) => const MyPageScreen(),
+      );
+    }
+
+    if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'profile') {
+      final targetUserId = int.tryParse(uri.pathSegments[1]);
+      if (targetUserId != null) {
+        return _buildRoute(
+          settings: settings,
+          builder: (_) => MyPageScreen(targetUserId: targetUserId),
+        );
+      }
     }
 
     if (uri.path == search) {
@@ -223,8 +273,13 @@ class AppRouter {
       if (routeArgs != null) {
         return _buildRoute(
           settings: settings,
-          builder: (_) =>
-              SearchResultScreen(query: routeArgs.query, type: routeArgs.type),
+          builder: (_) => SearchResultScreen(
+            query: routeArgs.query,
+            type: routeArgs.type,
+            onlyActive: routeArgs.onlyActive,
+            unOpenedOnly: routeArgs.unOpenedOnly,
+            sort: routeArgs.sort,
+          ),
         );
       }
     }
@@ -262,10 +317,19 @@ class WritePageRouteArgs {
 }
 
 class SearchResultRouteArgs {
-  const SearchResultRouteArgs({required this.query, this.type});
+  const SearchResultRouteArgs({
+    required this.query,
+    this.type,
+    this.onlyActive,
+    this.unOpenedOnly,
+    this.sort,
+  });
 
   final String query;
   final String? type;
+  final bool? onlyActive;
+  final bool? unOpenedOnly;
+  final String? sort;
 }
 
 class CommunityPostDetailRouteArgs {
@@ -278,6 +342,12 @@ class CommunityWriteRouteArgs {
   const CommunityWriteRouteArgs({required this.boardCode});
 
   final String boardCode;
+}
+
+class AuctionDetailRouteArgs {
+  const AuctionDetailRouteArgs({this.initialItem});
+
+  final AuctionSummary? initialItem;
 }
 
 class UsedTradeDetailRouteArgs {

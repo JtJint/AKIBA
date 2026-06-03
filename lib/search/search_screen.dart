@@ -1,7 +1,9 @@
 import 'package:akiba/colors.dart';
 import 'package:akiba/app_router.dart';
 import 'package:akiba/search/api/market_search_api.dart';
+import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/utils/responsive.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Figma AKIBA Design - 검색 화면
@@ -23,27 +25,7 @@ class _SearchScreenState extends State<SearchScreen_> {
     '닌텐도 스위치',
   ];
 
-  static const List<String> _fallbackRecommendedTags = [
-    '중고거래',
-    '경매',
-    '한정판',
-    '특전',
-  ];
-
-  static const List<String> _fallbackPopularSearchesTop10 = [
-    '아이폰 15 Pro',
-    '맥북 에어 M3',
-    '에어팟 프로 2',
-    '닌텐도 스위치',
-    '소니 WH-1000XM5',
-    '갤럭시 버즈2',
-    '아이패드 미니',
-    '애플워치 울트라',
-    'PS5',
-    'Xbox 시리즈 X',
-  ];
-
-  List<String> _recommendedTags = _fallbackRecommendedTags;
+  List<String> _recommendedTags = const [];
   List<PopularKeyword> _popularKeywords = const [];
   bool _isPopularBoxExpanded = false;
   bool _isKeywordLoading = true;
@@ -70,14 +52,14 @@ class _SearchScreenState extends State<SearchScreen_> {
       setState(() {
         final tags = results[0] as List<String>;
         final keywords = results[1] as List<PopularKeyword>;
-        _recommendedTags = tags.isEmpty ? _fallbackRecommendedTags : tags;
+        _recommendedTags = tags.take(10).toList();
         _popularKeywords = keywords;
         _isKeywordLoading = false;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _recommendedTags = _fallbackRecommendedTags;
+        _recommendedTags = const [];
         _popularKeywords = const [];
         _isKeywordLoading = false;
       });
@@ -215,12 +197,13 @@ class _SearchScreenState extends State<SearchScreen_> {
   /// 추천 검색어 태그 (보라→초록 그라데이션 테두리)
   Widget _buildRecommendedTags() {
     final ref = Responsive.ref(context);
+    final tags = _recommendedTags.isEmpty ? const ['-'] : _recommendedTags;
     return Wrap(
       spacing: ref * 0.02,
       runSpacing: ref * 0.02,
-      children: _recommendedTags.map((tag) {
+      children: tags.map((tag) {
         return GestureDetector(
-          onTap: () => _performSearch(tag),
+          onTap: tag == '-' ? null : () => _performSearch(tag),
           child: Container(
             padding: const EdgeInsets.all(1.5),
             decoration: BoxDecoration(
@@ -252,7 +235,7 @@ class _SearchScreenState extends State<SearchScreen_> {
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Text(
-                '#$tag',
+                tag == '-' ? '-' : '#$tag',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: ref * 0.03,
@@ -347,11 +330,13 @@ class _SearchScreenState extends State<SearchScreen_> {
                       child: Center(child: CircularProgressIndicator()),
                     )
                   else
-                    ...List.generate(_popularSearchLabels.length, (index) {
+                    ...List.generate(10, (index) {
                       final rank = index + 1;
-                      final item = _popularSearchLabels[index];
+                      final item = _popularKeywordAt(rank);
                       return GestureDetector(
-                        onTap: () => _performSearch(item),
+                        onTap: item.keyword == '-'
+                            ? null
+                            : () => _performSearch(item.keyword),
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: ref * 0.012),
                           child: Row(
@@ -373,7 +358,7 @@ class _SearchScreenState extends State<SearchScreen_> {
                               SizedBox(width: ref * 0.02),
                               Expanded(
                                 child: Text(
-                                  item,
+                                  item.keyword,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: ref * 0.03,
@@ -407,22 +392,65 @@ class _SearchScreenState extends State<SearchScreen_> {
       arguments: SearchResultRouteArgs(
         query: normalized,
         type: _typeQueryValue,
+        onlyActive: true,
+        unOpenedOnly: false,
+        sort: 'latest',
       ),
     );
   }
 
-  List<String> get _popularSearchLabels {
-    if (_popularKeywords.isEmpty) return _fallbackPopularSearchesTop10;
-    return _popularKeywords.map((item) => item.keyword).toList();
+  PopularKeyword _popularKeywordAt(int rank) {
+    return _popularKeywords.firstWhere(
+      (item) => item.rank == rank,
+      orElse: () =>
+          _popularKeywords.length >= rank
+              ? _popularKeywords[rank - 1]
+              : PopularKeyword(rank: rank, keyword: '-', trend: 'SAME'),
+    );
   }
 }
 
 /// 검색 결과 화면
-class SearchResultScreen extends StatelessWidget {
+class SearchResultScreen extends StatefulWidget {
   final String query;
   final String? type;
+  final bool? onlyActive;
+  final bool? unOpenedOnly;
+  final String? sort;
 
-  const SearchResultScreen({super.key, required this.query, this.type});
+  const SearchResultScreen({
+    super.key,
+    required this.query,
+    this.type,
+    this.onlyActive,
+    this.unOpenedOnly,
+    this.sort,
+  });
+
+  @override
+  State<SearchResultScreen> createState() => _SearchResultScreenState();
+}
+
+class _SearchResultScreenState extends State<SearchResultScreen> {
+  late Future<List<MarketSearchPost>> _items;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = _fetchItems();
+  }
+
+  Future<List<MarketSearchPost>> _fetchItems() {
+    return MarketSearchApi.searchPosts(
+      keyword: widget.query,
+      type: widget.type,
+      onlyActive: widget.onlyActive,
+      unOpenedOnly: widget.unOpenedOnly,
+      sort: widget.sort,
+      page: 0,
+      size: 20,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +468,7 @@ class SearchResultScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          '"$query" 검색 결과',
+          '"${widget.query}" 검색 결과',
           style: TextStyle(
             color: Colors.white,
             fontSize: Responsive.ref(context) * 0.035,
@@ -450,7 +478,7 @@ class SearchResultScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: FutureBuilder<List<MarketSearchPost>>(
-        future: MarketSearchApi.searchPosts(keyword: query, type: type),
+        future: _items,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
@@ -503,37 +531,67 @@ class _SearchResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: SizedBox(
-          width: 64,
-          height: 64,
-          child: item.thumbnailUrl.isEmpty
-              ? Container(color: const Color(0xff202020))
-              : Image.network(
-                  item.thumbnailUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      Container(color: const Color(0xff202020)),
-                ),
+    return InkWell(
+      onTap: () => _openDetail(context),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: SizedBox(
+            width: 64,
+            height: 64,
+            child: item.thumbnailUrl.isEmpty
+                ? Container(color: const Color(0xff202020))
+                : AkibaNetworkImage(
+                    url: item.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_) =>
+                        Container(color: const Color(0xff202020)),
+                  ),
+          ),
         ),
-      ),
-      title: Text(
-        item.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
+        title: Text(
+          item.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-      ),
-      subtitle: Text(
-        _formatPrice(item.price),
-        style: TextStyle(color: PointColor, fontWeight: FontWeight.w700),
+        subtitle: Text(
+          [
+            _formatPrice(item.price),
+            if (item.createdAtText.isNotEmpty) item.createdAtText,
+          ].join(' · '),
+          style: TextStyle(color: PointColor, fontWeight: FontWeight.w700),
+        ),
       ),
     );
+  }
+
+  void _openDetail(BuildContext context) {
+    final type = item.type.toUpperCase();
+    if (type.contains('USED') || type.contains('LIMITED')) {
+      Navigator.of(context).pushNamed(
+        AppRouter.usedDetail,
+        arguments: UsedTradeDetailRouteArgs(
+          postId: item.postId,
+          item: UsedTradeItem.fromJson({
+            'postId': item.postId,
+            'title': item.title,
+            'price': item.price,
+            'thumbnailUrl': item.thumbnailUrl,
+            'type': item.type,
+          }),
+        ),
+      );
+      return;
+    }
+
+    if (type.contains('AUCTION')) {
+      Navigator.of(context).pushNamed(AppRouter.auctionDetailPath(item.postId));
+    }
   }
 
   String _formatPrice(int price) {

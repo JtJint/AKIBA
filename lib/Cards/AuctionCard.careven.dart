@@ -1,5 +1,6 @@
 import 'package:akiba/colors.dart';
 import 'package:akiba/utils/responsive.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// 입찰 종료 임박 매물 카드
@@ -9,7 +10,8 @@ class Auctioncardcareven extends StatelessWidget {
   final String name;
   final String endTime; // 남은 시간 (예: "2시간 30분", "D-2")
   final String price;
-  final double rateOfChange; // 가격 변동률 (예: 5.2, -3.1)
+  final int bidCount;
+  final VoidCallback? onTap;
 
   const Auctioncardcareven({
     super.key,
@@ -17,51 +19,80 @@ class Auctioncardcareven extends StatelessWidget {
     required this.name,
     required this.endTime,
     required this.price,
-    required this.rateOfChange,
+    required this.bidCount,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final ref = Responsive.ref(context);
-    final isPositive = rateOfChange >= 0;
 
-    return Container(
-      width: ref * 0.32,
-      // height: ref * 0.3 + 1,
-      decoration: BoxDecoration(
-        color: Color(0xff1E1E1E),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 1. 사진
           ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-            child: Image.network(
-              img,
-              width: ref * 0.3,
-              height: ref * 0.2,
-              fit: BoxFit.cover,
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: ref * 0.32,
+              height: ref * 0.32,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: AkibaNetworkImage(
+                      url: img,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_) => Container(
+                        color: const Color(0xff202020),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: ref * 0.26),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: endTime == '마감'
+                            ? const Color(0xff242424)
+                            : const Color(0xffD0FF00),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        endTime,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: endTime == '마감'
+                              ? Colors.white70
+                              : Colors.black,
+                          fontSize: ref * 0.018,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(ref * 0.01),
+            padding: EdgeInsets.only(top: ref * 0.012),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 2. 남은 시간
-                Text(
-                  endTime,
-                  style: TextStyle(
-                    color: Color(0xffD0FF00),
-                    fontSize: ref * 0.012,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: ref * 0.006),
-                // 3. 이름
                 Text(
                   name,
                   style: TextStyle(
@@ -73,7 +104,6 @@ class Auctioncardcareven extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: ref * 0.006),
-                // 4. 가격 & 변동률
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -87,11 +117,9 @@ class Auctioncardcareven extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${isPositive ? '+' : ''}${rateOfChange.toStringAsFixed(1)}%',
+                      '입찰 $bidCount회',
                       style: TextStyle(
-                        color: isPositive
-                            ? Color(0xff00C853)
-                            : Color(0xffFF5252),
+                        color: Colors.white60,
                         fontSize: ref * 0.02,
                         fontWeight: FontWeight.w500,
                       ),

@@ -4,12 +4,27 @@ import 'dart:html' as html;
 import 'package:akiba/config/api_config.dart';
 import 'package:http/http.dart' as http;
 
+typedef AccessTokenRefreshListener = void Function(String accessToken);
+
 class AuthHttpClient {
   AuthHttpClient._();
 
   static bool _isRefreshing = false;
+  static final List<AccessTokenRefreshListener> _refreshListeners = [];
 
-  static Future<http.Response> get(Uri url, {Map<String, String>? headers}) {
+  static void addAccessTokenRefreshListener(
+    AccessTokenRefreshListener listener,
+  ) {
+    if (!_refreshListeners.contains(listener)) {
+      _refreshListeners.add(listener);
+    }
+  }
+
+  static Future<http.Response> get(
+    Uri url, {
+    Map<String, String>? headers,
+  }) async {
+    await ensureAccessTokenFresh();
     return _sendWithRefresh(() => http.get(url, headers: authHeaders(headers)));
   }
 
@@ -17,7 +32,8 @@ class AuthHttpClient {
     Uri url, {
     Map<String, String>? headers,
     Object? body,
-  }) {
+  }) async {
+    await ensureAccessTokenFresh();
     return _sendWithRefresh(
       () => http.post(url, headers: authHeaders(headers), body: body),
     );
@@ -27,13 +43,18 @@ class AuthHttpClient {
     Uri url, {
     Map<String, String>? headers,
     Object? body,
-  }) {
+  }) async {
+    await ensureAccessTokenFresh();
     return _sendWithRefresh(
       () => http.put(url, headers: authHeaders(headers), body: body),
     );
   }
 
-  static Future<http.Response> delete(Uri url, {Map<String, String>? headers}) {
+  static Future<http.Response> delete(
+    Uri url, {
+    Map<String, String>? headers,
+  }) async {
+    await ensureAccessTokenFresh();
     return _sendWithRefresh(
       () => http.delete(url, headers: authHeaders(headers)),
     );
@@ -42,8 +63,22 @@ class AuthHttpClient {
   static Future<http.StreamedResponse> sendMultipart(
     http.MultipartRequest request,
   ) async {
+    await ensureAccessTokenFresh();
     request.headers.addAll(authHeaders(request.headers));
     return request.send();
+  }
+
+  static Future<bool> ensureAccessTokenFresh() async {
+    final accessToken = html.window.localStorage['accessToken'];
+    if (accessToken == null || accessToken.isEmpty) {
+      return false;
+    }
+
+    if (!_isAccessTokenExpiringSoon(accessToken)) {
+      return true;
+    }
+
+    return refreshAccessToken();
   }
 
   static Future<http.Response> _sendWithRefresh(
@@ -60,7 +95,9 @@ class AuthHttpClient {
 
   static Future<bool> refreshAccessToken() async {
     if (_isRefreshing) {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      for (var attempt = 0; attempt < 20 && _isRefreshing; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      }
       return (html.window.localStorage['accessToken'] ?? '').isNotEmpty;
     }
 
@@ -96,6 +133,7 @@ class AuthHttpClient {
       if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
         html.window.localStorage['refreshToken'] = newRefreshToken;
       }
+      _notifyAccessTokenRefreshed(accessToken);
       return true;
     } catch (error) {
       await clearSession();
@@ -109,6 +147,7 @@ class AuthHttpClient {
     html.window.localStorage.remove('accessToken');
     html.window.localStorage.remove('refreshToken');
     html.window.localStorage.remove('userId');
+    _notifyAccessTokenRefreshed('');
   }
 
   static Map<String, String> authHeaders([Map<String, String>? headers]) {
@@ -118,6 +157,45 @@ class AuthHttpClient {
       if (accessToken != null && accessToken.isNotEmpty)
         'Authorization': 'Bearer $accessToken',
     };
+  }
+
+  static bool _isAccessTokenExpiringSoon(String accessToken) {
+    final payload = _decodeJwtPayload(accessToken);
+    if (payload == null) return false;
+
+    final exp = payload['exp'];
+    final expSeconds = exp is num ? exp.toInt() : int.tryParse('$exp');
+    if (expSeconds == null) return false;
+
+    final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+      expSeconds * 1000,
+      isUtc: true,
+    );
+    return DateTime.now().toUtc().isAfter(
+      expiresAt.subtract(const Duration(seconds: 60)),
+    );
+  }
+
+  static Map<String, dynamic>? _decodeJwtPayload(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) return null;
+
+    try {
+      final normalized = base64Url.normalize(parts[1]);
+      final payloadText = utf8.decode(base64Url.decode(normalized));
+      final decoded = jsonDecode(payloadText);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static void _notifyAccessTokenRefreshed(String accessToken) {
+    for (final listener in List<AccessTokenRefreshListener>.from(
+      _refreshListeners,
+    )) {
+      listener(accessToken);
+    }
   }
 
   static String? _extractToken(dynamic decoded, String key) {

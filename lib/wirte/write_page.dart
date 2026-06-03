@@ -1,5 +1,6 @@
 import 'dart:html' as html;
 
+import 'package:akiba/app_router.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/market/api/market_post_api.dart';
 import 'package:akiba/media/api/media_api.dart';
@@ -9,7 +10,7 @@ import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-enum WriteMode { used, wanted, auction }
+enum WriteMode { used, wanted, auction, limited }
 
 class WritePage extends StatefulWidget {
   const WritePage({
@@ -46,13 +47,17 @@ class _WritePageState extends State<WritePage> {
   String _tradeMethod = '직거래';
   String _wantedCondition = '미개봉';
   String _auctionCondition = '미개봉';
+  String _limitedCondition = '미개봉';
+  String _limitedSpecialType = 'LIMITED_EDITION';
   int _bidUnit = 1000;
   final int _categoryId = 1;
   bool _isSubmitting = false;
 
   DateTime _auctionDate = DateTime.now();
   TimeOfDay _auctionTime = TimeOfDay.now();
+  static const int _maxImageCount = 8;
   final List<html.File> _imageFiles = [];
+  final Map<html.File, String> _imagePreviewUrls = {};
   html.File? _receiptFile;
 
   bool get _isWantedEdit => widget.wantedEditPost != null;
@@ -90,6 +95,9 @@ class _WritePageState extends State<WritePage> {
 
   @override
   void dispose() {
+    for (final objectUrl in _imagePreviewUrls.values) {
+      html.Url.revokeObjectUrl(objectUrl);
+    }
     _titleController.dispose();
     _descController.dispose();
     _priceController.dispose();
@@ -191,7 +199,9 @@ class _WritePageState extends State<WritePage> {
           ? null
           : await MediaApi.upload(_receiptFile!);
 
-      if ((_mode == WriteMode.used || _mode == WriteMode.auction) &&
+      if ((_mode == WriteMode.used ||
+              _mode == WriteMode.auction ||
+              _mode == WriteMode.limited) &&
           imageMediaIds.isEmpty) {
         throw StateError('이미지를 1개 이상 추가해주세요.');
       }
@@ -219,6 +229,14 @@ class _WritePageState extends State<WritePage> {
           imageMediaIds: imageMediaIds,
           tagNames: tags,
         ),
+        WriteMode.limited => await _submitLimited(
+          title: title,
+          content: content,
+          price: price!,
+          receiptMediaId: receiptMediaId,
+          imageMediaIds: imageMediaIds,
+          tagNames: tags,
+        ),
       };
 
       if (!mounted) return;
@@ -233,6 +251,12 @@ class _WritePageState extends State<WritePage> {
         );
         if (_isWantedEdit || _isUsedEdit) {
           Navigator.of(context).pop();
+        } else if (_mode == WriteMode.limited) {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(true);
+          } else {
+            Navigator.of(context).pushReplacementNamed(AppRouter.limited);
+          }
         } else {
           Navigator.of(context).pushReplacementNamed('/main');
         }
@@ -372,6 +396,36 @@ class _WritePageState extends State<WritePage> {
     );
   }
 
+  Future<http.Response> _submitLimited({
+    required String title,
+    required String content,
+    required int price,
+    required int? receiptMediaId,
+    required List<int> imageMediaIds,
+    required List<String> tagNames,
+  }) {
+    final purchaseSource = _purchasePlaceController.text.trim();
+    if (purchaseSource.isEmpty) {
+      throw StateError('구매처를 입력해주세요.');
+    }
+
+    return MarketPostApi.createLimitedPost(
+      LimitedPostPayload(
+        title: title,
+        content: content,
+        price: price,
+        productCondition: _limitedCondition,
+        specialType: _limitedSpecialType,
+        categoryId: _categoryId,
+        deliveryMethod: _tradeMethod,
+        purchaseSource: purchaseSource,
+        receiptMediaId: receiptMediaId ?? 0,
+        imageMediaIds: imageMediaIds,
+        tagNames: tagNames,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AkibaShell(
@@ -492,6 +546,10 @@ class _WritePageState extends State<WritePage> {
             DropdownMenuItem(value: WriteMode.used, child: Text('중고거래')),
             DropdownMenuItem(value: WriteMode.wanted, child: Text('구해요')),
             DropdownMenuItem(value: WriteMode.auction, child: Text('경매')),
+            DropdownMenuItem(
+              value: WriteMode.limited,
+              child: Text('특전/한정판'),
+            ),
           ],
           onChanged: (value) {
             if (value == null) return;
@@ -717,7 +775,91 @@ class _WritePageState extends State<WritePage> {
             ),
           ],
         );
+
+      case WriteMode.limited:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionLabel('가격 *'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _priceController,
+              hintText: '₩ 가격을 입력해주세요.',
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 18),
+            _buildSectionLabel('특전/한정 구분 *'),
+            const SizedBox(height: 8),
+            _buildChoiceRow(
+              values: const ['한정판', '특전', '특전/한정'],
+              selectedValue: _limitedSpecialTypeLabel,
+              onTap: (value) {
+                setState(() {
+                  _limitedSpecialType = _limitedSpecialTypeFromLabel(value);
+                });
+              },
+            ),
+            const SizedBox(height: 18),
+            _buildSectionLabel('상태 *'),
+            const SizedBox(height: 8),
+            _buildChoiceRow(
+              values: const ['개봉', '미개봉'],
+              selectedValue: _limitedCondition,
+              onTap: (value) {
+                setState(() {
+                  _limitedCondition = value;
+                });
+              },
+            ),
+            const SizedBox(height: 18),
+            _buildSectionLabel('거래 방식 *'),
+            const SizedBox(height: 8),
+            _buildChoiceRow(
+              values: const ['택배', '직거래'],
+              selectedValue: _tradeMethod,
+              onTap: (value) {
+                setState(() {
+                  _tradeMethod = value;
+                });
+              },
+            ),
+            const SizedBox(height: 18),
+            _buildSectionLabel('구매처 *'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _purchasePlaceController,
+              hintText: '제품을 구매하신 링크를 입력해주세요.',
+            ),
+            const SizedBox(height: 18),
+            _buildSectionLabel('영수증 인증'),
+            const SizedBox(height: 8),
+            _buildReceiptPicker(),
+            const SizedBox(height: 18),
+            _buildSectionLabel('태그'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _tagController,
+              hintText: '# 키워드를 입력해주세요. (최대 5개)',
+            ),
+          ],
+        );
     }
+  }
+
+  String get _limitedSpecialTypeLabel {
+    return switch (_limitedSpecialType) {
+      'SPECIAL_BENEFIT' => '특전',
+      'BOTH' => '특전/한정',
+      _ => '한정판',
+    };
+  }
+
+  String _limitedSpecialTypeFromLabel(String label) {
+    return switch (label) {
+      '특전' => 'SPECIAL_BENEFIT',
+      '특전/한정' => 'BOTH',
+      _ => 'LIMITED_EDITION',
+    };
   }
 
   Widget _buildSectionLabel(String text) {
@@ -732,23 +874,82 @@ class _WritePageState extends State<WritePage> {
   }
 
   Widget _buildImagePickerRow() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final file in _imageFiles.take(4)) ...[
-          _buildImagePreview(file),
-          const SizedBox(width: 8),
-        ],
-        if (_imageFiles.isEmpty) ...[
-          _buildImageBox(isAdd: false),
-          const SizedBox(width: 8),
-        ],
-        GestureDetector(onTap: _pickImages, child: _buildImageBox(isAdd: true)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final file in _imageFiles) ...[
+                _buildImagePreview(file),
+                const SizedBox(width: 8),
+              ],
+              if (_imageFiles.isEmpty) ...[
+                _buildImageBox(isAdd: false),
+                const SizedBox(width: 8),
+              ],
+              if (_imageFiles.length < _maxImageCount)
+                GestureDetector(
+                  onTap: _pickImages,
+                  child: _buildImageBox(isAdd: true),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${_imageFiles.length}/$_maxImageCount',
+          style: const TextStyle(color: Color(0xff686868), fontSize: 12),
+        ),
       ],
     );
   }
 
+  String _previewUrlFor(html.File file) {
+    return _imagePreviewUrls.putIfAbsent(
+      file,
+      () => html.Url.createObjectUrl(file),
+    );
+  }
+
+  bool _isSameImageFile(html.File left, html.File right) {
+    return left.name == right.name &&
+        left.size == right.size &&
+        left.lastModified == right.lastModified;
+  }
+
+  void _removeImageFile(html.File file) {
+    final objectUrl = _imagePreviewUrls.remove(file);
+    if (objectUrl != null) {
+      html.Url.revokeObjectUrl(objectUrl);
+    }
+    setState(() {
+      _imageFiles.remove(file);
+    });
+  }
+
+  void _addImageFiles(List<html.File> files) {
+    final nextFiles = [..._imageFiles];
+    for (final file in files) {
+      if (nextFiles.length >= _maxImageCount) break;
+      final duplicated = nextFiles.any(
+        (selectedFile) => _isSameImageFile(selectedFile, file),
+      );
+      if (!duplicated) {
+        nextFiles.add(file);
+      }
+    }
+
+    setState(() {
+      _imageFiles
+        ..clear()
+        ..addAll(nextFiles);
+    });
+  }
+
   Widget _buildImagePreview(html.File file) {
-    final objectUrl = html.Url.createObjectUrl(file);
+    final objectUrl = _previewUrlFor(file);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -765,12 +966,7 @@ class _WritePageState extends State<WritePage> {
           top: -8,
           right: -8,
           child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _imageFiles.remove(file);
-              });
-              html.Url.revokeObjectUrl(objectUrl);
-            },
+            onTap: () => _removeImageFile(file),
             child: Container(
               width: 20,
               height: 20,
@@ -787,6 +983,7 @@ class _WritePageState extends State<WritePage> {
   }
 
   Future<void> _pickImages() async {
+    if (_imageFiles.length >= _maxImageCount) return;
     final input = html.FileUploadInputElement()
       ..accept = 'image/*'
       ..multiple = true;
@@ -795,13 +992,8 @@ class _WritePageState extends State<WritePage> {
 
     final files = input.files ?? <html.File>[];
     if (files.isEmpty) return;
-    setState(() {
-      _imageFiles
-        ..clear()
-        ..addAll(files.take(8));
-    });
+    _addImageFiles(files);
   }
-
   Future<void> _pickReceipt() async {
     final input = html.FileUploadInputElement()..accept = 'image/*';
     input.click();

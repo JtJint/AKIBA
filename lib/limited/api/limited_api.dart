@@ -33,6 +33,9 @@ class LimitedApi {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode == 400 && response.body.contains('type')) {
+        return getItems();
+      }
       throw LimitedApiException(response.statusCode, response.body);
     }
 
