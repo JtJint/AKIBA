@@ -53428,7 +53428,7 @@ $S:0}
 A.aLK.prototype={
 $0(){var s,r=A.bpj()
 window.sessionStorage.setItem("naver_state",r)
-s=A.bki("https","nid.naver.com","/oauth2.0/authorize",A.aG(["response_type","code","client_id","ZfdrzEhizfq8bi0KaKTQ","redirect_uri","http://localhost:8000/oauth/callback","state",r],t.N,t.z)).gog()
+s=A.bki("https","nid.naver.com","/oauth2.0/authorize",A.aG(["response_type","code","client_id","quwp3RTYyaTzBPWUj59t","redirect_uri","https://akiba-bay.vercel.app/oauth/callback","state",r],t.N,t.z)).gog()
 window.location.href=s},
 $S:0}
 A.aeC.prototype={
