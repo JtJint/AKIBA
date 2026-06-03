@@ -34148,7 +34148,7 @@ anE(a,b){var s=0,r=A.H(t.R),q,p,o,n,m,l,k
 var $async$anE=A.D(function(c,d){if(c===1)return A.E(d,r)
 for(;;)switch(s){case 0:m=A.eE("https://api.dev.akiba-shop.com/api/users/login",0,null)
 l=t.N
-k=A.aG(["provider","NAVER","code",a,"state",b,"env","dev"],l,l)
+k=A.aG(["provider","NAVER","code",a,"state",b,"env","prod"],l,l)
 A.fV("Login Request Body: "+k.j(0))
 s=3
 return A.y(A.aZJ(m,B.T.jv(k,null),A.aG(["Content-Type","application/json"],l,l)),$async$anE)
