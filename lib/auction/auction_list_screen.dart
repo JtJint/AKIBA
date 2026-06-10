@@ -1,8 +1,8 @@
 import 'package:akiba/app_router.dart';
 import 'package:akiba/auction/api/auction_api.dart';
 import 'package:akiba/utils/headerFiles.dart';
-import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
+import 'package:akiba/widgets/market_list_tile.dart';
 import 'package:flutter/material.dart';
 
 enum AuctionListType { endingSoon, popular }
@@ -100,67 +100,14 @@ class _AuctionListItem extends StatelessWidget {
         AppRouter.auctionDetailPath(item.postId),
         arguments: AuctionDetailRouteArgs(initialItem: item),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                width: 92,
-                height: 92,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: AkibaNetworkImage(
-                        url: item.thumbnailUrl,
-                        width: 92,
-                        height: 92,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      bottom: 0,
-                      child: _CountdownBadge(endsAt: item.endsAt),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '현재 입찰가 ${_formatPrice(item.currentPrice)}',
-                    style: const TextStyle(
-                      color: Color(0xffD0FF00),
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    '즉시 구매가 ${_formatPrice(item.buyNowPrice)} · 입찰 ${item.bidCount}회',
-                    style: const TextStyle(color: Colors.white60, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      child: MarketListTile(
+        title: item.title,
+        priceText: '현재 입찰가 ${_formatPrice(item.currentPrice)}',
+        imageUrl: item.thumbnailUrl,
+        badgeText: '경매',
+        metaText:
+            '즉시 구매가 ${_formatPrice(item.buyNowPrice)} · 입찰 ${item.bidCount}회',
+        trailing: _CountdownBadge(endsAt: item.endsAt),
       ),
     );
   }

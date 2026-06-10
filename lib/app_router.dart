@@ -17,7 +17,9 @@ import 'package:akiba/demand/guhaeyo.dart';
 import 'package:akiba/demand/guhaeyo.detail.dart';
 import 'package:akiba/home.dart';
 import 'package:akiba/limited/limited_screen.dart';
+import 'package:akiba/market/market_list_screen.dart';
 import 'package:akiba/myPage/myPage.dart';
+import 'package:akiba/search/search_result_page.dart';
 import 'package:akiba/search/search_screen.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/used/used_trade_detail_screen.dart';
@@ -47,6 +49,7 @@ class AppRouter {
   static const String profile = '/profile';
   static const String search = '/search';
   static const String searchResult = '/search/result';
+  static const String marketList = '/market/list';
 
   static String wantedDetailPath(int postId) => '/wanted/$postId';
   static String auctionDetailPath(int postId) => '/auction/$postId';
@@ -273,13 +276,24 @@ class AppRouter {
       if (routeArgs != null) {
         return _buildRoute(
           settings: settings,
-          builder: (_) => SearchResultScreen(
+          builder: (_) => SearchResultPage(
             query: routeArgs.query,
             type: routeArgs.type,
             onlyActive: routeArgs.onlyActive,
             unOpenedOnly: routeArgs.unOpenedOnly,
             sort: routeArgs.sort,
           ),
+        );
+      }
+    }
+
+    if (uri.path == marketList) {
+      final args = settings.arguments;
+      final routeArgs = args is MarketListRouteArgs ? args : null;
+      if (routeArgs != null) {
+        return _buildRoute(
+          settings: settings,
+          builder: (_) => MarketListScreen(type: routeArgs.type),
         );
       }
     }
@@ -330,6 +344,12 @@ class SearchResultRouteArgs {
   final bool? onlyActive;
   final bool? unOpenedOnly;
   final String? sort;
+}
+
+class MarketListRouteArgs {
+  const MarketListRouteArgs({required this.type});
+
+  final MarketListType type;
 }
 
 class CommunityPostDetailRouteArgs {

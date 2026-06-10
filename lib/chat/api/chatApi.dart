@@ -18,6 +18,10 @@ class Chatapi {
     return response;
   }
 
+  static Future<http.Response> getMarketPost(int marketPostId) {
+    return AuthHttpClient.get(ApiConfig.uri('api/market/posts/$marketPostId'));
+  }
+
   static Future<http.Response> postRoom(
     String roomType,
     int marketPostId,
@@ -229,13 +233,13 @@ class ChatService {
     connect(accessToken);
   }
 
-  void sendMessage(int roomId, String content) {
+  bool sendMessage(int roomId, String content) {
     final stompClient = _stompClient;
     if (stompClient == null || !_isConnected) {
       print(
         '[chat] sendMessage skipped roomId=$roomId, hasClient=${stompClient != null}, isConnected=$_isConnected',
       );
-      return;
+      return false;
     }
 
     print(
@@ -251,6 +255,7 @@ class ChatService {
       }),
     );
     print('[chat] sendMessage done roomId=$roomId');
+    return true;
   }
 
   void disconnect({bool clearSubscriptionCallbacks = true}) {

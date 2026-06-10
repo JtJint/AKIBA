@@ -1,5 +1,6 @@
 import 'package:akiba/Carousel/recommendCaroulsel.dart';
 import 'package:akiba/app_router.dart';
+import 'package:akiba/market/market_list_screen.dart';
 import 'package:akiba/used/api/used_trade_api.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/used/widgets/used_trade_widgets.dart';
@@ -99,6 +100,7 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
             child: UsedTradeHorizontalSection(
               title: '지금 가장 핫한 매물!',
               items: hotItems,
+              onMore: () => _openList(MarketListType.usedPopular),
               onTapItem: (item) {
                 Navigator.of(context).pushNamed(
                   AppRouter.usedDetail,
@@ -113,7 +115,10 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
           if (recommendItems.isNotEmpty) ...[
             const SliverToBoxAdapter(child: SizedBox(height: 18)),
             SliverToBoxAdapter(
-              child: SectionHeader(title: '이런 굿즈는 어때요?', onMore: () {}),
+              child: SectionHeader(
+                title: '이런 굿즈는 어때요?',
+                onMore: () => _openList(MarketListType.usedLatest),
+              ),
             ),
             SliverToBoxAdapter(
               child: RecommendCarousel(
@@ -139,6 +144,7 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
             child: UsedTradeHorizontalSection(
               title: '최근 본 상품',
               items: recentItems,
+              onMore: () => _openList(MarketListType.usedLatest),
               onTapItem: (item) {
                 Navigator.of(context).pushNamed(
                   AppRouter.usedDetail,
@@ -153,6 +159,13 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
+    );
+  }
+
+  void _openList(MarketListType type) {
+    Navigator.of(context).pushNamed(
+      AppRouter.marketList,
+      arguments: MarketListRouteArgs(type: type),
     );
   }
 }

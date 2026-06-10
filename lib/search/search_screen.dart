@@ -1,9 +1,10 @@
+import 'dart:convert';
+import 'dart:html' as html;
+
 import 'package:akiba/colors.dart';
 import 'package:akiba/app_router.dart';
 import 'package:akiba/search/api/market_search_api.dart';
-import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/utils/responsive.dart';
-import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Figma AKIBA Design - 검색 화면
@@ -15,15 +16,13 @@ class SearchScreen_ extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen_> {
+  static const String _recentSearchStorageKey = 'akibaRecentSearches';
+  static const int _recentSearchLimit = 10;
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   String? selectedType; // 'home' 또는 'guhaeyo' 중 선택된 타입
-  static const List<String> _recentSearches = [
-    '아이폰 15',
-    '맥북 에어',
-    '에어팟',
-    '닌텐도 스위치',
-  ];
+  List<String> _recentSearches = const [];
 
   List<String> _recommendedTags = const [];
   List<PopularKeyword> _popularKeywords = const [];
@@ -39,7 +38,41 @@ class _SearchScreenState extends State<SearchScreen_> {
     selectedType = widget.initialType == 'home'
         ? null
         : widget.initialType; // ✅ 여기서 미리 고정 칩 세팅
+    _loadRecentSearches();
     _fetchSearchMeta();
+  }
+
+  void _loadRecentSearches() {
+    final stored = html.window.localStorage[_recentSearchStorageKey];
+    if (stored == null || stored.isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(stored);
+      if (decoded is! List) return;
+      final searches = decoded
+          .map((item) => item.toString().trim())
+          .where((item) => item.isNotEmpty)
+          .take(_recentSearchLimit)
+          .toList();
+      setState(() => _recentSearches = searches);
+    } catch (_) {
+      html.window.localStorage.remove(_recentSearchStorageKey);
+    }
+  }
+
+  void _saveRecentSearch(String query) {
+    final normalized = query.trim();
+    if (normalized.isEmpty) return;
+
+    final next = [
+      normalized,
+      ..._recentSearches.where(
+        (item) => item.toLowerCase() != normalized.toLowerCase(),
+      ),
+    ].take(_recentSearchLimit).toList();
+
+    html.window.localStorage[_recentSearchStorageKey] = jsonEncode(next);
+    setState(() => _recentSearches = next);
   }
 
   Future<void> _fetchSearchMeta() async {
@@ -135,7 +168,9 @@ class _SearchScreenState extends State<SearchScreen_> {
                   // 최근 검색어
                   _buildSectionTitle('최근 검색어'),
                   SizedBox(height: Responsive.ref(context) * 0.015),
-                  _buildSearchChips(_recentSearches),
+                  _recentSearches.isEmpty
+                      ? _buildEmptyRecentSearch()
+                      : _buildSearchChips(_recentSearches),
                   SizedBox(height: Responsive.ref(context) * 0.04),
                   // 추천 검색어 태그
                   _buildSectionTitle('추천 검색어'),
@@ -191,6 +226,16 @@ class _SearchScreenState extends State<SearchScreen_> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildEmptyRecentSearch() {
+    return Text(
+      '최근 검색어가 없습니다.',
+      style: TextStyle(
+        color: Colors.white38,
+        fontSize: Responsive.ref(context) * 0.03,
+      ),
     );
   }
 
@@ -387,6 +432,7 @@ class _SearchScreenState extends State<SearchScreen_> {
   void _performSearch(String query) {
     final normalized = query.trim();
     if (normalized.isEmpty) return;
+    _saveRecentSearch(normalized);
     Navigator.of(context).pushNamed(
       AppRouter.searchResult,
       arguments: SearchResultRouteArgs(
@@ -407,200 +453,6 @@ class _SearchScreenState extends State<SearchScreen_> {
               ? _popularKeywords[rank - 1]
               : PopularKeyword(rank: rank, keyword: '-', trend: 'SAME'),
     );
-  }
-}
-
-/// 검색 결과 화면
-class SearchResultScreen extends StatefulWidget {
-  final String query;
-  final String? type;
-  final bool? onlyActive;
-  final bool? unOpenedOnly;
-  final String? sort;
-
-  const SearchResultScreen({
-    super.key,
-    required this.query,
-    this.type,
-    this.onlyActive,
-    this.unOpenedOnly,
-    this.sort,
-  });
-
-  @override
-  State<SearchResultScreen> createState() => _SearchResultScreenState();
-}
-
-class _SearchResultScreenState extends State<SearchResultScreen> {
-  late Future<List<MarketSearchPost>> _items;
-
-  @override
-  void initState() {
-    super.initState();
-    _items = _fetchItems();
-  }
-
-  Future<List<MarketSearchPost>> _fetchItems() {
-    return MarketSearchApi.searchPosts(
-      keyword: widget.query,
-      type: widget.type,
-      onlyActive: widget.onlyActive,
-      unOpenedOnly: widget.unOpenedOnly,
-      sort: widget.sort,
-      page: 0,
-      size: 20,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: BackGroundColor,
-      appBar: AppBar(
-        backgroundColor: BackGroundColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.white,
-            size: Responsive.ref(context) * 0.04,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          '"${widget.query}" 검색 결과',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: Responsive.ref(context) * 0.035,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: FutureBuilder<List<MarketSearchPost>>(
-        future: _items,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final items = snapshot.data ?? const <MarketSearchPost>[];
-          if (items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search_off, size: 64, color: Color(0xff838383)),
-                  SizedBox(height: Responsive.ref(context) * 0.02),
-                  Text(
-                    '검색 결과가 없습니다',
-                    style: TextStyle(
-                      color: Color(0xff838383),
-                      fontSize: Responsive.ref(context) * 0.035,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.ref(context) * 0.02),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text('돌아가기', style: TextStyle(color: PointColor)),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(20),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return _SearchResultTile(item: item);
-            },
-            separatorBuilder: (_, __) => const Divider(color: Colors.white12),
-            itemCount: items.length,
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _SearchResultTile extends StatelessWidget {
-  const _SearchResultTile({required this.item});
-
-  final MarketSearchPost item;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => _openDetail(context),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: SizedBox(
-            width: 64,
-            height: 64,
-            child: item.thumbnailUrl.isEmpty
-                ? Container(color: const Color(0xff202020))
-                : AkibaNetworkImage(
-                    url: item.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_) =>
-                        Container(color: const Color(0xff202020)),
-                  ),
-          ),
-        ),
-        title: Text(
-          item.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        subtitle: Text(
-          [
-            _formatPrice(item.price),
-            if (item.createdAtText.isNotEmpty) item.createdAtText,
-          ].join(' · '),
-          style: TextStyle(color: PointColor, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-
-  void _openDetail(BuildContext context) {
-    final type = item.type.toUpperCase();
-    if (type.contains('USED') || type.contains('LIMITED')) {
-      Navigator.of(context).pushNamed(
-        AppRouter.usedDetail,
-        arguments: UsedTradeDetailRouteArgs(
-          postId: item.postId,
-          item: UsedTradeItem.fromJson({
-            'postId': item.postId,
-            'title': item.title,
-            'price': item.price,
-            'thumbnailUrl': item.thumbnailUrl,
-            'type': item.type,
-          }),
-        ),
-      );
-      return;
-    }
-
-    if (type.contains('AUCTION')) {
-      Navigator.of(context).pushNamed(AppRouter.auctionDetailPath(item.postId));
-    }
-  }
-
-  String _formatPrice(int price) {
-    if (price <= 0) return '가격문의';
-    final formatted = price.toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => ',',
-    );
-    return '$formatted원';
   }
 }
 

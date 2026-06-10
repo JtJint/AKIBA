@@ -139,11 +139,15 @@ class _ChatingPageState extends State<ChatingPage> {
 
     setState(() {
       final optimisticIndex = _messages.indexWhere(
-        (item) => item.isOptimistic && _isSameMessage(item, message),
+        (item) => item.isOptimistic && _isSameSentMessage(item, message),
       );
 
       if (optimisticIndex >= 0) {
-        _messages[optimisticIndex] = message;
+        _messages[optimisticIndex] = message.copyWith(
+          isMine: _isCurrentUserMessage(message),
+          senderName: _isCurrentUserMessage(message) ? '나' : message.senderName,
+          isOptimistic: false,
+        );
       } else if (!_messages.any((item) => _isSameMessage(item, message))) {
         _messages.add(message);
       }
@@ -182,8 +186,14 @@ class _ChatingPageState extends State<ChatingPage> {
 
     try {
       print('[chat] calling ChatService.sendMessage roomId=${widget.roomId}');
-      ChatService.instance.sendMessage(widget.roomId, content);
+      final sent = ChatService.instance.sendMessage(widget.roomId, content);
       print('[chat] ChatService.sendMessage returned roomId=${widget.roomId}');
+      if (!sent) {
+        setState(() {
+          _messages.remove(optimisticMessage);
+          _errorText = '소켓 연결이 끊겨 메시지를 보내지 못했습니다.';
+        });
+      }
     } catch (_) {
       print('[chat] sendMessage threw error roomId=${widget.roomId}');
       setState(() {
@@ -235,7 +245,16 @@ class _ChatingPageState extends State<ChatingPage> {
       return left.messageId == right.messageId;
     }
 
-    if (left.content != right.content || left.isMine != right.isMine) {
+    if (left.content != right.content) {
+      return false;
+    }
+
+    final hasOptimistic = left.isOptimistic || right.isOptimistic;
+    if (hasOptimistic && _isSameSentMessage(left, right)) {
+      return true;
+    }
+
+    if (!hasOptimistic && left.isMine != right.isMine) {
       return false;
     }
 
@@ -252,7 +271,25 @@ class _ChatingPageState extends State<ChatingPage> {
       return delta <= const Duration(seconds: 10);
     }
 
-    return left.isOptimistic || right.isOptimistic;
+    return hasOptimistic;
+  }
+
+  bool _isSameSentMessage(_ChatMessage left, _ChatMessage right) {
+    if (left.content != right.content) {
+      return false;
+    }
+
+    final leftIsMine = left.isOptimistic || _isCurrentUserMessage(left);
+    final rightIsMine = right.isOptimistic || _isCurrentUserMessage(right);
+    return leftIsMine && rightIsMine;
+  }
+
+  bool _isCurrentUserMessage(_ChatMessage message) {
+    final myUserId = html.window.localStorage['userId'];
+    return message.isMine ||
+        (message.senderId != null &&
+            myUserId != null &&
+            message.senderId == myUserId);
   }
 
   @override
@@ -596,6 +633,7 @@ class _MessageBubble extends StatelessWidget {
 
 class _ChatMessage {
   final String? messageId;
+  final String? senderId;
   final String content;
   final String timeLabel;
   final String dateLabel;
@@ -607,6 +645,7 @@ class _ChatMessage {
 
   const _ChatMessage({
     this.messageId,
+    this.senderId,
     required this.content,
     required this.timeLabel,
     required this.dateLabel,
@@ -616,6 +655,32 @@ class _ChatMessage {
     required this.senderName,
     this.isOptimistic = false,
   });
+
+  _ChatMessage copyWith({
+    String? messageId,
+    String? senderId,
+    String? content,
+    String? timeLabel,
+    String? dateLabel,
+    String? dateKey,
+    DateTime? createdAt,
+    bool? isMine,
+    String? senderName,
+    bool? isOptimistic,
+  }) {
+    return _ChatMessage(
+      messageId: messageId ?? this.messageId,
+      senderId: senderId ?? this.senderId,
+      content: content ?? this.content,
+      timeLabel: timeLabel ?? this.timeLabel,
+      dateLabel: dateLabel ?? this.dateLabel,
+      dateKey: dateKey ?? this.dateKey,
+      createdAt: createdAt ?? this.createdAt,
+      isMine: isMine ?? this.isMine,
+      senderName: senderName ?? this.senderName,
+      isOptimistic: isOptimistic ?? this.isOptimistic,
+    );
+  }
 
   factory _ChatMessage.fromJson(dynamic raw) {
     final map = raw is Map<String, dynamic>
@@ -655,6 +720,7 @@ class _ChatMessage {
             map['chatMessageId'],
             map['id'],
           ])?.toString(),
+      senderId: senderId,
       content:
           _firstNonNull([
             map['content'],

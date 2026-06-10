@@ -105,17 +105,19 @@ class UsedTradeHorizontalSection extends StatelessWidget {
     required this.title,
     required this.items,
     required this.onTapItem,
+    this.onMore,
   });
 
   final String title;
   final List<UsedTradeItem> items;
   final ValueChanged<UsedTradeItem> onTapItem;
+  final VoidCallback? onMore;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SectionHeader(title: title, onMore: () {}),
+        SectionHeader(title: title, onMore: onMore),
         SizedBox(
           height: 192,
           child: ListView.separated(

@@ -2,6 +2,7 @@ import 'package:akiba/Carousel/rankingListTile.dart';
 import 'package:akiba/Carousel/recommendCaroulsel.dart';
 import 'package:akiba/app_router.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
+import 'package:akiba/market/market_list_screen.dart';
 import 'package:akiba/search/SearchWidget.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/models/recommendItem.dart';
@@ -104,7 +105,10 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
               : CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
-                      child: SectionHeader(title: "이런 굿즈는 어때요?", onMore: () {}),
+                      child: SectionHeader(
+                        title: "이런 굿즈는 어때요?",
+                        onMore: _openList,
+                      ),
                     ),
                     SliverToBoxAdapter(
                       child: RecommendCarousel(
@@ -124,7 +128,7 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                     SliverToBoxAdapter(
                       child: SectionHeader(
                         title: "지금 가장 많이 찾는 굿즈!",
-                        onMore: () {},
+                        onMore: _openList,
                       ),
                     ),
                     SliverList.separated(
@@ -149,7 +153,7 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                     SliverToBoxAdapter(
                       child: SectionHeader(
                         title: "지금 가장 핫한 매물!",
-                        onMore: () {},
+                        onMore: _openList,
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -163,6 +167,13 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                 ),
         ),
       ),
+    );
+  }
+
+  void _openList() {
+    Navigator.of(context).pushNamed(
+      AppRouter.marketList,
+      arguments: const MarketListRouteArgs(type: MarketListType.wantedLatest),
     );
   }
 }

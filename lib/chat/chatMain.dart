@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:akiba/app_router.dart';
 import 'package:akiba/chat/api/chatApi.dart';
 import 'package:akiba/chat/model/chatmodel.dart';
+import 'package:akiba/config/api_config.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -24,14 +26,32 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Response chatRooms = Response('', 200);
-  dynamic chatRoomsData;
+  List<ChatItemModel> _chatItems = const [];
+  bool _isLoading = true;
+  String? _errorText;
+
   Future<void> _fetchChatData() async {
-    dynamic rt = await Chatapi.getRooms();
-    debugPrint("chatRooms: ${rt.body}");
-    setState(() {
-      chatRooms = rt;
-      chatRoomsData = chatRooms.body;
-    });
+    try {
+      final rt = await Chatapi.getRooms();
+      debugPrint("chatRooms: ${rt.body}");
+      final rooms = _extractRoomList(jsonDecode(rt.body));
+      final items = await Future.wait(rooms.map(_buildChatItemFromRoom));
+      if (!mounted) return;
+      setState(() {
+        chatRooms = rt;
+        _chatItems = items;
+        _isLoading = false;
+        _errorText = null;
+      });
+    } catch (error) {
+      debugPrint('chat rooms fetch error: $error');
+      if (!mounted) return;
+      setState(() {
+        _chatItems = const [];
+        _isLoading = false;
+        _errorText = '채팅방 목록을 불러오지 못했습니다.';
+      });
+    }
   }
 
   @override
@@ -43,7 +63,7 @@ class _ChatPageState extends State<ChatPage> {
 
     final categories = ['전체', '중고거래', '구해요', '경매', '추천'];
 
-    final chats = _buildChatItems();
+    final chats = _chatItems;
     final filteredChats = _selectedCategory == '전체'
         ? chats
         : chats.where((item) => item.category == _selectedCategory).toList();
@@ -132,7 +152,24 @@ class _ChatPageState extends State<ChatPage> {
 
                 const SizedBox(height: 22),
 
-                if (filteredChats.isEmpty)
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_errorText != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Text(
+                      _errorText!,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                else if (filteredChats.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 48),
                     child: Text(
@@ -165,6 +202,7 @@ class _ChatPageState extends State<ChatPage> {
                               userName: item.userName,
                               itemTitle: item.title,
                               itemImageUrl: item.imageUrl,
+                              priceText: item.priceText,
                             ),
                           );
                         },
@@ -184,54 +222,133 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  List<ChatItemModel> _buildChatItems() {
-    if (chatRoomsData == null) {
-      return [];
+  List<dynamic> _extractRoomList(dynamic decoded) {
+    if (decoded is List) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      for (final key in ['data', 'content', 'result', 'rooms', 'items']) {
+        final value = decoded[key];
+        if (value is List) return value;
+        if (value is Map<String, dynamic>) {
+          final nested = value['content'] ?? value['items'] ?? value['rooms'];
+          if (nested is List) return nested;
+        }
+      }
     }
+    return [];
+  }
 
+  Future<ChatItemModel> _buildChatItemFromRoom(dynamic room) async {
+    final map = room is Map<String, dynamic>
+        ? room
+        : room is Map
+        ? Map<String, dynamic>.from(room)
+        : <String, dynamic>{};
+    final roomType = (map['roomType'] ?? map['category'] ?? '전체').toString();
+    final roomId = _parseInt(map['roomId'] ?? map['id']);
+    final marketPostId = _parseInt(map['marketPostId'] ?? map['postId']);
+    final post = marketPostId > 0 ? await _fetchMarketPost(marketPostId) : null;
+
+    return ChatItemModel(
+      roodId: roomId,
+      marketPostId: marketPostId,
+      imageUrl: _postImageUrl(post, map),
+      title:
+          (post?['title'] ?? map['title'] ?? map['marketPostTitle'] ?? '상품 정보')
+              .toString(),
+      preview:
+          (map['lastMessage'] ??
+                  map['lastMessageContent'] ??
+                  post?['content'] ??
+                  '')
+              .toString(),
+      priceText: _formatPrice(
+        _parseInt(post?['price'] ?? post?['currentPrice'] ?? post?['startPrice']),
+      ),
+      category: _mapRoomTypeToCategory(roomType),
+      userName:
+          (map['targetNickname'] ??
+                  map['nickname'] ??
+                  map['userName'] ??
+                  post?['sellerNickname'] ??
+                  (post?['seller'] is Map ? post!['seller']['nickname'] : null) ??
+                  '상대방')
+              .toString(),
+      dateText:
+          (map['lastMessageAtText'] ??
+                  map['updatedAtText'] ??
+                  _formatDateText(map['createdAt']))
+              .toString(),
+    );
+  }
+
+  Future<Map<String, dynamic>?> _fetchMarketPost(int marketPostId) async {
     try {
-      final decoded = chatRoomsData is String
-          ? jsonDecode(chatRoomsData)
-          : chatRoomsData;
-      final rooms = decoded is List
-          ? decoded
-          : decoded is Map<String, dynamic> && decoded['data'] is List
-          ? decoded['data'] as List
-          : decoded is Map<String, dynamic> && decoded['content'] is List
-          ? decoded['content'] as List
-          : <dynamic>[];
-
-      return rooms.map((room) {
-        final map = room is Map<String, dynamic>
-            ? room
-            : Map<String, dynamic>.from(room as Map);
-        final roomType = (map['roomType'] ?? map['category'] ?? '전체')
-            .toString();
-
-        return ChatItemModel(
-          roodId: (map['roomId'] ?? map['id'] ?? 0) as int,
-          imageUrl:
-              (map['thumbnailUrl'] ??
-                      map['imageUrl'] ??
-                      'https://picsum.photos/seed/chat/200/200')
-                  .toString(),
-          title: (map['title'] ?? map['marketPostTitle'] ?? '채팅방').toString(),
-          preview: (map['lastMessage'] ?? map['lastMessageContent'] ?? '')
-              .toString(),
-          category: _mapRoomTypeToCategory(roomType),
-          userName:
-              (map['targetNickname'] ??
-                      map['nickname'] ??
-                      map['userName'] ??
-                      '상대방')
-                  .toString(),
-          dateText: (map['lastMessageAtText'] ?? map['updatedAtText'] ?? '')
-              .toString(),
-        );
-      }).toList();
-    } catch (_) {
-      return [];
+      final response = await Chatapi.getMarketPost(marketPostId);
+      if (response.statusCode < 200 || response.statusCode >= 300) return null;
+      final decoded = jsonDecode(response.body);
+      final body = decoded is Map<String, dynamic>
+          ? decoded['data'] is Map
+                ? decoded['data']
+                : decoded['result'] is Map
+                ? decoded['result']
+                : decoded
+          : decoded;
+      return body is Map ? Map<String, dynamic>.from(body) : null;
+    } catch (error) {
+      debugPrint('chat market post fetch error: $error');
+      return null;
     }
+  }
+
+  String _postImageUrl(Map<String, dynamic>? post, Map<String, dynamic> room) {
+    final roomImage = room['thumbnailUrl'] ?? room['imageUrl'];
+    if (roomImage is String && roomImage.isNotEmpty) {
+      return ApiConfig.resourceUrl(roomImage);
+    }
+
+    final postImage = post?['thumbnailUrl'] ?? post?['imageUrl'];
+    if (postImage is String && postImage.isNotEmpty) {
+      return ApiConfig.resourceUrl(postImage);
+    }
+
+    final images = post?['images'] ?? post?['imageUrls'];
+    if (images is List && images.isNotEmpty) {
+      final first = images.first;
+      if (first is String) return ApiConfig.resourceUrl(first);
+      if (first is Map) {
+        return ApiConfig.resourceUrl(
+          (first['imageUrl'] ?? first['url'])?.toString(),
+        );
+      }
+    }
+
+    return '';
+  }
+
+  int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  String _formatPrice(int price) {
+    if (price <= 0) return '가격 정보 없음';
+    final text = price.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => ',',
+    );
+    return '$text원';
+  }
+
+  String _formatDateText(dynamic value) {
+    final raw = value?.toString() ?? '';
+    final date = DateTime.tryParse(raw);
+    if (date == null) return '';
+    final diff = DateTime.now().difference(date.toLocal());
+    if (diff.inDays > 0) return '${diff.inDays}일전';
+    if (diff.inHours > 0) return '${diff.inHours}시간전';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}분전';
+    return '방금 전';
   }
 
   String _mapRoomTypeToCategory(String roomType) {
@@ -326,11 +443,30 @@ class _ChatListItem extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            child: Image.network(
-              item.imageUrl,
+            child: SizedBox(
               width: 98,
               height: 98,
-              fit: BoxFit.cover,
+              child: item.imageUrl.isEmpty
+                  ? Container(
+                      color: const Color(0xff202020),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: Colors.white38,
+                      ),
+                    )
+                  : AkibaNetworkImage(
+                      url: item.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_) => Container(
+                        color: const Color(0xff202020),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 14),
@@ -365,7 +501,7 @@ class _ChatListItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    item.preview,
+                    item.preview.isEmpty ? item.priceText : item.preview,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

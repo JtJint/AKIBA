@@ -2,6 +2,7 @@ import 'package:akiba/app_router.dart';
 import 'package:akiba/limited/api/limited_api.dart';
 import 'package:akiba/limited/limited_widgets.dart';
 import 'package:akiba/limited/model/limited_models.dart';
+import 'package:akiba/market/market_list_screen.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/widgets/akiba_shell.dart';
 import 'package:akiba/wirte/write_page.dart';
@@ -116,18 +117,21 @@ class _LimitedScreenState extends State<LimitedScreen> {
                   child: _LargeLimitedSection(
                     title: '지금 가장 핫한 매물 !',
                     items: hotItems,
+                    onMore: () => _openList(MarketListType.limitedPopular),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _LimitedHorizontalSection(
                     title: '좋아하실 것 같아요!',
                     items: recommendItems,
+                    onMore: () => _openList(MarketListType.limitedLatest),
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _LimitedHorizontalSection(
                     title: '최근 본 상품',
                     items: recentItems,
+                    onMore: () => _openList(MarketListType.limitedLatest),
                   ),
                 ),
               ],
@@ -162,19 +166,31 @@ class _LimitedScreenState extends State<LimitedScreen> {
       await _fetchItems();
     }
   }
+
+  void _openList(MarketListType type) {
+    Navigator.of(context).pushNamed(
+      AppRouter.marketList,
+      arguments: MarketListRouteArgs(type: type),
+    );
+  }
 }
 
 class _LargeLimitedSection extends StatelessWidget {
-  const _LargeLimitedSection({required this.title, required this.items});
+  const _LargeLimitedSection({
+    required this.title,
+    required this.items,
+    required this.onMore,
+  });
 
   final String title;
   final List<LimitedItem> items;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SectionHeader(title: title, onMore: () {}),
+        SectionHeader(title: title, onMore: onMore),
         SizedBox(
           height: 270,
           child: ListView.separated(
@@ -191,16 +207,21 @@ class _LargeLimitedSection extends StatelessWidget {
 }
 
 class _LimitedHorizontalSection extends StatelessWidget {
-  const _LimitedHorizontalSection({required this.title, required this.items});
+  const _LimitedHorizontalSection({
+    required this.title,
+    required this.items,
+    required this.onMore,
+  });
 
   final String title;
   final List<LimitedItem> items;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SectionHeader(title: title, onMore: () {}),
+        SectionHeader(title: title, onMore: onMore),
         SizedBox(
           height: 166,
           child: ListView.separated(

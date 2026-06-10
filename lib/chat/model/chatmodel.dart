@@ -1,17 +1,21 @@
 class ChatItemModel {
   final int roodId;
+  final int marketPostId;
   final String imageUrl;
   final String title;
   final String preview;
+  final String priceText;
   final String category;
   final String userName;
   final String dateText;
 
   ChatItemModel({
     required this.roodId,
+    required this.marketPostId,
     required this.imageUrl,
     required this.title,
     required this.preview,
+    required this.priceText,
     required this.category,
     required this.userName,
     required this.dateText,
