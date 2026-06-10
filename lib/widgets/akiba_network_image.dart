@@ -1,9 +1,7 @@
-import 'dart:typed_data';
-
-import 'package:akiba/api/auth_http_client.dart';
+import 'package:akiba/config/api_config.dart';
 import 'package:flutter/material.dart';
 
-class AkibaNetworkImage extends StatefulWidget {
+class AkibaNetworkImage extends StatelessWidget {
   const AkibaNetworkImage({
     super.key,
     required this.url,
@@ -20,62 +18,21 @@ class AkibaNetworkImage extends StatefulWidget {
   final WidgetBuilder? errorBuilder;
 
   @override
-  State<AkibaNetworkImage> createState() => _AkibaNetworkImageState();
-}
-
-class _AkibaNetworkImageState extends State<AkibaNetworkImage> {
-  late Future<Uint8List> _bytesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _bytesFuture = _fetchBytes();
-  }
-
-  @override
-  void didUpdateWidget(covariant AkibaNetworkImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _bytesFuture = _fetchBytes();
-    }
-  }
-
-  Future<Uint8List> _fetchBytes() async {
-    final uri = Uri.tryParse(widget.url);
-    if (uri == null) {
-      throw StateError('이미지 URL이 올바르지 않습니다.');
-    }
-
-    final response = await AuthHttpClient.get(uri);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw StateError('이미지 요청 실패 (${response.statusCode})');
-    }
-    return response.bodyBytes;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List>(
-      future: _bytesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Image.memory(
-            snapshot.data!,
-            width: widget.width,
-            height: widget.height,
-            fit: widget.fit,
-            gaplessPlayback: true,
-            errorBuilder: (_, __, ___) => _buildError(context),
-          );
-        }
+    final resolvedUrl = ApiConfig.resourceUrl(url);
+    if (resolvedUrl.isEmpty) return _buildError(context);
 
-        if (snapshot.hasError) {
-          return _buildError(context);
-        }
-
+    return Image.network(
+      resolvedUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      gaplessPlayback: true,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
         return SizedBox(
-          width: widget.width,
-          height: widget.height,
+          width: width,
+          height: height,
           child: const Center(
             child: SizedBox(
               width: 18,
@@ -85,11 +42,11 @@ class _AkibaNetworkImageState extends State<AkibaNetworkImage> {
           ),
         );
       },
+      errorBuilder: (_, __, ___) => _buildError(context),
     );
   }
 
   Widget _buildError(BuildContext context) {
-    return widget.errorBuilder?.call(context) ??
-        SizedBox(width: widget.width, height: widget.height);
+    return errorBuilder?.call(context) ?? SizedBox(width: width, height: height);
   }
 }
