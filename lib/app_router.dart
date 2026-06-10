@@ -316,11 +316,22 @@ class AppRouter {
     );
   }
 
-  static MaterialPageRoute<dynamic> _buildRoute({
+  static PageRouteBuilder<dynamic> _buildRoute({
     required RouteSettings settings,
     required WidgetBuilder builder,
   }) {
-    return MaterialPageRoute(builder: builder, settings: settings);
+    return PageRouteBuilder(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+      transitionDuration: const Duration(milliseconds: 120),
+      reverseTransitionDuration: const Duration(milliseconds: 90),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+          child: child,
+        );
+      },
+    );
   }
 }
 
