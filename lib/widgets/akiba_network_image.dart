@@ -28,6 +28,7 @@ class AkibaNetworkImage extends StatelessWidget {
       height: height,
       fit: fit,
       gaplessPlayback: true,
+      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return SizedBox(
