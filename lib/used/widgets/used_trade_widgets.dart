@@ -2,6 +2,7 @@ import 'package:akiba/models/recommendItem.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/utils/headerFiles.dart';
 import 'package:akiba/widgets/akiba_network_image.dart';
+import 'package:akiba/widgets/image_preview_viewer.dart';
 import 'package:flutter/material.dart';
 
 class UsedTradeSearchBar extends StatelessWidget {
@@ -346,23 +347,30 @@ class _UsedTradeImageCarouselState extends State<UsedTradeImageCarousel> {
           borderRadius: BorderRadius.circular(18),
           child: AspectRatio(
             aspectRatio: 1,
-            child: PageView.builder(
-              controller: _controller,
-              itemCount: widget.imageUrls.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              itemBuilder: (_, index) => AkibaNetworkImage(
-                url: widget.imageUrls[index],
-                fit: BoxFit.cover,
-                errorBuilder: (_) => Container(
-                  color: Colors.white10,
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    color: Colors.white38,
+            child: GestureDetector(
+              onTap: () => showImagePreviewViewer(
+                context,
+                imageUrls: widget.imageUrls,
+                initialIndex: _currentIndex,
+              ),
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: widget.imageUrls.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                itemBuilder: (_, index) => AkibaNetworkImage(
+                  url: widget.imageUrls[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (_) => Container(
+                    color: Colors.white10,
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.white38,
+                    ),
                   ),
                 ),
               ),
@@ -370,20 +378,38 @@ class _UsedTradeImageCarouselState extends State<UsedTradeImageCarousel> {
           ),
         ),
         const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.imageUrls.length,
-            (index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: _currentIndex == index ? 14 : 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: _currentIndex == index
-                    ? const Color(0xFFB026FF)
-                    : Colors.white24,
-                borderRadius: BorderRadius.circular(999),
+        SizedBox(
+          height: 58,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.imageUrls.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, index) => GestureDetector(
+              onTap: () {
+                _controller.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                );
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _currentIndex == index
+                        ? const Color(0xFFD0FF00)
+                        : Colors.white12,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: AkibaNetworkImage(
+                  url: widget.imageUrls[index],
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),

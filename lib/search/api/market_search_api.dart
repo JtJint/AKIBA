@@ -85,6 +85,26 @@ class MarketSearchApi {
         .toList();
   }
 
+  static Future<List<MarketSearchPost>> getPopularPosts({
+    required String type,
+    int limit = 3,
+  }) async {
+    final response = await AuthHttpClient.get(
+      ApiConfig.uri(
+        'api/market/posts/popular',
+      ).replace(queryParameters: {'type': type, 'limit': limit.toString()}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw MarketSearchApiException(response.statusCode, response.body);
+    }
+
+    final decoded = jsonDecode(response.body);
+    return _extractList(decoded, 'posts')
+        .map((item) => MarketSearchPost.fromJson(item))
+        .where((item) => item.postId != 0 || item.title.isNotEmpty)
+        .toList();
+  }
+
   static List<dynamic> _extractList(dynamic decoded, String preferredKey) {
     if (decoded is List) return decoded;
     if (decoded is Map<String, dynamic>) {

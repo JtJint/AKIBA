@@ -4,6 +4,9 @@ import 'dart:html' as html;
 import 'package:akiba/app_router.dart';
 import 'package:akiba/chat/api/chatApi.dart';
 import 'package:akiba/demand/api/wanted_api.dart';
+import 'package:akiba/widgets/akiba_network_image.dart';
+import 'package:akiba/widgets/image_preview_viewer.dart';
+import 'package:akiba/widgets/report_dialog.dart';
 import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
@@ -119,6 +122,21 @@ class _GDetailScreenState extends State<GDetailScreen> {
     );
   }
 
+  Future<void> _reportPost() async {
+    final post = _post;
+    if (post == null || post.author.userId == 0) return;
+
+    final submitted = await showReportDialog(
+      context,
+      targetUserId: post.author.userId,
+      targetPostId: post.postId,
+    );
+    if (!mounted || !submitted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
+  }
+
   Future<void> _openChatRoom() async {
     final post = _post;
     if (post == null) return;
@@ -197,12 +215,12 @@ class _GDetailScreenState extends State<GDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
         ),
         actions: [
-          if (_canEdit)
+          if (post != null)
             PopupMenuButton<String>(
               color: const Color(0xff1b1b1b),
               icon: const Icon(Icons.more_vert, color: Colors.white),
               onSelected: (value) async {
-                if (value == 'edit' && post != null) {
+                if (value == 'edit') {
                   await Navigator.of(context).pushNamed(
                     AppRouter.write,
                     arguments: WritePageRouteArgs(
@@ -215,11 +233,37 @@ class _GDetailScreenState extends State<GDetailScreen> {
                 if (value == 'delete') {
                   _deletePost();
                 }
+                if (value == 'report') {
+                  _reportPost();
+                }
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('수정')),
-                PopupMenuItem(value: 'delete', child: Text('삭제')),
-              ],
+              itemBuilder: (context) => _canEdit
+                  ? [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Text(
+                          '수정',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        enabled: !_isDeleting,
+                        child: Text(
+                          _isDeleting ? '삭제 중...' : '삭제하기',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ]
+                  : const [
+                      PopupMenuItem(
+                        value: 'report',
+                        child: Text(
+                          '신고하기',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
             ),
         ],
       ),
@@ -415,43 +459,68 @@ class _HeroImageCarousel extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           child: AspectRatio(
             aspectRatio: 1,
-            child: PageView.builder(
-              controller: pageController,
-              itemCount: imageUrls.length,
-              onPageChanged: onPageChanged,
-              itemBuilder: (_, index) {
-                return Image.network(
-                  imageUrls[index],
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.white10,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      color: Colors.white54,
+            child: GestureDetector(
+              onTap: () => showImagePreviewViewer(
+                context,
+                imageUrls: imageUrls,
+                initialIndex: currentImageIndex,
+              ),
+              child: PageView.builder(
+                controller: pageController,
+                itemCount: imageUrls.length,
+                onPageChanged: onPageChanged,
+                itemBuilder: (_, index) {
+                  return AkibaNetworkImage(
+                    url: imageUrls[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_) => Container(
+                      color: Colors.white10,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white54,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ),
         if (imageUrls.length > 1) ...[
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              imageUrls.length,
-              (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: currentImageIndex == index ? 14 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: currentImageIndex == index
-                      ? const Color(0xFFB026FF)
-                      : Colors.white24,
-                  borderRadius: BorderRadius.circular(999),
+          SizedBox(
+            height: 58,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: imageUrls.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, index) => GestureDetector(
+                onTap: () {
+                  pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: currentImageIndex == index
+                          ? const Color(0xFFD0FF00)
+                          : Colors.white12,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: AkibaNetworkImage(
+                    url: imageUrls[index],
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),

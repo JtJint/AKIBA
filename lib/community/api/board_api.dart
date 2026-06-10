@@ -106,6 +106,18 @@ class BoardApi {
     }
   }
 
+  static Future<void> deletePost({
+    required String boardCode,
+    required int postId,
+  }) async {
+    final response = await AuthHttpClient.delete(
+      ApiConfig.uri('api/boards/$boardCode/posts/$postId'),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw BoardApiException(response.statusCode, response.body);
+    }
+  }
+
   static Future<void> createComment({
     required String boardCode,
     required int postId,

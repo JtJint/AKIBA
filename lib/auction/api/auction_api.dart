@@ -81,6 +81,15 @@ class AuctionApi {
     }
   }
 
+  static Future<void> deletePost({required int postId}) async {
+    final response = await AuthHttpClient.delete(
+      ApiConfig.uri('api/auction/posts/$postId'),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw AuctionApiException(response.statusCode, response.body);
+    }
+  }
+
   static List<dynamic> _extractList(dynamic decoded) {
     if (decoded is List) return decoded;
     if (decoded is Map<String, dynamic>) {

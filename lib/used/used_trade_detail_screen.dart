@@ -7,6 +7,7 @@ import 'package:akiba/used/api/used_trade_api.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/used/widgets/used_trade_widgets.dart';
 import 'package:akiba/utils/headerFiles.dart';
+import 'package:akiba/widgets/report_dialog.dart';
 import 'package:akiba/wirte/write_page.dart';
 import 'package:flutter/material.dart';
 
@@ -113,6 +114,22 @@ class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
     );
   }
 
+  Future<void> _reportPost() async {
+    final item = _item;
+    final targetUserId = item?.seller.userId;
+    if (item == null || targetUserId == null || targetUserId == 0) return;
+
+    final submitted = await showReportDialog(
+      context,
+      targetUserId: targetUserId,
+      targetPostId: item.id,
+    );
+    if (!mounted || !submitted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
+  }
+
   Future<void> _openChatRoom() async {
     final item = _item;
     if (item == null) return;
@@ -192,12 +209,12 @@ class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
         actions: [
           const Icon(Icons.ios_share_outlined, color: Colors.white),
           const SizedBox(width: 10),
-          if (_canEdit)
+          if (item != null)
             PopupMenuButton<String>(
               color: const Color(0xff1b1b1b),
               icon: const Icon(Icons.more_vert, color: Colors.white),
               onSelected: (value) async {
-                if (value == 'edit' && item != null) {
+                if (value == 'edit') {
                   await Navigator.of(context).pushNamed(
                     AppRouter.write,
                     arguments: WritePageRouteArgs(
@@ -210,15 +227,37 @@ class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
                 if (value == 'delete') {
                   _deletePost();
                 }
+                if (value == 'report') {
+                  _reportPost();
+                }
               },
-              itemBuilder: (context) => [
-                const PopupMenuItem(value: 'edit', child: Text('수정')),
-                PopupMenuItem(
-                  value: 'delete',
-                  enabled: !_isDeleting,
-                  child: Text(_isDeleting ? '삭제 중...' : '삭제'),
-                ),
-              ],
+              itemBuilder: (context) => _canEdit
+                  ? [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Text(
+                          '수정',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        enabled: !_isDeleting,
+                        child: Text(
+                          _isDeleting ? '삭제 중...' : '삭제하기',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ]
+                  : const [
+                      PopupMenuItem(
+                        value: 'report',
+                        child: Text(
+                          '신고하기',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
             ),
           const SizedBox(width: 10),
         ],

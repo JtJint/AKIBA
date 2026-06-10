@@ -6,6 +6,7 @@ import 'package:akiba/Cards/category.dart';
 import 'package:akiba/limited/api/limited_api.dart';
 import 'package:akiba/limited/limited_widgets.dart';
 import 'package:akiba/limited/model/limited_models.dart';
+import 'package:akiba/search/api/market_search_api.dart';
 import 'package:akiba/used/api/used_trade_api.dart';
 import 'package:akiba/used/model/used_trade_models.dart';
 import 'package:akiba/used/widgets/used_trade_widgets.dart';
@@ -21,8 +22,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<MarketSearchPost> _marketPopularItems = const [];
   List<UsedTradeItem> _usedPopularItems = const [];
   List<LimitedItem> _limitedPopularItems = const [];
+  bool _isMarketPopularLoading = true;
   bool _isUsedPopularLoading = true;
   bool _isLimitedPopularLoading = true;
 
@@ -33,8 +36,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchPopularItems() async {
+    _fetchMarketPopularItems();
     _fetchUsedPopularItems();
     _fetchLimitedPopularItems();
+  }
+
+  Future<void> _fetchMarketPopularItems() async {
+    try {
+      final items = await MarketSearchApi.getPopularPosts(
+        type: 'USED',
+        limit: 3,
+      );
+      if (!mounted) return;
+      setState(() {
+        _marketPopularItems = items;
+        _isMarketPopularLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _marketPopularItems = const [];
+        _isMarketPopularLoading = false;
+      });
+      debugPrint('home market popular fetch error: $error');
+    }
   }
 
   Future<void> _fetchUsedPopularItems() async {
@@ -100,6 +125,71 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
+  List<CarevenItem> _buildMarketPopularCarouselItems() {
+    return _marketPopularItems.map((item) {
+      return CarevenItem(
+        imageUrl: item.thumbnailUrl.isEmpty
+            ? 'https://picsum.photos/seed/market-${item.postId}/600/600'
+            : item.thumbnailUrl,
+        title: item.title,
+        description: _formatMarketPopularDescription(item),
+        tags: [_marketTypeLabel(item.type)],
+        onTap: () => _openMarketPost(item),
+      );
+    }).toList();
+  }
+
+  void _openMarketPost(MarketSearchPost item) {
+    final type = item.type.toUpperCase();
+    if (type.contains('AUCTION')) {
+      Navigator.of(context).pushNamed(AppRouter.auctionDetailPath(item.postId));
+      return;
+    }
+    if (type.contains('WANTED') || type.contains('REQUEST')) {
+      Navigator.of(context).pushNamed(AppRouter.wantedDetailPath(item.postId));
+      return;
+    }
+    if (type.contains('LIMITED')) {
+      Navigator.of(context).pushNamed(AppRouter.limited);
+      return;
+    }
+
+    Navigator.of(context).pushNamed(
+      AppRouter.usedDetail,
+      arguments: UsedTradeDetailRouteArgs(
+        postId: item.postId,
+        item: UsedTradeItem.fromJson({
+          'postId': item.postId,
+          'title': item.title,
+          'price': item.price,
+          'thumbnailUrl': item.thumbnailUrl,
+          'type': item.type,
+        }),
+      ),
+    );
+  }
+
+  String _formatMarketPopularDescription(MarketSearchPost item) {
+    final price = item.price <= 0
+        ? '가격문의'
+        : '${item.price.toString().replaceAllMapped(
+            RegExp(r'\B(?=(\d{3})+(?!\d))'),
+            (match) => ',',
+          )}원';
+    final createdAt = item.createdAtText.isEmpty ? '' : item.createdAtText;
+    return [price, createdAt].where((text) => text.isNotEmpty).join(' · ');
+  }
+
+  String _marketTypeLabel(String type) {
+    final normalized = type.toUpperCase();
+    if (normalized.contains('AUCTION')) return '경매';
+    if (normalized.contains('WANTED') || normalized.contains('REQUEST')) {
+      return '구해요';
+    }
+    if (normalized.contains('LIMITED')) return '특전/한정';
+    return '중고거래';
+  }
+
   int getSelectedIndexFromRoute(BuildContext context) {
     final routeName = ModalRoute.of(context)?.settings.name;
 
@@ -129,7 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               SizedBox(height: Responsive.ref(context) * 0.02),
-              Careven(),
+              Careven(
+                items: _buildMarketPopularCarouselItems(),
+                isLoading: _isMarketPopularLoading,
+              ),
               SizedBox(height: Responsive.ref(context) * 0.02),
               category(),
               SizedBox(height: Responsive.ref(context) * 0.02),

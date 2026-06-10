@@ -1,5 +1,7 @@
 import 'package:akiba/auction/api/auction_api.dart';
 import 'package:akiba/widgets/akiba_network_image.dart';
+import 'package:akiba/widgets/image_preview_viewer.dart';
+import 'package:akiba/widgets/report_dialog.dart';
 import 'package:flutter/material.dart';
 
 class AuctionDetailScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
   AuctionSummary? _item;
   bool _isLoading = true;
   bool _isSubmitting = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -99,6 +102,67 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
     }
   }
 
+  Future<void> _deletePost() async {
+    final item = _item;
+    if (item == null || _isDeleting) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff202020),
+        title: const Text('경매 글 삭제', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          '이 경매 글을 삭제할까요?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('삭제하기'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await AuctionApi.deletePost(postId: item.postId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('경매 글이 삭제되었습니다.')));
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('삭제 실패: $error')));
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  Future<void> _reportPost() async {
+    final item = _item;
+    final targetUserId = item?.sellerUserId;
+    if (item == null || targetUserId == null || targetUserId == 0) return;
+
+    final submitted = await showReportDialog(
+      context,
+      targetUserId: targetUserId,
+      targetPostId: item.postId,
+    );
+    if (!mounted || !submitted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('신고가 접수되었습니다.')));
+  }
+
   void _openBidSheet() {
     final item = _item;
     if (item == null) return;
@@ -124,6 +188,42 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
         ),
+        actions: [
+          if (item != null)
+            PopupMenuButton<String>(
+              color: const Color(0xff1b1b1b),
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onSelected: (value) {
+                if (value == 'delete') {
+                  _deletePost();
+                }
+                if (value == 'report') {
+                  _reportPost();
+                }
+              },
+              itemBuilder: (context) => item.myPost
+                  ? [
+                      PopupMenuItem(
+                        value: 'delete',
+                        enabled: !_isDeleting,
+                        child: Text(
+                          _isDeleting ? '삭제 중...' : '삭제하기',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ]
+                  : const [
+                      PopupMenuItem(
+                        value: 'report',
+                        child: Text(
+                          '신고하기',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+            ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: _isLoading && item == null
           ? const Center(child: CircularProgressIndicator())
@@ -380,45 +480,121 @@ class _BidSheetState extends State<_BidSheet> {
   }
 }
 
-class _AuctionImages extends StatelessWidget {
+class _AuctionImages extends StatefulWidget {
   const _AuctionImages({required this.item});
 
   final AuctionSummary item;
 
   @override
+  State<_AuctionImages> createState() => _AuctionImagesState();
+}
+
+class _AuctionImagesState extends State<_AuctionImages> {
+  final PageController _controller = PageController();
+  int _currentIndex = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final images = item.imageUrls.isEmpty ? [item.thumbnailUrl] : item.imageUrls;
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Stack(
-        children: [
-          PageView.builder(
-            itemCount: images.length,
-            itemBuilder: (_, index) => AkibaNetworkImage(
-              url: images[index],
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-            ),
+    final images = widget.item.imageUrls.isEmpty
+        ? [widget.item.thumbnailUrl]
+        : widget.item.imageUrls;
+    return Column(
+      children: [
+        AspectRatio(
+          aspectRatio: 1,
+          child: Stack(
+            children: [
+              GestureDetector(
+                onTap: () => showImagePreviewViewer(
+                  context,
+                  imageUrls: images,
+                  initialIndex: _currentIndex,
+                ),
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: images.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                  itemBuilder: (_, index) => AkibaNetworkImage(
+                    url: images[index],
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 18,
+                bottom: 16,
+                child: _RemainingBadge(endsAt: widget.item.endsAt),
+              ),
+              Positioned(
+                right: 18,
+                bottom: 16,
+                child: Row(
+                  children: [
+                    const Icon(Icons.visibility, color: Colors.white, size: 17),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.item.viewCount.toString(),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Positioned(
-            left: 18,
-            bottom: 16,
-            child: _RemainingBadge(endsAt: item.endsAt),
-          ),
-          Positioned(
-            right: 18,
-            bottom: 16,
-            child: Row(
-              children: [
-                const Icon(Icons.visibility, color: Colors.white, size: 17),
-                const SizedBox(width: 4),
-                Text(item.viewCount.toString(), style: const TextStyle(color: Colors.white)),
-              ],
+        ),
+        if (images.length > 1) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 58,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: images.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, index) => GestureDetector(
+                onTap: () {
+                  _controller.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: _currentIndex == index
+                          ? const Color(0xFFD0FF00)
+                          : Colors.white12,
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: AkibaNetworkImage(
+                    url: images[index],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
-      ),
+      ],
     );
   }
 }

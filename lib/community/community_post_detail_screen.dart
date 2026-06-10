@@ -2,6 +2,7 @@ import 'dart:html' as html;
 
 import 'package:akiba/community/api/board_api.dart';
 import 'package:akiba/widgets/community_app_bar.dart';
+import 'package:akiba/widgets/report_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CommunityPostDetailScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
   late Future<List<BoardComment>> _commentsFuture;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmittingComment = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -96,6 +98,64 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  bool _isMyPost(BoardPostSummary post) {
+    final myUserId = int.tryParse(html.window.localStorage['userId'] ?? '');
+    return myUserId != null && post.userId != 0 && myUserId == post.userId;
+  }
+
+  Future<void> _deletePost(BoardPostSummary post) async {
+    if (_isDeleting) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1b1b1b),
+        title: const Text('게시글 삭제', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          '이 게시글을 삭제할까요?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('삭제하기'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await BoardApi.deletePost(
+        boardCode: post.boardCode.isEmpty ? widget.boardCode : post.boardCode,
+        postId: post.postId,
+      );
+      if (!mounted) return;
+      _showSnack('게시글이 삭제되었습니다.');
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('삭제 실패: $error');
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  Future<void> _reportPost(BoardPostSummary post) async {
+    if (post.userId == 0) return;
+    final submitted = await showReportDialog(
+      context,
+      targetUserId: post.userId,
+      targetPostId: post.postId,
+    );
+    if (!mounted || !submitted) return;
+    _showSnack('신고가 접수되었습니다.');
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width.clamp(360.0, 800.0);
@@ -112,9 +172,48 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                 onPressed: () {},
                 icon: const Icon(Icons.ios_share, color: Colors.white),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_vert, color: Colors.white),
+              FutureBuilder<BoardPostSummary>(
+                future: _postFuture,
+                initialData: widget.initialPost,
+                builder: (context, snapshot) {
+                  final post = snapshot.data;
+                  if (post == null) {
+                    return const SizedBox(width: 48);
+                  }
+                  final isMine = _isMyPost(post);
+                  return PopupMenuButton<String>(
+                    color: const Color(0xff1b1b1b),
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _deletePost(post);
+                      }
+                      if (value == 'report') {
+                        _reportPost(post);
+                      }
+                    },
+                    itemBuilder: (context) => isMine
+                        ? [
+                            PopupMenuItem(
+                              value: 'delete',
+                              enabled: !_isDeleting,
+                              child: Text(
+                                _isDeleting ? '삭제 중...' : '삭제하기',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ]
+                        : const [
+                            PopupMenuItem(
+                              value: 'report',
+                              child: Text(
+                                '신고하기',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                  );
+                },
               ),
               const SizedBox(width: 6),
             ],

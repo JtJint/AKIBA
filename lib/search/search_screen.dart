@@ -75,6 +75,23 @@ class _SearchScreenState extends State<SearchScreen_> {
     setState(() => _recentSearches = next);
   }
 
+  void _removeRecentSearch(String query) {
+    final next = _recentSearches
+        .where((item) => item.toLowerCase() != query.toLowerCase())
+        .toList();
+    if (next.isEmpty) {
+      html.window.localStorage.remove(_recentSearchStorageKey);
+    } else {
+      html.window.localStorage[_recentSearchStorageKey] = jsonEncode(next);
+    }
+    setState(() => _recentSearches = next);
+  }
+
+  void _clearRecentSearches() {
+    html.window.localStorage.remove(_recentSearchStorageKey);
+    setState(() => _recentSearches = const []);
+  }
+
   Future<void> _fetchSearchMeta() async {
     try {
       final results = await Future.wait([
@@ -166,7 +183,7 @@ class _SearchScreenState extends State<SearchScreen_> {
                   ),
                   SizedBox(height: Responsive.ref(context) * 0.04),
                   // 최근 검색어
-                  _buildSectionTitle('최근 검색어'),
+                  _buildRecentSearchHeader(),
                   SizedBox(height: Responsive.ref(context) * 0.015),
                   _recentSearches.isEmpty
                       ? _buildEmptyRecentSearch()
@@ -199,6 +216,25 @@ class _SearchScreenState extends State<SearchScreen_> {
     );
   }
 
+  Widget _buildRecentSearchHeader() {
+    return Row(
+      children: [
+        Expanded(child: _buildSectionTitle('최근 검색어')),
+        if (_recentSearches.isNotEmpty)
+          TextButton(
+            onPressed: _clearRecentSearches,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white54,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(58, 28),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('전체 삭제'),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSearchChips(List<String> items) {
     return Wrap(
       spacing: Responsive.ref(context) * 0.02,
@@ -208,7 +244,7 @@ class _SearchScreenState extends State<SearchScreen_> {
           onTap: () => _performSearch(item),
           child: Container(
             padding: EdgeInsets.symmetric(
-              horizontal: Responsive.ref(context) * 0.03,
+              horizontal: Responsive.ref(context) * 0.026,
               vertical: Responsive.ref(context) * 0.015,
             ),
             decoration: BoxDecoration(
@@ -216,12 +252,26 @@ class _SearchScreenState extends State<SearchScreen_> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Color(0xff2A2A2A), width: 1),
             ),
-            child: Text(
-              item,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: Responsive.ref(context) * 0.03,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: Responsive.ref(context) * 0.03,
+                  ),
+                ),
+                SizedBox(width: Responsive.ref(context) * 0.012),
+                GestureDetector(
+                  onTap: () => _removeRecentSearch(item),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white54,
+                    size: 16,
+                  ),
+                ),
+              ],
             ),
           ),
         );
