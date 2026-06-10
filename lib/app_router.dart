@@ -16,6 +16,7 @@ import 'package:akiba/demand/api/wanted_api.dart';
 import 'package:akiba/demand/guhaeyo.dart';
 import 'package:akiba/demand/guhaeyo.detail.dart';
 import 'package:akiba/home.dart';
+import 'package:akiba/limited/limited_detail_screen.dart';
 import 'package:akiba/limited/limited_screen.dart';
 import 'package:akiba/market/market_list_screen.dart';
 import 'package:akiba/myPage/myPage.dart';
@@ -40,6 +41,7 @@ class AppRouter {
   static const String used = '/used';
   static const String usedDetail = '/used/detail';
   static const String limited = '/limited';
+  static String limitedDetailPath(int postId) => '/limited/$postId';
   static const String auction = '/auction';
   static const String auctionEndingSoon = '/auction/ending-soon';
   static const String auctionPopular = '/auction/popular';
@@ -167,6 +169,16 @@ class AppRouter {
         settings: settings,
         builder: (_) => const LimitedScreen(),
       );
+    }
+
+    if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'limited') {
+      final postId = int.tryParse(uri.pathSegments[1]);
+      if (postId != null) {
+        return _buildRoute(
+          settings: settings,
+          builder: (_) => LimitedDetailScreen(postId: postId),
+        );
+      }
     }
 
     if (uri.path == auction) {

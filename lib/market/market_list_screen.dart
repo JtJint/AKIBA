@@ -31,6 +31,7 @@ class MarketListScreen extends StatefulWidget {
 
 class _MarketListScreenState extends State<MarketListScreen> {
   late Future<List<_MarketListItem>> _items;
+  bool _changed = false;
 
   @override
   void initState() {
@@ -41,21 +42,21 @@ class _MarketListScreenState extends State<MarketListScreen> {
   Future<List<_MarketListItem>> _fetchItems() async {
     return switch (widget.type) {
       MarketListType.usedPopular => (await UsedTradeApi.getPopularPosts(
-          limit: 40,
-        )).map(_MarketListItem.fromUsed).toList(),
+        limit: 40,
+      )).map(_MarketListItem.fromUsed).toList(),
       MarketListType.usedLatest => (await UsedTradeApi.getPosts(
-          size: 40,
-        )).map(_MarketListItem.fromUsed).toList(),
+        size: 40,
+      )).map(_MarketListItem.fromUsed).toList(),
       MarketListType.limitedPopular => (await LimitedApi.getPopularPosts(
-          limit: 40,
-        )).map(_MarketListItem.fromLimited).toList(),
-      MarketListType.limitedLatest => (await LimitedApi.getItems())
-          .map(_MarketListItem.fromLimited)
-          .toList(),
-      MarketListType.wantedLatest => (await WantedApi.getWantedPosts())
-          .map(_MarketListItem.fromWanted)
-          .where((item) => item.id > 0 || item.title.isNotEmpty)
-          .toList(),
+        limit: 40,
+      )).map(_MarketListItem.fromLimited).toList(),
+      MarketListType.limitedLatest =>
+        (await LimitedApi.getItems()).map(_MarketListItem.fromLimited).toList(),
+      MarketListType.wantedLatest =>
+        (await WantedApi.getWantedPosts())
+            .map(_MarketListItem.fromWanted)
+            .where((item) => item.id > 0 || item.title.isNotEmpty)
+            .toList(),
     };
   }
 
@@ -77,7 +78,10 @@ class _MarketListScreenState extends State<MarketListScreen> {
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: TopBar(title: _title, onBack: () => Navigator.of(context).pop()),
+            child: TopBar(
+              title: _title,
+              onBack: () => Navigator.of(context).pop(_changed ? true : null),
+            ),
           ),
           FutureBuilder<List<_MarketListItem>>(
             future: _items,
@@ -123,10 +127,11 @@ class _MarketListScreenState extends State<MarketListScreen> {
     );
   }
 
-  void _openDetail(_MarketListItem item) {
+  Future<void> _openDetail(_MarketListItem item) async {
+    Object? deleted;
     switch (item.kind) {
       case _MarketListKind.used:
-        Navigator.of(context).pushNamed(
+        deleted = await Navigator.of(context).pushNamed(
           AppRouter.usedDetail,
           arguments: UsedTradeDetailRouteArgs(
             postId: item.id,
@@ -134,10 +139,20 @@ class _MarketListScreenState extends State<MarketListScreen> {
           ),
         );
       case _MarketListKind.limited:
-        Navigator.of(context).pushNamed(AppRouter.limited);
+        deleted = await Navigator.of(
+          context,
+        ).pushNamed(AppRouter.limitedDetailPath(item.id));
       case _MarketListKind.wanted:
-        Navigator.of(context).pushNamed(AppRouter.wantedDetailPath(item.id));
+        deleted = await Navigator.of(
+          context,
+        ).pushNamed(AppRouter.wantedDetailPath(item.id));
     }
+
+    if (!mounted || deleted != true) return;
+    setState(() {
+      _changed = true;
+      _items = _fetchItems();
+    });
   }
 }
 

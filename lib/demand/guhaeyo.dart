@@ -118,9 +118,7 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                             (post) => post.title == item.title,
                           );
                           if (match.isEmpty) return;
-                          Navigator.of(context).pushNamed(
-                            AppRouter.wantedDetailPath(match.first.id),
-                          );
+                          _openDetail(match.first.id);
                         },
                       ),
                     ),
@@ -141,11 +139,7 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                           title: item.title,
                           subtitle: item.writerName,
                           thumbnailUrl: item.thumbnailUrl,
-                          onTap: () {
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRouter.wantedDetailPath(item.id));
-                          },
+                          onTap: () => _openDetail(item.id),
                         );
                       },
                     ),
@@ -159,7 +153,10 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
                     SliverToBoxAdapter(
                       child: SizedBox(
                         height: Responsive.ref(context) * 0.36,
-                        child: _WantedHotCarousel(items: _hotItems),
+                        child: _WantedHotCarousel(
+                          items: _hotItems,
+                          onDeleted: _fetchWantedPosts,
+                        ),
                       ),
                     ),
                     SliverToBoxAdapter(child: const SizedBox(height: 24)),
@@ -170,18 +167,31 @@ class _GuhaeyoScreenState extends State<GuhaeyoScreen> {
     );
   }
 
-  void _openList() {
-    Navigator.of(context).pushNamed(
+  Future<void> _openList() async {
+    final changed = await Navigator.of(context).pushNamed(
       AppRouter.marketList,
       arguments: const MarketListRouteArgs(type: MarketListType.wantedLatest),
     );
+    if (changed == true && mounted) {
+      _fetchWantedPosts();
+    }
+  }
+
+  Future<void> _openDetail(int postId) async {
+    final deleted = await Navigator.of(
+      context,
+    ).pushNamed(AppRouter.wantedDetailPath(postId));
+    if (deleted == true && mounted) {
+      _fetchWantedPosts();
+    }
   }
 }
 
 class _WantedHotCarousel extends StatefulWidget {
-  const _WantedHotCarousel({required this.items});
+  const _WantedHotCarousel({required this.items, required this.onDeleted});
 
   final List<_WantedPostViewModel> items;
+  final VoidCallback onDeleted;
 
   @override
   State<_WantedHotCarousel> createState() => _WantedHotCarouselState();
@@ -220,10 +230,13 @@ class _WantedHotCarouselState extends State<_WantedHotCarousel> {
               horizontal: Responsive.ref(context) * 0.01,
             ),
             child: GestureDetector(
-              onTap: () {
-                Navigator.of(
+              onTap: () async {
+                final deleted = await Navigator.of(
                   context,
                 ).pushNamed(AppRouter.wantedDetailPath(item.id));
+                if (deleted == true) {
+                  widget.onDeleted();
+                }
               },
               child: _WantedHotCard(item: item),
             ),

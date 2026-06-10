@@ -13,7 +13,7 @@ class CommunityPopularPostsScreen extends StatefulWidget {
 
 class _CommunityPopularPostsScreenState
     extends State<CommunityPopularPostsScreen> {
-  late final Future<List<BoardPostSummary>> _popularPosts;
+  late Future<List<BoardPostSummary>> _popularPosts;
 
   @override
   void initState() {
@@ -76,7 +76,15 @@ class _CommunityPopularPostsScreenState
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 120),
                 itemBuilder: (context, index) {
                   final post = posts[index];
-                  return _PopularPostListTile(rank: index + 1, post: post);
+                  return _PopularPostListTile(
+                    rank: index + 1,
+                    post: post,
+                    onDeleted: () {
+                      setState(() {
+                        _popularPosts = BoardApi.getPopularPosts();
+                      });
+                    },
+                  );
                 },
                 separatorBuilder: (_, __) =>
                     const Divider(height: 30, color: Color(0xffD9D9D9)),
@@ -106,18 +114,26 @@ class _CommunityPopularPostsScreenState
 }
 
 class _PopularPostListTile extends StatelessWidget {
-  const _PopularPostListTile({required this.rank, required this.post});
+  const _PopularPostListTile({
+    required this.rank,
+    required this.post,
+    required this.onDeleted,
+  });
 
   final int rank;
   final BoardPostSummary post;
+  final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRouter.communityPostDetailPath(post.boardCode, post.postId),
-        arguments: CommunityPostDetailRouteArgs(initialPost: post),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.communityPostDetailPath(post.boardCode, post.postId),
+          arguments: CommunityPostDetailRouteArgs(initialPost: post),
+        );
+        if (deleted == true) onDeleted();
+      },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

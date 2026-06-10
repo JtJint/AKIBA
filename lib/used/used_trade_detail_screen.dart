@@ -103,7 +103,7 @@ class _UsedTradeDetailScreenState extends State<UsedTradeDetailScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('중고거래 글이 삭제되었습니다.')));
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
       return;
     }
 

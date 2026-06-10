@@ -18,6 +18,7 @@ class AuctionListScreen extends StatefulWidget {
 
 class _AuctionListScreenState extends State<AuctionListScreen> {
   late Future<List<AuctionSummary>> _items;
+  bool _changed = false;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _AuctionListScreenState extends State<AuctionListScreen> {
           SliverToBoxAdapter(
             child: TopBar(
               title: title,
-              onBack: () => Navigator.of(context).pop(),
+              onBack: () => Navigator.of(context).pop(_changed ? true : null),
             ),
           ),
           FutureBuilder<List<AuctionSummary>>(
@@ -73,8 +74,15 @@ class _AuctionListScreenState extends State<AuctionListScreen> {
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
                 sliver: SliverList.separated(
-                  itemBuilder: (_, index) =>
-                      _AuctionListItem(item: items[index]),
+                  itemBuilder: (_, index) => _AuctionListItem(
+                    item: items[index],
+                    onDeleted: () {
+                      setState(() {
+                        _changed = true;
+                        _items = _fetchItems();
+                      });
+                    },
+                  ),
                   separatorBuilder: (_, __) =>
                       const Divider(color: Color(0xff242424)),
                   itemCount: items.length,
@@ -89,17 +97,21 @@ class _AuctionListScreenState extends State<AuctionListScreen> {
 }
 
 class _AuctionListItem extends StatelessWidget {
-  const _AuctionListItem({required this.item});
+  const _AuctionListItem({required this.item, required this.onDeleted});
 
   final AuctionSummary item;
+  final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRouter.auctionDetailPath(item.postId),
-        arguments: AuctionDetailRouteArgs(initialItem: item),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.auctionDetailPath(item.postId),
+          arguments: AuctionDetailRouteArgs(initialItem: item),
+        );
+        if (deleted == true) onDeleted();
+      },
       child: MarketListTile(
         title: item.title,
         priceText: '현재 입찰가 ${_formatPrice(item.currentPrice)}',

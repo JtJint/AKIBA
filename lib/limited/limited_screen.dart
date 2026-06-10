@@ -118,6 +118,7 @@ class _LimitedScreenState extends State<LimitedScreen> {
                     title: '지금 가장 핫한 매물 !',
                     items: hotItems,
                     onMore: () => _openList(MarketListType.limitedPopular),
+                    onDeleted: _removeItem,
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -125,6 +126,7 @@ class _LimitedScreenState extends State<LimitedScreen> {
                     title: '좋아하실 것 같아요!',
                     items: recommendItems,
                     onMore: () => _openList(MarketListType.limitedLatest),
+                    onDeleted: _removeItem,
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -132,6 +134,7 @@ class _LimitedScreenState extends State<LimitedScreen> {
                     title: '최근 본 상품',
                     items: recentItems,
                     onMore: () => _openList(MarketListType.limitedLatest),
+                    onDeleted: _removeItem,
                   ),
                 ),
               ],
@@ -167,11 +170,23 @@ class _LimitedScreenState extends State<LimitedScreen> {
     }
   }
 
-  void _openList(MarketListType type) {
-    Navigator.of(context).pushNamed(
+  Future<void> _openList(MarketListType type) async {
+    final changed = await Navigator.of(context).pushNamed(
       AppRouter.marketList,
       arguments: MarketListRouteArgs(type: type),
     );
+    if (changed == true && mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+      await _fetchItems();
+    }
+  }
+
+  void _removeItem(int postId) {
+    setState(() {
+      _items = _items.where((item) => item.id != postId).toList();
+    });
   }
 }
 
@@ -180,11 +195,13 @@ class _LargeLimitedSection extends StatelessWidget {
     required this.title,
     required this.items,
     required this.onMore,
+    required this.onDeleted,
   });
 
   final String title;
   final List<LimitedItem> items;
   final VoidCallback onMore;
+  final ValueChanged<int> onDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +215,18 @@ class _LargeLimitedSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (_, index) => LimitedLargeCard(item: items[index]),
+            itemBuilder: (_, index) {
+              final item = items[index];
+              return LimitedLargeCard(
+                item: item,
+                onTap: () async {
+                  final deleted = await Navigator.of(
+                    context,
+                  ).pushNamed(AppRouter.limitedDetailPath(item.id));
+                  if (deleted == true) onDeleted(item.id);
+                },
+              );
+            },
           ),
         ),
       ],
@@ -211,11 +239,13 @@ class _LimitedHorizontalSection extends StatelessWidget {
     required this.title,
     required this.items,
     required this.onMore,
+    required this.onDeleted,
   });
 
   final String title;
   final List<LimitedItem> items;
   final VoidCallback onMore;
+  final ValueChanged<int> onDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +259,18 @@ class _LimitedHorizontalSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (_, index) => LimitedThumbCard(item: items[index]),
+            itemBuilder: (_, index) {
+              final item = items[index];
+              return LimitedThumbCard(
+                item: item,
+                onTap: () async {
+                  final deleted = await Navigator.of(
+                    context,
+                  ).pushNamed(AppRouter.limitedDetailPath(item.id));
+                  if (deleted == true) onDeleted(item.id);
+                },
+              );
+            },
           ),
         ),
       ],

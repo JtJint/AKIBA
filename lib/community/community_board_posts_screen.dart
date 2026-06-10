@@ -115,7 +115,14 @@ class _CommunityBoardPostsScreenState extends State<CommunityBoardPostsScreen> {
                       sliver: SliverList.separated(
                         itemBuilder: (context, index) {
                           final post = posts[index];
-                          return _CommunityPostTile(post: post);
+                          return _CommunityPostTile(
+                            post: post,
+                            onDeleted: () {
+                              setState(() {
+                                _posts = _fetchPosts();
+                              });
+                            },
+                          );
                         },
                         separatorBuilder: (_, __) =>
                             const Divider(height: 28, color: Color(0xff777777)),
@@ -286,19 +293,23 @@ class _SortButton extends StatelessWidget {
 }
 
 class _CommunityPostTile extends StatelessWidget {
-  const _CommunityPostTile({required this.post});
+  const _CommunityPostTile({required this.post, required this.onDeleted});
 
   final BoardPostSummary post;
+  final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
     final tileHeight = post.imageUrls.isNotEmpty ? 124.0 : 110.0;
 
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRouter.communityPostDetailPath(post.boardCode, post.postId),
-        arguments: CommunityPostDetailRouteArgs(initialPost: post),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.communityPostDetailPath(post.boardCode, post.postId),
+          arguments: CommunityPostDetailRouteArgs(initialPost: post),
+        );
+        if (deleted == true) onDeleted();
+      },
       child: SizedBox(
         height: tileHeight,
         child: Row(

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:akiba/api/auth_http_client.dart';
 import 'package:akiba/config/api_config.dart';
 import 'package:akiba/limited/model/limited_models.dart';
+import 'package:akiba/used/model/used_trade_models.dart';
+import 'package:http/http.dart' as http;
 
 class LimitedApi {
   static Future<List<LimitedItem>> getItems({String? keyword}) async {
@@ -44,6 +46,22 @@ class LimitedApi {
         .map((item) => LimitedItem.fromJson(item))
         .where((item) => item.id != 0 || item.title.isNotEmpty)
         .toList();
+  }
+
+  static Future<UsedTradeItem> getPostDetail(int postId) async {
+    final response = await AuthHttpClient.get(
+      ApiConfig.uri('api/limited/posts/$postId'),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw LimitedApiException(response.statusCode, response.body);
+    }
+
+    return UsedTradeItem.fromJson(jsonDecode(response.body));
+  }
+
+  static Future<http.Response> deletePost(int postId) {
+    return AuthHttpClient.delete(ApiConfig.uri('api/limited/posts/$postId'));
   }
 
   static List<dynamic> _extractList(dynamic decoded) {

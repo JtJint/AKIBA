@@ -31,8 +31,11 @@ class Chatapi {
     final response = await AuthHttpClient.post(
       url,
       headers: const {'Content-Type': 'application/json'},
-      body:
-          '{"roomType": "$roomType", "marketPostId": $marketPostId, "targetUserId": $targetUserId}',
+      body: jsonEncode({
+        'roomType': 'MARKET',
+        'marketPostId': marketPostId,
+        'targetUserId': targetUserId,
+      }),
     );
     return response;
   }

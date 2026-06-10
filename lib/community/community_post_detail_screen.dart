@@ -105,6 +105,11 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
 
   Future<void> _deletePost(BoardPostSummary post) async {
     if (_isDeleting) return;
+    final userId = int.tryParse(html.window.localStorage['userId'] ?? '');
+    if (userId == null) {
+      _showSnack('로그인 후 삭제할 수 있습니다.');
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -133,10 +138,11 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
       await BoardApi.deletePost(
         boardCode: post.boardCode.isEmpty ? widget.boardCode : post.boardCode,
         postId: post.postId,
+        userId: userId,
       );
       if (!mounted) return;
       _showSnack('게시글이 삭제되었습니다.');
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
       _showSnack('삭제 실패: $error');

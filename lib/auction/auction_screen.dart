@@ -91,8 +91,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
                 child: _AuctionHorizontalSection(
                   title: '곧 입찰이 끝나요!',
                   items: featuredItems,
-                  onMore: () =>
-                      Navigator.of(context).pushNamed(AppRouter.auctionEndingSoon),
+                  onMore: () => _openList(AppRouter.auctionEndingSoon),
+                  onDeleted: _removeItem,
                 ),
               ),
             if (_popularItems.isNotEmpty)
@@ -100,8 +100,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
                 child: _AuctionHorizontalSection(
                   title: '인기 경매',
                   items: _popularItems,
-                  onMore: () =>
-                      Navigator.of(context).pushNamed(AppRouter.auctionPopular),
+                  onMore: () => _openList(AppRouter.auctionPopular),
+                  onDeleted: _removeItem,
                 ),
               ),
             SliverToBoxAdapter(
@@ -131,8 +131,10 @@ class _AuctionScreenState extends State<AuctionScreen> {
                       ),
                     )
                   : SliverList.separated(
-                      itemBuilder: (_, index) =>
-                          _AuctionListTile(item: _recentItems[index]),
+                      itemBuilder: (_, index) => _AuctionListTile(
+                        item: _recentItems[index],
+                        onDeleted: _removeItem,
+                      ),
                       separatorBuilder: (_, __) =>
                           const Divider(color: Color(0xff242424)),
                       itemCount: _recentItems.length,
@@ -144,6 +146,27 @@ class _AuctionScreenState extends State<AuctionScreen> {
       ),
     );
   }
+
+  Future<void> _openList(String routeName) async {
+    final changed = await Navigator.of(context).pushNamed(routeName);
+    if (changed == true && mounted) {
+      _fetchAuctions();
+    }
+  }
+
+  void _removeItem(int postId) {
+    setState(() {
+      _endingSoonItems = _endingSoonItems
+          .where((item) => item.postId != postId)
+          .toList();
+      _popularItems = _popularItems
+          .where((item) => item.postId != postId)
+          .toList();
+      _recentItems = _recentItems
+          .where((item) => item.postId != postId)
+          .toList();
+    });
+  }
 }
 
 class _AuctionHorizontalSection extends StatelessWidget {
@@ -151,11 +174,13 @@ class _AuctionHorizontalSection extends StatelessWidget {
     required this.title,
     required this.items,
     required this.onMore,
+    required this.onDeleted,
   });
 
   final String title;
   final List<AuctionSummary> items;
   final VoidCallback onMore;
+  final ValueChanged<int> onDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +194,8 @@ class _AuctionHorizontalSection extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
-            itemBuilder: (_, index) => _AuctionCard(item: items[index]),
+            itemBuilder: (_, index) =>
+                _AuctionCard(item: items[index], onDeleted: onDeleted),
             separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemCount: items.length,
           ),
@@ -180,17 +206,21 @@ class _AuctionHorizontalSection extends StatelessWidget {
 }
 
 class _AuctionCard extends StatelessWidget {
-  const _AuctionCard({required this.item});
+  const _AuctionCard({required this.item, required this.onDeleted});
 
   final AuctionSummary item;
+  final ValueChanged<int> onDeleted;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRouter.auctionDetailPath(item.postId),
-        arguments: AuctionDetailRouteArgs(initialItem: item),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.auctionDetailPath(item.postId),
+          arguments: AuctionDetailRouteArgs(initialItem: item),
+        );
+        if (deleted == true) onDeleted(item.postId);
+      },
       child: SizedBox(
         width: 156,
         child: Column(
@@ -231,17 +261,21 @@ class _AuctionCard extends StatelessWidget {
 }
 
 class _AuctionListTile extends StatelessWidget {
-  const _AuctionListTile({required this.item});
+  const _AuctionListTile({required this.item, required this.onDeleted});
 
   final AuctionSummary item;
+  final ValueChanged<int> onDeleted;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pushNamed(
-        AppRouter.auctionDetailPath(item.postId),
-        arguments: AuctionDetailRouteArgs(initialItem: item),
-      ),
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.auctionDetailPath(item.postId),
+          arguments: AuctionDetailRouteArgs(initialItem: item),
+        );
+        if (deleted == true) onDeleted(item.postId);
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(

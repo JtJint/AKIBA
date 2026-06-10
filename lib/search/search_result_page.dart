@@ -118,7 +118,14 @@ class _SearchResultPageState extends State<SearchResultPage> {
                 padding: const EdgeInsets.all(20),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  return _SearchResultTile(item: item);
+                  return _SearchResultTile(
+                    item: item,
+                    onDeleted: () {
+                      setState(() {
+                        _items = _fetchItems();
+                      });
+                    },
+                  );
                 },
                 itemCount: items.length,
               );
@@ -131,9 +138,10 @@ class _SearchResultPageState extends State<SearchResultPage> {
 }
 
 class _SearchResultTile extends StatelessWidget {
-  const _SearchResultTile({required this.item});
+  const _SearchResultTile({required this.item, required this.onDeleted});
 
   final MarketSearchPost item;
+  final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -147,15 +155,27 @@ class _SearchResultTile extends StatelessWidget {
     );
   }
 
-  void _openDetail(BuildContext context) {
+  Future<void> _openDetail(BuildContext context) async {
     final type = item.type.toUpperCase();
+    Object? deleted;
     if (type.contains('WANTED')) {
-      Navigator.of(context).pushNamed(AppRouter.wantedDetailPath(item.postId));
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.wantedDetailPath(item.postId));
+      if (deleted == true) onDeleted();
       return;
     }
 
-    if (type.contains('USED') || type.contains('LIMITED')) {
-      Navigator.of(context).pushNamed(
+    if (type.contains('LIMITED')) {
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.limitedDetailPath(item.postId));
+      if (deleted == true) onDeleted();
+      return;
+    }
+
+    if (type.contains('USED')) {
+      deleted = await Navigator.of(context).pushNamed(
         AppRouter.usedDetail,
         arguments: UsedTradeDetailRouteArgs(
           postId: item.postId,
@@ -168,11 +188,15 @@ class _SearchResultTile extends StatelessWidget {
           }),
         ),
       );
+      if (deleted == true) onDeleted();
       return;
     }
 
     if (type.contains('AUCTION')) {
-      Navigator.of(context).pushNamed(AppRouter.auctionDetailPath(item.postId));
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.auctionDetailPath(item.postId));
+      if (deleted == true) onDeleted();
     }
   }
 

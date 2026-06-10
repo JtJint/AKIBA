@@ -109,9 +109,12 @@ class BoardApi {
   static Future<void> deletePost({
     required String boardCode,
     required int postId,
+    required int userId,
   }) async {
     final response = await AuthHttpClient.delete(
-      ApiConfig.uri('api/boards/$boardCode/posts/$postId'),
+      ApiConfig.uri(
+        'api/boards/$boardCode/posts/$postId',
+      ).replace(queryParameters: {'userId': userId.toString()}),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw BoardApiException(response.statusCode, response.body);

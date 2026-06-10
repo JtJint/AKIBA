@@ -101,15 +101,7 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
               title: '지금 가장 핫한 매물!',
               items: hotItems,
               onMore: () => _openList(MarketListType.usedPopular),
-              onTapItem: (item) {
-                Navigator.of(context).pushNamed(
-                  AppRouter.usedDetail,
-                  arguments: UsedTradeDetailRouteArgs(
-                    postId: item.id,
-                    item: item,
-                  ),
-                );
-              },
+              onTapItem: _openDetail,
             ),
           ),
           if (recommendItems.isNotEmpty) ...[
@@ -128,13 +120,7 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
                     (element) => element.title == item.title,
                     orElse: () => _items.first,
                   );
-                  Navigator.of(context).pushNamed(
-                    AppRouter.usedDetail,
-                    arguments: UsedTradeDetailRouteArgs(
-                      postId: match.id,
-                      item: match,
-                    ),
-                  );
+                  _openDetail(match);
                 },
               ),
             ),
@@ -145,15 +131,7 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
               title: '최근 본 상품',
               items: recentItems,
               onMore: () => _openList(MarketListType.usedLatest),
-              onTapItem: (item) {
-                Navigator.of(context).pushNamed(
-                  AppRouter.usedDetail,
-                  arguments: UsedTradeDetailRouteArgs(
-                    postId: item.id,
-                    item: item,
-                  ),
-                );
-              },
+              onTapItem: _openDetail,
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -162,11 +140,32 @@ class _UsedTradeScreenState extends State<UsedTradeScreen> {
     );
   }
 
-  void _openList(MarketListType type) {
-    Navigator.of(context).pushNamed(
+  Future<void> _openDetail(UsedTradeItem item) async {
+    final deleted = await Navigator.of(context).pushNamed(
+      AppRouter.usedDetail,
+      arguments: UsedTradeDetailRouteArgs(
+        postId: item.id,
+        item: item,
+      ),
+    );
+    if (deleted == true && mounted) {
+      setState(() {
+        _items = _items.where((value) => value.id != item.id).toList();
+        _popularItems = _popularItems
+            .where((value) => value.id != item.id)
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _openList(MarketListType type) async {
+    final changed = await Navigator.of(context).pushNamed(
       AppRouter.marketList,
       arguments: MarketListRouteArgs(type: type),
     );
+    if (changed == true && mounted) {
+      _fetchItems();
+    }
   }
 }
 

@@ -111,7 +111,7 @@ class _GDetailScreenState extends State<GDetailScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('구해요 글이 삭제되었습니다.')));
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
       return;
     }
 

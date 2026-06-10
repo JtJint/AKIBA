@@ -104,11 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
         imageUrl: item.imageUrls.first,
         title: item.title,
         priceText: formatUsedTradePrice(item.price),
-        onTap: () {
-          Navigator.of(context).pushNamed(
+        onTap: () async {
+          final deleted = await Navigator.of(context).pushNamed(
             AppRouter.usedDetail,
             arguments: UsedTradeDetailRouteArgs(postId: item.id, item: item),
           );
+          if (deleted == true && mounted) _fetchPopularItems();
         },
       );
     }).toList();
@@ -120,7 +121,12 @@ class _HomeScreenState extends State<HomeScreen> {
         imageUrl: item.imageUrl,
         title: item.title,
         priceText: formatLimitedPrice(item.price),
-        onTap: () => Navigator.of(context).pushNamed(AppRouter.limited),
+        onTap: () async {
+          final deleted = await Navigator.of(
+            context,
+          ).pushNamed(AppRouter.limitedDetailPath(item.id));
+          if (deleted == true && mounted) _fetchPopularItems();
+        },
       );
     }).toList();
   }
@@ -139,22 +145,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
-  void _openMarketPost(MarketSearchPost item) {
+  Future<void> _openMarketPost(MarketSearchPost item) async {
     final type = item.type.toUpperCase();
+    Object? deleted;
     if (type.contains('AUCTION')) {
-      Navigator.of(context).pushNamed(AppRouter.auctionDetailPath(item.postId));
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.auctionDetailPath(item.postId));
+      if (deleted == true && mounted) _fetchPopularItems();
       return;
     }
     if (type.contains('WANTED') || type.contains('REQUEST')) {
-      Navigator.of(context).pushNamed(AppRouter.wantedDetailPath(item.postId));
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.wantedDetailPath(item.postId));
+      if (deleted == true && mounted) _fetchPopularItems();
       return;
     }
     if (type.contains('LIMITED')) {
-      Navigator.of(context).pushNamed(AppRouter.limited);
+      deleted = await Navigator.of(
+        context,
+      ).pushNamed(AppRouter.limitedDetailPath(item.postId));
+      if (deleted == true && mounted) _fetchPopularItems();
       return;
     }
 
-    Navigator.of(context).pushNamed(
+    deleted = await Navigator.of(context).pushNamed(
       AppRouter.usedDetail,
       arguments: UsedTradeDetailRouteArgs(
         postId: item.postId,
@@ -167,6 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }),
       ),
     );
+    if (deleted == true && mounted) _fetchPopularItems();
   }
 
   String _formatMarketPopularDescription(MarketSearchPost item) {
@@ -252,8 +269,12 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: Responsive.ref(context) * 0.06),
               _HomeSectionHeader(
                 title: '곧 입찰이 끝나요!',
-                onMoreTap: () =>
-                    Navigator.of(context).pushNamed(AppRouter.auctionEndingSoon),
+                onMoreTap: () async {
+                  final changed = await Navigator.of(
+                    context,
+                  ).pushNamed(AppRouter.auctionEndingSoon);
+                  if (changed == true && mounted) _fetchPopularItems();
+                },
               ),
               SizedBox(height: Responsive.ref(context) * 0.02),
               const Autioncareven(),

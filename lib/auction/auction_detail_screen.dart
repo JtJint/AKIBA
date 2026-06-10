@@ -136,7 +136,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('경매 글이 삭제되었습니다.')));
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(

@@ -40,7 +40,7 @@ class UsedPostPayload {
     required this.categoryId,
     required this.deliveryMethod,
     required this.purchaseSource,
-    required this.receiptMediaId,
+    this.receiptMediaId,
     required this.imageMediaIds,
     required this.tagNames,
   });
@@ -53,7 +53,7 @@ class UsedPostPayload {
   final int categoryId;
   final String deliveryMethod;
   final String purchaseSource;
-  final int receiptMediaId;
+  final int? receiptMediaId;
   final List<int> imageMediaIds;
   final List<String> tagNames;
 
@@ -67,7 +67,8 @@ class UsedPostPayload {
       'categoryId': categoryId,
       'deliveryMethod': deliveryMethod,
       'purchaseSource': purchaseSource,
-      'receiptMediaId': receiptMediaId,
+      if (receiptMediaId != null && receiptMediaId! > 0)
+        'receiptMediaId': receiptMediaId,
       'imageMediaIds': imageMediaIds,
       'tagNames': tagNames,
     };
@@ -87,7 +88,7 @@ class AuctionPostPayload {
     required this.endsAt,
     required this.deliveryMethod,
     required this.purchaseSource,
-    required this.receiptMediaId,
+    this.receiptMediaId,
     required this.imageMediaIds,
     required this.tagNames,
   });
@@ -103,7 +104,7 @@ class AuctionPostPayload {
   final DateTime endsAt;
   final String deliveryMethod;
   final String purchaseSource;
-  final int receiptMediaId;
+  final int? receiptMediaId;
   final List<int> imageMediaIds;
   final List<String> tagNames;
 
@@ -120,7 +121,8 @@ class AuctionPostPayload {
       'endsAt': endsAt.toIso8601String(),
       'deliveryMethod': deliveryMethod,
       'purchaseSource': purchaseSource,
-      'receiptMediaId': receiptMediaId,
+      if (receiptMediaId != null && receiptMediaId! > 0)
+        'receiptMediaId': receiptMediaId,
       'imageMediaIds': imageMediaIds,
       'tagNames': tagNames,
     };
@@ -129,6 +131,7 @@ class AuctionPostPayload {
 
 class LimitedPostPayload {
   const LimitedPostPayload({
+    this.type = 'LIMITED',
     required this.title,
     required this.content,
     required this.price,
@@ -137,11 +140,12 @@ class LimitedPostPayload {
     required this.categoryId,
     required this.deliveryMethod,
     required this.purchaseSource,
-    required this.receiptMediaId,
+    this.receiptMediaId,
     required this.imageMediaIds,
     required this.tagNames,
   });
 
+  final String type;
   final String title;
   final String content;
   final int price;
@@ -150,12 +154,13 @@ class LimitedPostPayload {
   final int categoryId;
   final String deliveryMethod;
   final String purchaseSource;
-  final int receiptMediaId;
+  final int? receiptMediaId;
   final List<int> imageMediaIds;
   final List<String> tagNames;
 
   Map<String, dynamic> toJson() {
     return {
+      'type': type,
       'title': title,
       'content': content,
       'price': price,
@@ -164,7 +169,8 @@ class LimitedPostPayload {
       'categoryId': categoryId,
       'deliveryMethod': deliveryMethod,
       'purchaseSource': purchaseSource,
-      'receiptMediaId': receiptMediaId,
+      if (receiptMediaId != null && receiptMediaId! > 0)
+        'receiptMediaId': receiptMediaId,
       'imageMediaIds': imageMediaIds,
       'tagNames': tagNames,
     };

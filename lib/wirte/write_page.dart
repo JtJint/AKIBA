@@ -335,8 +335,7 @@ class _WritePageState extends State<WritePage> {
       categoryId: _categoryId,
       deliveryMethod: _tradeMethod,
       purchaseSource: _purchasePlaceController.text.trim(),
-      receiptMediaId:
-          receiptMediaId ?? widget.usedEditPost?.receiptMediaId ?? 0,
+      receiptMediaId: receiptMediaId ?? widget.usedEditPost?.receiptMediaId,
       imageMediaIds: imageMediaIds,
       tagNames: tagNames,
     );
@@ -389,7 +388,7 @@ class _WritePageState extends State<WritePage> {
         endsAt: endsAt,
         deliveryMethod: _tradeMethod,
         purchaseSource: purchaseSource,
-        receiptMediaId: receiptMediaId ?? 0,
+        receiptMediaId: receiptMediaId,
         imageMediaIds: imageMediaIds,
         tagNames: tagNames,
       ),
@@ -419,7 +418,7 @@ class _WritePageState extends State<WritePage> {
         categoryId: _categoryId,
         deliveryMethod: _tradeMethod,
         purchaseSource: purchaseSource,
-        receiptMediaId: receiptMediaId ?? 0,
+        receiptMediaId: receiptMediaId,
         imageMediaIds: imageMediaIds,
         tagNames: tagNames,
       ),
