@@ -98,11 +98,6 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  bool _isMyPost(BoardPostSummary post) {
-    final myUserId = int.tryParse(html.window.localStorage['userId'] ?? '');
-    return myUserId != null && post.userId != 0 && myUserId == post.userId;
-  }
-
   Future<void> _deletePost(BoardPostSummary post) async {
     if (_isDeleting) return;
     final userId = int.tryParse(html.window.localStorage['userId'] ?? '');
@@ -186,7 +181,9 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                   if (post == null) {
                     return const SizedBox(width: 48);
                   }
-                  final isMine = _isMyPost(post);
+                  final isLoggedIn =
+                      int.tryParse(html.window.localStorage['userId'] ?? '') !=
+                      null;
                   return PopupMenuButton<String>(
                     color: const Color(0xff1b1b1b),
                     icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -198,26 +195,24 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                         _reportPost(post);
                       }
                     },
-                    itemBuilder: (context) => isMine
-                        ? [
-                            PopupMenuItem(
-                              value: 'delete',
-                              enabled: !_isDeleting,
-                              child: Text(
-                                _isDeleting ? '삭제 중...' : '삭제하기',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ]
-                        : const [
-                            PopupMenuItem(
-                              value: 'report',
-                              child: Text(
-                                '신고하기',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
+                    itemBuilder: (context) => [
+                      if (isLoggedIn)
+                        PopupMenuItem(
+                          value: 'delete',
+                          enabled: !_isDeleting,
+                          child: Text(
+                            _isDeleting ? '삭제 중...' : '삭제하기',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      const PopupMenuItem(
+                        value: 'report',
+                        child: Text(
+                          '신고하기',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

@@ -85,19 +85,7 @@ class _CommunityHomeBodyState extends State<_CommunityHomeBody> {
     final categories = _boards.isEmpty
         ? _CommunityHome._fallbackCategories
         : _boards.map(_categoryFromBoard).take(3).toList();
-    final popularPosts = _popularPosts
-        .take(3)
-        .indexed
-        .map(
-          (entry) => _PopularPost(
-            rank: entry.$1 + 1,
-            title: entry.$2.title,
-            subtitle: entry.$2.content.isEmpty
-                ? '댓글 ${entry.$2.commentCount}개 · 좋아요 ${entry.$2.likeCount}개'
-                : entry.$2.content,
-          ),
-        )
-        .toList();
+    final popularPosts = _popularPosts.take(3).toList();
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
@@ -129,8 +117,12 @@ class _CommunityHomeBodyState extends State<_CommunityHomeBody> {
           else if (popularPosts.isEmpty)
             const _PopularPostsEmpty()
           else
-            for (final post in popularPosts) ...[
-              _PopularPostCard(post: post),
+            for (final entry in popularPosts.indexed) ...[
+              _PopularPostCard(
+                rank: entry.$1 + 1,
+                post: entry.$2,
+                onDeleted: _fetchCommunityData,
+              ),
               const SizedBox(height: 14),
             ],
         ],
@@ -365,62 +357,79 @@ class _PopularHeader extends StatelessWidget {
 }
 
 class _PopularPostCard extends StatelessWidget {
-  const _PopularPostCard({required this.post});
+  const _PopularPostCard({
+    required this.rank,
+    required this.post,
+    required this.onDeleted,
+  });
 
-  final _PopularPost post;
+  final int rank;
+  final BoardPostSummary post;
+  final VoidCallback onDeleted;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 94),
-      decoration: BoxDecoration(
-        color: const Color(0xff202020),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 50,
-            child: Text(
-              post.rank.toString(),
-              style: const TextStyle(
-                color: Color(0xffD0FF00),
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
+    return InkWell(
+      onTap: () async {
+        final deleted = await Navigator.of(context).pushNamed(
+          AppRouter.communityPostDetailPath(post.boardCode, post.postId),
+          arguments: CommunityPostDetailRouteArgs(initialPost: post),
+        );
+        if (deleted == true) onDeleted();
+      },
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 94),
+        decoration: BoxDecoration(
+          color: const Color(0xff202020),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 50,
+              child: Text(
+                rank.toString(),
+                style: const TextStyle(
+                  color: Color(0xffD0FF00),
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  post.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    post.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  post.subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xff8C8C8C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                  const SizedBox(height: 8),
+                  Text(
+                    post.content.isEmpty
+                        ? '댓글 ${post.commentCount}개 · 좋아요 ${post.likeCount}개'
+                        : post.content,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xff8C8C8C),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -474,16 +483,4 @@ class _CommunityCategory {
   final String boardCode;
   final String title;
   final String imagePath;
-}
-
-class _PopularPost {
-  const _PopularPost({
-    required this.rank,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final int rank;
-  final String title;
-  final String subtitle;
 }
